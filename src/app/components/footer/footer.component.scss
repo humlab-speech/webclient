@@ -1,0 +1,35 @@
+@import '../../../colors.scss';
+
+#footer-container {
+    display:flex;
+    /* This is now specified in app-footer rule in the base css
+    grid-column: center;
+    grid-row: lower-panel;
+    */
+    background: $dark;
+    color: #fff;
+    font-size: 1.0rem;
+    /*
+    height:3rem;
+    font-size: 1.5vh;
+    padding: 1vh;
+    */
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    margin:0px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#footer-container span {
+    padding:0;
+    margin:0;
+}
+
+#footer-container a {
+    color: #fff;
+    padding:0;
+    margin:0;
+}

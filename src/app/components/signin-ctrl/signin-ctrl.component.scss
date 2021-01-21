@@ -1,0 +1,25 @@
+
+
+#signin-btn-container {
+    width: 100%;
+    display:flex;
+    justify-content: center;
+}
+
+#signin-btn-container button {
+    font-family: 'Oswald', sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 1rem;
+    background: #fa6;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    color: #333;
+    cursor:pointer;
+}
+
+#signin-btn-container img {
+    position:relative;
+    top: 0.2rem;
+    margin-right:0.4rem;
+}

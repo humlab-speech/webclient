@@ -1,0 +1,34 @@
+<div *ngIf="userIsSignedIn">
+    <!--<button id="magick-btn" (click)="dumpSession()">Dump Session</button>-->
+    <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        &nbsp;Create new project
+    </button>
+    <h2>Your Projects
+        <span class="projects-loading-indicator" *ngIf="!projectsLoaded">
+            <img src="../../../assets/logo-loading.gif">
+        </span>
+    </h2>
+    
+    <ul *ngFor="let project of projects">
+        <app-project-item [project]="project"></app-project-item>
+    </ul>
+
+    <div id="create-project-dialog-container" *ngIf="showCreateProjectDialog" ngClass="">
+        <div id="create-project-dialog">
+            <div class="dialog-header"><h2>Create new project</h2><div id="dialog-close-btn" (click)="closeCreateProjectDialog()">X</div></div>
+            <form [formGroup]="createProjectForm">
+                <fieldset class="fieldset">
+                    <label for="project-name">Project name</label>
+                    <input formControlName="projectName" name="projectName" id="projectName">
+                </fieldset>
+                <fieldset class="fieldset">
+                    <label for="create-emu-db">Generate empty EMU database</label>
+                    <input formControlName="genEmuDb" type="checkbox" name="genEmuDb" id="genEmuDb">
+                </fieldset>
+                <button type="button" (click)="createProject()">Submit</button>
+            </form>
+        </div>
+        
+    </div>
+</div>

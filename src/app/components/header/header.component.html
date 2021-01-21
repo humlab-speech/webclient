@@ -1,0 +1,17 @@
+<div id="header-container">
+    <div class="title">
+        <h1>V O I S</h1>
+        <hr />
+        <h2>Voice Oriented Investigation System</h2>
+    </div>
+    <div id="account-widget" class="account" *ngIf="userIsSignedIn" (mouseover)="showAccountMenu(true)" (mouseout)="showAccountMenu(false, true)">
+        <div class="account-container">
+            <img src="assets/user.svg"/>
+            <h1 class="user_displayname" (notify)="onNotify($event)">{{ getUserDisplayName() }}</h1>
+        </div>
+
+        <ul *ngIf="accountMenuVisible" class="account-menu-dropdown" (click)="signOut()">
+            <li><i class="fa fa-sign-out" aria-hidden="true"></i> Sign out</li>
+        </ul>
+    </div>
+</div>

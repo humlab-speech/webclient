@@ -1,0 +1,116 @@
+@import '../../../colors.scss';
+@import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
+
+li {
+    background-color: $lightgrey;
+    border-radius: 4px;
+    padding: 1rem;
+    list-style: none;
+    margin-right: 1rem;
+    border-style: solid;
+    border-color: #ddd;
+    border-width: 1px;
+}
+
+h3 {
+    margin: 0.5rem;
+    font-size: 1.5rem;
+}
+
+button {
+    font-size: 1.0rem;
+    padding: 0.25rem;
+    border-radius: 4px;
+    border-style: solid;
+    margin:0.5rem;
+    cursor:pointer;
+}
+
+.app-btn {
+    display:block;
+    background-color: $primary;
+    color: $white;
+    width: 100%;
+}
+
+.app-btn:hover {
+    background-color: lighten($primary, 10%);
+}
+
+.application-panel-container {
+    display:flex;
+    margin-bottom: 2rem;
+}
+
+.sessions-container {
+    margin-left: 1rem;
+}
+
+.sessions-container button {
+    margin:0;
+    background-color: $accent2;
+    color: $white;
+}
+
+.sessions-container button:hover {
+    background-color: lighten($accent2, 10%);
+}
+
+.status-msg-container img {
+    height: 0.8rem;
+    margin-right:0.5rem;
+}
+
+.disabled-btn {
+    background-color: #eee !important;
+    color: #000 !important;
+}
+
+button img {
+    height: 1rem;
+    width: 1rem;
+    margin:0;
+    padding:0;
+}
+
+button i {
+    height: 1rem;
+    width: 1rem;
+    margin:0;
+    padding:0;
+}
+
+.header {
+    display:flex;
+    justify-content: space-between;
+}
+
+.project-menu {
+    position:relative;
+    width: 1rem;
+    height: 1rem;
+    cursor:pointer;
+    right:0px;
+}
+
+.project-menu-dropdown {
+    display:block;
+    box-shadow: 0 0 1rem 0.25rem #ccc;
+    list-style-type: none;
+    margin:0;
+    padding:0;
+    position:absolute;
+    right:0px;
+    white-space:nowrap;
+}
+
+.project-menu-dropdown li {
+    margin:0;
+    padding:0.5rem;
+    background-color: $white;
+}
+
+.project-menu-dropdown li:hover {
+    background-color: $primary;
+    color: $white;
+}
