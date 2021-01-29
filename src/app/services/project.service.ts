@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable, Subject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { Project } from "../models/Project";
+import { ApiResponse } from "../models/ApiResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -20,14 +21,14 @@ export class ProjectService {
   }
 
   updateProjects() {
-    this._fetchProjects().subscribe(projects => {
-      this.projects = projects;
+    this._fetchProjects().subscribe(response => {
+      this.projects = <Project[]>response.body;
       this._projectSource.next(this.projects);
     });
   }
 
-  _fetchProjects():Observable<Project[]> {
-    return this.http.get<Project[]>(this.getProjectsUrl);
+  _fetchProjects():Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(this.getProjectsUrl);
   }
 
   getProjects():Project[] {
@@ -62,7 +63,7 @@ export class ProjectService {
     };
 
     return new Observable((observer) => {
-      this.http.post<Project>('https://localtest.me/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
+      this.http.post<ApiResponse>('https://localtest.me/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
         console.log(response);
         this.updateProjects();
         /*
@@ -93,7 +94,7 @@ export class ProjectService {
     };
 
     return new Observable((observer) => {
-      this.http.post<any>('https://localtest.me/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
+      this.http.post<ApiResponse>('https://localtest.me/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
         console.log(response);
         this.updateProjects();
       });

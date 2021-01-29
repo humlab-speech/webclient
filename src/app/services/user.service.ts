@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable } from 'rxjs';
 import { Session } from "../models/Session";
+import { ApiResponse } from "../models/ApiResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class UserService {
   public sessionObs:Observable<Session>;
   constructor(private http:HttpClient) {
     this.sessionObs = new Observable((observer) => {
-      this.fetchSession().subscribe((session) => {
+      this.fetchSession().subscribe((response) => {
+        let session = <Session>response.body;
         this.session = session;
         observer.next(this.session);
       });
@@ -24,8 +26,8 @@ export class UserService {
     window.location.href = '/auth'; //This url does not exist in the application, it is specified in apache as the trigger-url for shibboleth auth
   }
 
-  fetchSession():Observable<Session> {
-    return this.http.get<Session>(this.getSessionUrl);
+  fetchSession():Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(this.getSessionUrl);
   }
 
   getSession():Session {

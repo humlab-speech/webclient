@@ -1,12 +1,10 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { FrontpageComponent } from './components/frontpage/frontpage.component';
 
 const routes: Routes = [
-  { path: '', component: FrontpageComponent },
-  { path: 'auth', component: DashboardComponent },
-  { path: 'auth/dashboard', component: DashboardComponent }
+  { path: '', component: DashboardComponent },
+  { path: 'auth', redirectTo: '/', pathMatch: 'full' }
 ];
 
 @NgModule({

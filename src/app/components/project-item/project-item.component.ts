@@ -69,7 +69,7 @@ export class ProjectItemComponent implements OnInit {
 
     console.log(body);
 
-    this.http.post<any>('https://localtest.me/api/v1/rstudio/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/rstudio/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       console.log(data);
       this.statusMsg = "Taking you there...";
       
@@ -101,7 +101,7 @@ export class ProjectItemComponent implements OnInit {
       rstudioSession: cookies['rstudioSession']
     };
 
-    this.http.post<any>('https://localtest.me/api/v1/rstudio/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/rstudio/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       this.statusMsg = "";
       console.log("saved:", data);
       
@@ -109,7 +109,7 @@ export class ProjectItemComponent implements OnInit {
       this.rstudioSaveInProgress = false;
     });
 
-    this.http.post<any>('https://localtest.me/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       for(let key in this.project.sessions) {
         if(this.project.sessions[key].sessionCode == cookies['rstudioSession']) {
           this.project.sessions.splice(key, 1);
@@ -134,7 +134,7 @@ export class ProjectItemComponent implements OnInit {
     let body = {
       rstudioSession: cookies['rstudioSession']
     };
-    this.http.post<any>('https://localtest.me/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       this.statusMsg = "";
       console.log(data);
       

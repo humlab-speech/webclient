@@ -12,29 +12,33 @@
         
         <div class="applications-container">
             <h4>Applications</h4>
-            <button id="rstudioLaunchBtn" class="app-btn" (click)="launchProjectInApp('rstudio')">RStudio</button>
-            <button [disabled]="true" id="emuWebappLaunchBtn" class="app-btn" (click)="launchProjectInApp('emuwebapp')">EMU WebApp</button>
+            <fieldset>
+                <button id="rstudioLaunchBtn" class="app-btn" (click)="launchProjectInApp('rstudio')">Launch RStudio</button>
+                <div class="status-msg-container">
+                    <span *ngIf="statusMsg.length > 0"><img src="../../../assets/logo-loading.gif">{{ statusMsg }}</span>
+                </div>
+                <div *ngIf="hasRunningSessionsOfType('rstudio')" class="sessions-container">
+                    <button [disabled]="rstudioSaveInProgress || rstudioDeleteInProgress" [ngClass]="{'disabled-btn': rstudioSaveInProgress}" (click)="saveAndClose('rstudio')">
+                        <img *ngIf="rstudioSaveInProgress" src="../../../assets/logo-loading.gif">
+                        <i *ngIf="!rstudioSaveInProgress" class="fa fa-floppy-o" aria-hidden="true"></i>
+                        &nbsp;Save & close session
+                    </button>
+                    <button [disabled]="rstudioSaveInProgress || rstudioDeleteInProgress" [ngClass]="{'disabled-btn': rstudioDeleteInProgress}" (click)="discardAndClose('emuwebapp')">
+                        <img *ngIf="rstudioDeleteInProgress" src="../../../assets/logo-loading.gif">
+                        <i *ngIf="!rstudioDeleteInProgress" class="fa fa-times-circle" aria-hidden="true"></i>
+                        &nbsp;Close session without saving
+                    </button>
+                </div>
+            </fieldset>
+            <fieldset>
+                <button [disabled]="true" id="emuWebappLaunchBtn" class="app-btn" (click)="launchProjectInApp('emuwebapp')">Launch EMU WebApp</button>
+                <div *ngIf="hasRunningSessionsOfType('emuwebapp')" class="sessions-container">
+                    <button>Save & close session</button>
+                    <button>Close session without saving</button>
+                </div>
+            </fieldset>
         </div>
-        <div class="sessions-container">
-            <h4>My sessions</h4>
-            <div class="status-msg-container" *ngIf="statusMsg.length > 0"><img src="../../../assets/logo-loading.gif">{{ statusMsg }}</div>
-            <div *ngIf="hasRunningSessionsOfType('rstudio')">
-                <button [disabled]="rstudioSaveInProgress || rstudioDeleteInProgress" [ngClass]="{'disabled-btn': rstudioSaveInProgress}" (click)="saveAndClose('rstudio')">
-                    <img *ngIf="rstudioSaveInProgress" src="../../../assets/logo-loading.gif">
-                    <i *ngIf="!rstudioSaveInProgress" class="fa fa-floppy-o" aria-hidden="true"></i>
-                    &nbsp;Save & close session
-                </button>
-                <button [disabled]="rstudioSaveInProgress || rstudioDeleteInProgress" [ngClass]="{'disabled-btn': rstudioDeleteInProgress}" (click)="discardAndClose('emuwebapp')">
-                    <img *ngIf="rstudioDeleteInProgress" src="../../../assets/logo-loading.gif">
-                    <i *ngIf="!rstudioDeleteInProgress" class="fa fa-times-circle" aria-hidden="true"></i>
-                    &nbsp;Close session without saving
-                </button>
-            </div>
-            <div *ngIf="hasRunningSessionsOfType('emuwebapp')">
-                <button>Save & close session</button>
-                <button>Close session without saving</button>
-            </div>
-        </div>
+        
     </div>
     <div>
         <a href="{{ project.web_url }}/-/wikis/home">wiki</a> | 

@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from "../../services/user.service";
 import { ProjectService } from "../../services/project.service";
-import { Session } from "../../models/Session";
 import { Project } from "../../models/Project";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { FormControl, FormGroup } from '@angular/forms';
-import { ThrowStmt } from '@angular/compiler';
 
 @Component({
   selector: 'app-project-manager',
@@ -23,39 +21,13 @@ export class ProjectManagerComponent implements OnInit {
     projectName: new FormControl(''),
     genEmuDb: new FormControl(false)
   });
-  //projectName = new FormControl('');
-  //genEmuDb = new FormControl(false);
 
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
   ngOnInit():void {
-    /*
-    this.projectService.fetchProjects().subscribe(projects => {
-      //this.projects = projects;
-      this.projects = this.projectService.projects;
-      this.projectsLoaded = true;
-    });
-    */
-
-    /*
-    setInterval(() => {
-      console.log("update project list");
-      this.projects = this.projectService.projects;
-      console.log(this.projects);
-    }, 1000);
-    */
-
-    this.userService.sessionObs.subscribe((session:Session) => {
-      console.log("Session updated", session);
-      if(session.email != null) {
-        this.userIsSignedIn = true;
-      }
-      else {
-        this.userIsSignedIn = false;
-      }
-    });
-
+   this.userIsSignedIn = this.userService.session != null;
+   
     this.projectService.projects$.subscribe((projects) => {
       console.log("well whaddaya know! the projects list seems to be updated! aint that somehting...");
       this.projects = projects;

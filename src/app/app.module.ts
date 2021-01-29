@@ -11,7 +11,6 @@ import { InfoboxManagerComponent } from './components/infobox-manager/infobox-ma
 import { HeaderComponent } from './components/header/header.component';
 import { SigninCtrlComponent } from './components/signin-ctrl/signin-ctrl.component';
 import { ProjectManagerComponent } from './components/project-manager/project-manager.component';
-import { FrontpageComponent } from './components/frontpage/frontpage.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -27,7 +26,6 @@ import { ProjectItemComponent } from './components/project-item/project-item.com
     HeaderComponent,
     SigninCtrlComponent,
     ProjectManagerComponent,
-    FrontpageComponent,
     DashboardComponent,
     ProjectItemComponent
   ],
