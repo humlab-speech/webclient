@@ -15,6 +15,9 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProjectItemComponent } from './components/project-item/project-item.component';
+import { AppctrlComponent } from './components/appctrl/appctrl.component';
+
+import { NgxDropzoneModule } from 'ngx-dropzone';
 
 @NgModule({
   declarations: [
@@ -27,7 +30,8 @@ import { ProjectItemComponent } from './components/project-item/project-item.com
     SigninCtrlComponent,
     ProjectManagerComponent,
     DashboardComponent,
-    ProjectItemComponent
+    ProjectItemComponent,
+    AppctrlComponent
   ],
   imports: [
     BrowserModule,
@@ -35,7 +39,8 @@ import { ProjectItemComponent } from './components/project-item/project-item.com
     HttpClientModule,
     BrowserAnimationsModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgxDropzoneModule
   ],
   providers: [],
   bootstrap: [AppComponent]

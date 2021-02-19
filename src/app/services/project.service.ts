@@ -53,26 +53,23 @@ export class ProjectService {
   }
   */
 
-  createProject(name:string, genEmuDb:boolean) {
+  createProject(name:string, genEmuDb:boolean, createProjectContextId:string) {
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
     let body = {
       name: name,
-      genEmuDb: genEmuDb
+      genEmuDb: genEmuDb,
+      context: createProjectContextId
     };
 
     return new Observable((observer) => {
-      this.http.post<ApiResponse>('https://localtest.me/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
-        console.log(response);
+      this.http.post<ApiResponse>('/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+        //console.log(response);
         this.updateProjects();
-        /*
         observer.next(response);
 
-        this.projectObs.subscribe((projects:Project[]) => {
-          this.projects = projects;
-        });
-        */
+        console.log(JSON.parse(response.body));
 
       });
     });

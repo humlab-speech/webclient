@@ -118,3 +118,43 @@ li {
     position:relative;
     top: 0.2em;
 }
+
+.upload-container {
+    margin-bottom: 1em;
+}
+
+#submitBtn.disabled {
+    background-color: #fff !important;
+    color: #333;
+}
+
+#submitBtn img {
+    position:relative;
+    top: 0.1em;
+    height: 1em;
+    width: 1em;
+}
+
+.small-button {
+    font-size: 1em;
+}
+
+#sessions-container {
+    background-color: #eee;
+    border-radius: 0.25em;
+}
+
+.session-header-container {
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.session-header-container > i {
+    visibility: hidden;
+}
+
+.session-header-container:hover > i {
+    visibility: visible;
+    cursor:pointer;
+}

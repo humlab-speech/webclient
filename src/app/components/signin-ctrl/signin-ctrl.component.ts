@@ -14,7 +14,7 @@ export class SigninCtrlComponent implements OnInit {
   constructor(private userService:UserService) { }
 
   ngOnInit():void {
-
+    /*
     this.userService.sessionObs.subscribe((session:Session) => {
       console.log("Session updated", session);
       if(session.email != null) {
@@ -24,6 +24,7 @@ export class SigninCtrlComponent implements OnInit {
         this.userIsSignedIn = false;
       }
     });
+    */
   }
 
   signIn() {

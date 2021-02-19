@@ -33,6 +33,7 @@ export class InfoboxManagerComponent implements OnInit {
       }
     ];
 
+    /*
     this.userService.sessionObs.subscribe((session:Session) => {
       console.log("Session updated", session);
       if(session.email != null) {
@@ -42,6 +43,7 @@ export class InfoboxManagerComponent implements OnInit {
         this.userIsSignedIn = false;
       }
     });
+    */
 
   }
 

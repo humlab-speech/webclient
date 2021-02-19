@@ -17,76 +17,6 @@ h3 {
     font-size: 1.5rem;
 }
 
-button {
-    font-size: 1.0rem;
-    padding: 0.25rem;
-    border-radius: 4px;
-    border-style: solid;
-    margin:0.5rem;
-    cursor:pointer;
-}
-
-.app-btn {
-    display:block;
-    background-color: $primary;
-    color: $white;
-    width: 100%;
-    margin:0;
-    
-}
-
-.app-btn:hover {
-    background-color: lighten($primary, 10%);
-}
-
-.application-panel-container {
-    display:flex;
-    margin-bottom: 2rem;
-}
-
-.sessions-container {
-    display:flex;
-    justify-content: space-evenly;
-}
-
-.sessions-container button {
-    margin:0;
-    background-color: $secondary;
-    color: $white;
-}
-
-.sessions-container button:hover {
-    background-color: lighten($secondary, 10%);
-}
-
-.status-msg-container {
-    margin: 0.25em;
-}
-
-.status-msg-container img {
-    height: 0.8rem;
-    margin-right:0.5rem;
-}
-
-.disabled-btn {
-    background-color: #eee !important;
-    color: #000 !important;
-}
-
-button img {
-    height: 1rem;
-    width: 1rem;
-    margin:0;
-    padding:0;
-}
-
-button i {
-    height: 1rem;
-    width: 1rem;
-    margin:0;
-    padding:0;
-}
-
 .header {
     display:flex;
     justify-content: space-between;
@@ -132,4 +62,8 @@ button i {
     border: 1px solid #ddd;
     width: 100%;
     border-radius: 0.25em;
+}
+
+.project-links-container {
+    margin-top: 1em;
 }

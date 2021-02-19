@@ -22,11 +22,36 @@
                     <label for="project-name">Project name</label>
                     <input formControlName="projectName" name="projectName" id="projectName">
                 </fieldset>
+                <!--
                 <fieldset class="fieldset">
-                    <label for="create-emu-db">Generate empty EMU database</label>
+                    <label for="create-emu-db">Generate EMU database</label>
                     <input formControlName="genEmuDb" type="checkbox" name="genEmuDb" id="genEmuDb">
                 </fieldset>
-                <button type="button" (click)="createProject()">Submit</button>
+                -->
+                <h3>Sessions</h3>
+                <fieldset id="sessions-container">
+                    <button class="small-button" (click)="addSession()">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                        &nbsp;Add session
+                    </button>
+
+                    <div class="upload-container" *ngFor="let session of sessions">
+                        <div class="session-header-container">
+                            <h4>{{ session.name }}</h4><i (click)="deleteSession(session)" class="fa fa-minus-circle" aria-hidden="true"></i>
+                        </div>
+                        <ngx-dropzone [expandable]="true" (change)="onSelect($event, session)" accept="audio/wav">
+                            <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
+                            <ngx-dropzone-preview *ngFor="let f of session.files" [removable]="true" (removed)="onRemove(f, session)">
+                                <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                            </ngx-dropzone-preview>
+                        </ngx-dropzone>
+                    </div>
+                    
+                </fieldset>
+                <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject()">
+                    <img *ngIf="!submitBtnEnabled" src="../../../assets/logo-loading.gif">
+                    {{ submitBtnLabel }}
+                </button>
             </form>
         </div>
         

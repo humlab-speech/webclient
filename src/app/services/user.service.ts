@@ -13,13 +13,23 @@ export class UserService {
   session:Session = null;
   public sessionObs:Observable<Session>;
   constructor(private http:HttpClient) {
+    
     this.sessionObs = new Observable((observer) => {
       this.fetchSession().subscribe((response) => {
         let session = <Session>response.body;
         this.session = session;
+        
+        this.createPersonalAccessToken().subscribe(response => {
+        });
+
         observer.next(this.session);
       });
     });
+    
+  }
+
+  createPersonalAccessToken():Observable<ApiResponse> {
+    return this.http.post<ApiResponse>("/api/v1/personalaccesstoken", "{}");
   }
   
   authenticate() {
