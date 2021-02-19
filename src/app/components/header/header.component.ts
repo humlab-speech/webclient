@@ -53,7 +53,8 @@ export class HeaderComponent implements OnInit {
 
   signOut() {
     console.log('Signout');
-    window.location.href = 'https://localtest.me/Shibboleth.sso/Logout?return=https://localtest.me/api/v1/signout';
+    //window.location.href = 'https://localtest.me/Shibboleth.sso/Logout?return=https://localtest.me/api/v1/signout';
+    window.location.href = '/Shibboleth.sso/Logout?return=https://speech.humlab.umu.se/api/v1/signout';
   }
 
 }
