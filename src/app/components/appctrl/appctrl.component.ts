@@ -23,16 +23,21 @@ export class AppctrlComponent implements OnInit {
   constructor(private http:HttpClient) { }
 
   ngOnInit(): void {
-    this.btnTitle = "Launch "+this.hsApp.title;
+    this.btnTitle = this.hsApp.title;
   }
 
   launchProjectInApp() {
+    //this.hsApp.launch();
+    
     switch(this.hsApp.name) {
       case "rstudio":
         this.launchContainerSession();
       break;
       case "emuwebapp":
-        this.launchStandardSession();
+        this.launchEmuWebAppSession();
+      break;
+      case "octra":
+        this.launchOctraSession();
       break;
     }
   }
@@ -61,7 +66,7 @@ export class AppctrlComponent implements OnInit {
     });
   }
 
-  launchStandardSession() {
+  launchEmuWebAppSession() {
     this.statusMsg = "Taking you there...";
 
     let headers = {
@@ -85,6 +90,24 @@ export class AppctrlComponent implements OnInit {
       url += "&emuDBname="+emuDBname;
       url += "&bundleListName="+bundleListName;
       url += "&privateToken="+privateToken;
+      
+      console.log(url);
+      window.location.href = url;
+    });
+  }
+
+  launchOctraSession() {
+    this.statusMsg = "Taking you there...";
+
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      projectId: this.project.id
+    };
+    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+
+      let url = "https://"+this.hsApp.name+"."+this.domain+"/";
       
       console.log(url);
       window.location.href = url;
