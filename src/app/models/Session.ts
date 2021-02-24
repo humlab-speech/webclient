@@ -4,4 +4,5 @@ export class Session {
     fullName:string;
     email:string;
     gitlabUsername:string;
+    personalAccessToken:string;
 }
