@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class ProjectService {
   public projects:Project[] = [];
   public projectObs:Observable<Project[]>;
 
-  constructor(private http:HttpClient) {
+  constructor(private http:HttpClient, private userService:UserService) {
     this.updateProjects();
   }
 
@@ -35,23 +36,12 @@ export class ProjectService {
     return this.projects;
   }
 
-  /*
-  fetchProjects():Observable<Project[]> {
-    console.log("fetchProjects");
-    this.projectObs = new Observable((observer) => {
-      let obs = this._fetchProjects();
-      obs.subscribe((fetchedProjects) => {
-        this.projects = fetchedProjects;
-        observer.next(fetchedProjects);
-        observer.complete();
-      }, (error) => {
-        console.log(error);
-      });
-    });
-
-    return this.projectObs;
+  fetchProjectMembers(projectId) {
+    let headers = {
+      "PRIVATE-TOKEN": this.userService.getSession().personalAccessToken
+    };
+    return this.http.get<ApiResponse>('https://gitlab.localtest.me/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
-  */
 
   createProject(name:string, genEmuDb:boolean, createProjectContextId:string) {
     let headers = {
@@ -73,13 +63,7 @@ export class ProjectService {
 
       });
     });
-
-    /*
-    .pipe(mergeMap((data:any) => {
-      console.log(data);
-      return data;
-    }));
-    */
+    
   }
 
   deleteProject(project:Project) {
