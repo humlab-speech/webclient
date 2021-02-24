@@ -9,7 +9,7 @@
             </ul>
         </div>
     </div>
-    <div class="application-panel-container">
+    <div class="project-main-panel">
         
         <div class="applications-container">
             <h4>Applications</h4>
@@ -17,12 +17,21 @@
                 <app-appctrl [hsApp]="hsApp" [project]="project"></app-appctrl>
             </div>
         </div>
+
+        <div class="project-members-list">
+            <h4>Members <a href="{{ project.web_url }}/-/project_members"><i class="fa fa-plus-circle"></i></a></h4>
+            <ul>
+                <li *ngFor="let member of members">
+                    <a href="{{ member.web_url }}">{{ member.name }}</a>
+                </li>
+            </ul>
+        </div>
         
     </div>
+
     <div class="project-links-container">
         <a href="{{ project.web_url }}">Project in Gitlab:</a> | 
         <a href="{{ project.web_url }}/-/wikis/home">wiki</a> | 
-        <a href="{{ project.web_url }}/-/issues">issues</a> | 
-        <a href="{{ project.web_url }}/-/project_members">members</a>
+        <a href="{{ project.web_url }}/-/issues">issues</a>
     </div>
 </li>
