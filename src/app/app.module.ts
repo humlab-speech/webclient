@@ -18,6 +18,7 @@ import { ProjectItemComponent } from './components/project-item/project-item.com
 import { AppctrlComponent } from './components/appctrl/appctrl.component';
 
 import { NgxDropzoneModule } from 'ngx-dropzone';
+import { UserService } from './services/user.service';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,7 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
     ReactiveFormsModule,
     NgxDropzoneModule
   ],
-  providers: [],
+  providers: [UserService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
