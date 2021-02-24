@@ -31,6 +31,10 @@ app-signin-ctrl {
     display:block;
 }
 
+button {
+    border-style: solid;
+}
+
 #main-container {
     display: grid;
     overflow:auto;
