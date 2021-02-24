@@ -19,6 +19,7 @@ export class ProjectItemComponent implements OnInit {
   rstudioDeleteInProgress:boolean = false;
   projectMenuVisible:boolean = false;
   menuTimeout:any;
+  members:[];
   
   hsApplications:HsApp[];
 
@@ -32,8 +33,16 @@ export class ProjectItemComponent implements OnInit {
     let emuWebApp = new HsApp();
     emuWebApp.name = "emuwebapp";
     emuWebApp.title = "EmuWebApp";
+
+    let octraApp = new HsApp();
+    octraApp.name = "octra";
+    octraApp.title = "Octra";
     
-    this.hsApplications = [rstudioApp, emuWebApp];
+    this.hsApplications = [rstudioApp, emuWebApp, octraApp];
+    
+    this.projectService.fetchProjectMembers(this.project.id).subscribe((response:any) => {
+      this.members = response;
+    });
   }
 
   showProjectMenu(show:boolean = true, useTimer = false) {
