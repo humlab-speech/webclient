@@ -40,7 +40,7 @@ export class ProjectService {
     let headers = {
       "PRIVATE-TOKEN": this.userService.getSession().personalAccessToken
     };
-    return this.http.get<ApiResponse>('https://gitlab.localtest.me/api/v4/projects/'+projectId+'/users', { "headers": headers });
+    return this.http.get<ApiResponse>('https://gitlab.speech.humlab.umu.se/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
 
   createProject(name:string, genEmuDb:boolean, createProjectContextId:string) {
