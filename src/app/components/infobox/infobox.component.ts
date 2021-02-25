@@ -15,4 +15,7 @@ export class InfoboxComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  redirectToOctra() {
+    window.location.href = "https://octra."+window.location.hostname;
+  }
 }
