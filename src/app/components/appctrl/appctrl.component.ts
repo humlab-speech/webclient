@@ -78,7 +78,7 @@ export class AppctrlComponent implements OnInit {
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       //Example: https://ips-lmu.github.io/EMU-webApp/?autoConnect=true&comMode=GITLAB&gitlabURL=https:%2F%2Fgitlab.lrz.de&projectID=44728&emuDBname=ae&bundleListName=test.user&privateToken=reQFspQnbCHbvTfHjwfP
 
-      let gitlabURL:string = encodeURIComponent("https://gitlab.localtest.me");
+      let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
       let projectId:number = this.project.id;
       let emuDBname:string  = "default";
       let bundleListName:string = "user.user";
