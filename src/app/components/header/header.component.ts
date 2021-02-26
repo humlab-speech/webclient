@@ -16,15 +16,6 @@ export class HeaderComponent implements OnInit {
   constructor(private userService:UserService) { }
 
   ngOnInit(): void {
-    /*
-    let session = this.userService.getSession();
-    if(session == null) {
-      this.userIsSignedIn = false;
-    }
-    else {
-      this.userIsSignedIn = true;
-    }
-    */
   }
 
   onNotify(evt) {

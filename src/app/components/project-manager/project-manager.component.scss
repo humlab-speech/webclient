@@ -1,6 +1,21 @@
 @import '../../../colors.scss';
 @import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
+
+app-create-project-dialog {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    //padding:10%;
+    background-color:rgba(0, 0, 0, 0.5);
+    
+}
+
 #create-project-btn {
     padding:0.8em;
     background-color: $crimson;
@@ -15,45 +30,6 @@
     background-color:lighten($crimson, 10%);
 }
 
-#create-project-dialog-container {
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    position:fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    //padding:10%;
-    background-color:rgba(0, 0, 0, 0.5);
-    
-}
-
-#create-project-dialog {
-    display:flex;
-    flex-direction: column;
-    padding: 2rem;
-    border-radius:4px;
-    background-color: #fff;
-    box-shadow: 0px 0px 10px 5px #666;
-}
-
-fieldset {
-    display:flex;
-    flex-direction: column;
-    border-width:0;
-}
-
-fieldset label {
-    font-weight: bold;
-}
-
-fieldset input {
-    border-color: #ccc;
-    border-style: solid;
-    border-radius: 4px;
-    font-size: 1.2rem;
-}
 
 button {
     font-size: 1.5rem;
@@ -75,24 +51,6 @@ button:hover {
 input[type=checkbox] {
     width:2rem;
     height:2rem;
-}
-
-#dialog-close-btn {
-    position: relative;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 25%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.2rem;
-    border: 1px solid #666;
-}
-
-#dialog-close-btn:hover {
-    background-color: lighten($crimson, 10%);
-    cursor: pointer;
-    color: #fff;
 }
 
 .dialog-header {
@@ -117,44 +75,4 @@ li {
     height: 1.0em;
     position:relative;
     top: 0.2em;
-}
-
-.upload-container {
-    margin-bottom: 1em;
-}
-
-#submitBtn.disabled {
-    background-color: #fff !important;
-    color: #333;
-}
-
-#submitBtn img {
-    position:relative;
-    top: 0.1em;
-    height: 1em;
-    width: 1em;
-}
-
-.small-button {
-    font-size: 1em;
-}
-
-#sessions-container {
-    background-color: #eee;
-    border-radius: 0.25em;
-}
-
-.session-header-container {
-    display:flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.session-header-container > i {
-    visibility: hidden;
-}
-
-.session-header-container:hover > i {
-    visibility: visible;
-    cursor:pointer;
 }

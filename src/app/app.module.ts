@@ -19,6 +19,7 @@ import { AppctrlComponent } from './components/appctrl/appctrl.component';
 
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
+import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { UserService } from './services/user.service';
     ProjectManagerComponent,
     DashboardComponent,
     ProjectItemComponent,
-    AppctrlComponent
+    AppctrlComponent,
+    CreateProjectDialogComponent
   ],
   imports: [
     BrowserModule,

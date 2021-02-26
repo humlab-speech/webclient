@@ -31,7 +31,7 @@ export class AppctrlComponent implements OnInit {
     
     switch(this.hsApp.name) {
       case "rstudio":
-        this.launchContainerSession();
+        this.launchContainerSession("rstudio");
       break;
       case "emuwebapp":
         this.launchEmuWebAppSession();
@@ -39,10 +39,13 @@ export class AppctrlComponent implements OnInit {
       case "octra":
         this.launchOctraSession();
       break;
+      case "jupyter":
+        this.launchContainerSession("jupyter");
+      break;
     }
   }
 
-  launchContainerSession() {
+  launchContainerSession(appName) {
     this.statusMsg = "Creating your environment...";
 
     let headers = {
@@ -52,14 +55,14 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
 
-    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/'+appName+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
       this.statusMsg = "Taking you there...";
       
-      document.cookie = this.hsApp.name+"Session="+sessionAccessCode+"; domain="+this.domain;
+      document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain;
 
       setTimeout(() => {
-        window.location.href = "https://"+this.hsApp.name+"."+this.domain;
+        window.location.href = "https://"+appName+"."+this.domain+"/?token="+sessionAccessCode;
       }, 1000);
     }, (error) => {
       console.error(error);

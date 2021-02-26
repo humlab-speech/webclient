@@ -27,7 +27,7 @@ export class ProjectItemComponent implements OnInit {
 
   ngOnInit(): void {
     let rstudioApp = new HsApp();
-    rstudioApp.name = "rstudio";
+    rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
     rstudioApp.title = "RStudio";
 
     let emuWebApp = new HsApp();
@@ -37,8 +37,12 @@ export class ProjectItemComponent implements OnInit {
     let octraApp = new HsApp();
     octraApp.name = "octra";
     octraApp.title = "Octra";
+
+    let jupyterApp = new HsApp();
+    jupyterApp.name = "jupyter";
+    jupyterApp.title = "Jupyter";
     
-    this.hsApplications = [rstudioApp, emuWebApp, octraApp];
+    this.hsApplications = [rstudioApp, emuWebApp, jupyterApp];
     
     this.projectService.fetchProjectMembers(this.project.id).subscribe((response:any) => {
       this.members = response;

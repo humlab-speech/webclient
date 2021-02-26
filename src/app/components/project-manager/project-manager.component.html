@@ -14,46 +14,5 @@
         <app-project-item [project]="project"></app-project-item>
     </ul>
 
-    <div id="create-project-dialog-container" *ngIf="showCreateProjectDialog" ngClass="">
-        <div id="create-project-dialog">
-            <div class="dialog-header"><h2>Create new project</h2><div id="dialog-close-btn" (click)="closeCreateProjectDialog()">X</div></div>
-            <form [formGroup]="createProjectForm">
-                <fieldset class="fieldset">
-                    <label for="project-name">Project name</label>
-                    <input formControlName="projectName" name="projectName" id="projectName">
-                </fieldset>
-                <!--
-                <fieldset class="fieldset">
-                    <label for="create-emu-db">Generate EMU database</label>
-                    <input formControlName="genEmuDb" type="checkbox" name="genEmuDb" id="genEmuDb">
-                </fieldset>
-                -->
-                <h3>Sessions</h3>
-                <fieldset id="sessions-container">
-                    <button class="small-button" (click)="addSession()">
-                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                        &nbsp;Add session
-                    </button>
-
-                    <div class="upload-container" *ngFor="let session of sessions">
-                        <div class="session-header-container">
-                            <h4>{{ session.name }}</h4><i (click)="deleteSession(session)" class="fa fa-minus-circle" aria-hidden="true"></i>
-                        </div>
-                        <ngx-dropzone [expandable]="true" (change)="onSelect($event, session)" accept="audio/wav">
-                            <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
-                            <ngx-dropzone-preview *ngFor="let f of session.files" [removable]="true" (removed)="onRemove(f, session)">
-                                <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
-                            </ngx-dropzone-preview>
-                        </ngx-dropzone>
-                    </div>
-                    
-                </fieldset>
-                <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject()">
-                    <img *ngIf="!submitBtnEnabled" src="../../../assets/logo-loading.gif">
-                    {{ submitBtnLabel }}
-                </button>
-            </form>
-        </div>
-        
-    </div>
+    <app-create-project-dialog [projectManager]="this" *ngIf="showCreateProjectDialog"></app-create-project-dialog>
 </div>
