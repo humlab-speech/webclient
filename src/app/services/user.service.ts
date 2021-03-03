@@ -3,13 +3,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable } from 'rxjs';
 import { Session } from "../models/Session";
 import { ApiResponse } from "../models/ApiResponse";
+import { Config } from '../config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
 
-  getSessionUrl:string = '/api/v1/session';
+  getSessionUrl:string = Config.API_ENDPOINT+'/api/v1/session';
   session:Session = null;
   public sessionObs:Observable<Session>;
   constructor(private http:HttpClient) {
@@ -29,7 +30,7 @@ export class UserService {
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {
-    return this.http.post<ApiResponse>("/api/v1/personalaccesstoken", "{}");
+    return this.http.post<ApiResponse>(Config.API_ENDPOINT+"/api/v1/personalaccesstoken", "{}");
   }
   
   authenticate() {

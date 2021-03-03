@@ -45,6 +45,11 @@ export class AppctrlComponent implements OnInit {
     }
   }
 
+  goToUrl(url) {
+    this.statusMsg = "";
+    window.open(url);
+  }
+
   launchContainerSession(appName) {
     this.statusMsg = "Creating your environment...";
 
@@ -62,8 +67,8 @@ export class AppctrlComponent implements OnInit {
       document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain;
 
       setTimeout(() => {
-        window.location.href = "https://"+appName+"."+this.domain+"/?token="+sessionAccessCode;
-      }, 1000);
+        this.goToUrl("https://"+appName+"."+this.domain+"/?token="+sessionAccessCode);
+      }, 500);
     }, (error) => {
       console.error(error);
     });
@@ -94,8 +99,7 @@ export class AppctrlComponent implements OnInit {
       url += "&bundleListName="+bundleListName;
       url += "&privateToken="+privateToken;
       
-      console.log(url);
-      window.location.href = url;
+      this.goToUrl(url);
     });
   }
 
@@ -109,11 +113,8 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-
       let url = "https://"+this.hsApp.name+"."+this.domain+"/";
-      
-      console.log(url);
-      window.location.href = url;
+      this.goToUrl(url);
     });
   }
 

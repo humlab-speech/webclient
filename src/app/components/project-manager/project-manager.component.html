@@ -4,15 +4,21 @@
         <i class="fa fa-plus-circle" aria-hidden="true"></i>
         &nbsp;Create new project
     </button>
-    <h2>Your Projects
-        <span class="projects-loading-indicator" *ngIf="!projectsLoaded">
-            <img src="../../../assets/logo-loading.gif">
-        </span>
-    </h2>
+    <h2>Your Projects</h2>
     
     <ul *ngFor="let project of projects">
         <app-project-item [project]="project"></app-project-item>
     </ul>
+
+    <div *ngIf="!projectsLoaded">
+        <span class="projects-loading-indicator" *ngIf="!projectsLoaded">
+            <img src="../../../assets/logo-loading.gif">
+        </span>
+        Loading your projects...
+    </div>
+    <div *ngIf="projects?.length == 0">
+        You have no projects
+    </div>
 
     <app-create-project-dialog [projectManager]="this" *ngIf="showCreateProjectDialog"></app-create-project-dialog>
 </div>

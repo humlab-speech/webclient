@@ -5,10 +5,12 @@ import { mergeMap } from 'rxjs/operators';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
+import { Config } from '../config';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class ProjectService {
 
   private getProjectsUrl:string = '/api/v1/user/project';
@@ -54,7 +56,7 @@ export class ProjectService {
     };
 
     return new Observable((observer) => {
-      this.http.post<ApiResponse>('/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
         //console.log(response);
         this.updateProjects();
         observer.next(response);
@@ -75,7 +77,7 @@ export class ProjectService {
     };
 
     return new Observable((observer) => {
-      this.http.post<ApiResponse>('https://localtest.me/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
+      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
         console.log(response);
         this.updateProjects();
       });

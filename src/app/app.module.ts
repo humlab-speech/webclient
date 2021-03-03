@@ -21,6 +21,7 @@ import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
 import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -45,7 +46,9 @@ import { CreateProjectDialogComponent } from './components/project-manager/creat
     ReactiveFormsModule,
     NgxDropzoneModule
   ],
-  providers: [UserService],
+  providers: [
+    UserService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
