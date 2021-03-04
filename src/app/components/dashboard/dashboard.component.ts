@@ -10,20 +10,11 @@ import { Session } from "../../models/Session";
 export class DashboardComponent implements OnInit {
 
   userIsSignedIn:boolean = false;
-
   constructor(private userService:UserService) { }
 
   ngOnInit(): void {
-    this.userService.sessionObs.subscribe((session:Session) => {
-      console.log("Session updated", session);
-      if(session.email != null) {
-        this.userIsSignedIn = true;
-      }
-      else {
-        this.userIsSignedIn = false;
-      }
+    window.addEventListener('userSessionUpdated', () => {
+      this.userIsSignedIn = this.userService.userIsSignedIn;
     });
-
   }
-
 }

@@ -11,11 +11,14 @@ export class HeaderComponent implements OnInit {
 
   accountMenuVisible:boolean = false;
   menuTimeout:any;
-  userIsSignedIn:boolean = true;
+  userIsSignedIn:boolean = false;
 
   constructor(private userService:UserService) { }
 
   ngOnInit(): void {
+    window.addEventListener('userSessionUpdated', () => {
+      this.userIsSignedIn = this.userService.userIsSignedIn;
+    });
   }
 
   onNotify(evt) {

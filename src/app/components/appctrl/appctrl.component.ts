@@ -27,8 +27,6 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchProjectInApp() {
-    //this.hsApp.launch();
-    
     switch(this.hsApp.name) {
       case "rstudio":
         this.launchContainerSession("rstudio");
@@ -46,8 +44,10 @@ export class AppctrlComponent implements OnInit {
   }
 
   goToUrl(url) {
+    console.log("Performing window open on: "+url);
     this.statusMsg = "";
-    window.open(url);
+    //window.open(url);
+    window.location.href = url;
   }
 
   launchContainerSession(appName) {
@@ -65,11 +65,10 @@ export class AppctrlComponent implements OnInit {
       this.statusMsg = "Taking you there...";
       
       document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain;
+      this.goToUrl("https://"+appName+"."+this.domain+"/?token="+sessionAccessCode);
 
-      setTimeout(() => {
-        this.goToUrl("https://"+appName+"."+this.domain+"/?token="+sessionAccessCode);
-      }, 500);
-    }, (error) => {
+    },
+    (error) => {
       console.error(error);
     });
   }

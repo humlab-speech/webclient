@@ -10,23 +10,17 @@ import { Config } from '../config';
 })
 export class UserService {
 
+  userIsSignedIn:boolean = false;
   getSessionUrl:string = Config.API_ENDPOINT+'/api/v1/session';
   session:Session = null;
   public sessionObs:Observable<Session>;
   constructor(private http:HttpClient) {
-    
-    this.sessionObs = new Observable((observer) => {
-      this.fetchSession().subscribe((response) => {
-        let session = <Session>response.body;
-        this.session = session;
-        
-        this.createPersonalAccessToken().subscribe(response => {
-        });
 
-        observer.next(this.session);
-      });
-    });
-    
+    this.updateSession(true);
+
+    setInterval(() => {
+      this.updateSession();
+    }, 60000);
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {
@@ -39,6 +33,25 @@ export class UserService {
 
   fetchSession():Observable<ApiResponse> {
     return this.http.get<ApiResponse>(this.getSessionUrl);
+  }
+
+  updateSession(createPersonalAccessToken:boolean = false) {
+    return this.fetchSession().subscribe((response) => {
+      this.session = <Session>response.body;
+      this.userIsSignedIn = true;
+      window.dispatchEvent(new Event('userSessionUpdated'));
+
+      if(createPersonalAccessToken) {
+        this.createPersonalAccessToken().subscribe();
+      }
+    }, (error) => {
+      this.userIsSignedIn = false;
+      this.session = null;
+    });
+  }
+
+  setSession(session:Session) {
+    this.session = session;
   }
 
   getSession():Session {

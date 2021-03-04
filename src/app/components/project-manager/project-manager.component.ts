@@ -15,22 +15,14 @@ export class ProjectManagerComponent implements OnInit {
 
   projectsLoaded:boolean = false;
   projects:Project[];
-  userIsSignedIn:boolean = false;
   showCreateProjectDialog:boolean = false;
-
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
   ngOnInit():void {
-
-    this.userIsSignedIn = this.userService.session != null;
-   
     this.projectService.projects$.subscribe((projects) => {
       this.projects = projects;
       this.projectsLoaded = true;
     });
   }
-
-  
-
 }
