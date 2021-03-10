@@ -16,10 +16,20 @@ export class ProjectManagerComponent implements OnInit {
   projectsLoaded:boolean = false;
   projects:Project[];
   showCreateProjectDialog:boolean = false;
+  projectCreateInProgress:boolean = false;
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
   ngOnInit():void {
+
+    window.addEventListener('project-create-in-progress', () => {
+      this.projectCreateInProgress = true;
+    });
+
+    window.addEventListener('project-create-done', () => {
+      this.projectCreateInProgress = false;
+    });
+
     this.projectService.projects$.subscribe((projects) => {
       this.projects = projects;
       this.projectsLoaded = true;

@@ -13,13 +13,19 @@ import { SigninCtrlComponent } from './components/signin-ctrl/signin-ctrl.compon
 import { ProjectManagerComponent } from './components/project-manager/project-manager.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ProjectItemComponent } from './components/project-item/project-item.component';
 import { AppctrlComponent } from './components/appctrl/appctrl.component';
 
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
 import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
+
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 
 
 @NgModule({
@@ -42,9 +48,13 @@ import { CreateProjectDialogComponent } from './components/project-manager/creat
     AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    FormsModule,
     ReactiveFormsModule,
-    NgxDropzoneModule
+    NgxDropzoneModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatChipsModule
   ],
   providers: [
     UserService

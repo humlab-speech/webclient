@@ -40,8 +40,8 @@ button {
     overflow:auto;
     width: 100vw;
     height: 100vh;
-    grid-template-columns: [left-panel]10vw [center]auto [right-panel]10vw;
-    grid-template-rows: [upper-panel]15vh [center]1fr [lower-panel]auto;
+    grid-template-columns: [left-panel]8vw [center]auto [right-panel]8vw;
+    grid-template-rows: [upper-panel]5vh [center]1fr [lower-panel]auto;
 
     grid-template-areas:
     "header header header"

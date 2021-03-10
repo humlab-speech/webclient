@@ -1,7 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray } from '@angular/forms';
 import { nanoid } from 'nanoid'
 import { EmuSession } from "../../../models/EmuSession";
+import { AnnotLevel } from "../../../models/AnnotLevel";
+import { AnnotLevelLink } from "../../../models/AnnotLevelLink";
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
@@ -16,41 +18,132 @@ export class CreateProjectDialogComponent implements OnInit {
   @Input() projectManager: ProjectManagerComponent;
 
   submitBtnLabel:string = "Save project";
-  submitBtnEnabled:boolean = true;
+  submitBtnEnabled:boolean = false;
   files: File[] = [];
-  sessions:EmuSession[] = [];
+  sessions:FormArray;
+  annotLevels:FormArray;
+  annotLevelLinks:FormArray;
+  
+  annotLevelTypes = [
+    'ITEM',
+    'SEGMENT',
+    'EVENT'
+  ];
+  
+  annotLevelLinkTypes = [
+    'ONE_TO_MANY',
+    'ONE_TO_ONE',
+    'MANY_TO_MANY'
+  ];
+  
   createProjectContextId:string = nanoid();
-  createProjectForm = new FormGroup({
-    projectName: new FormControl(''),
-    genEmuDb: new FormControl(true)
-  });
 
-  constructor(private http:HttpClient, private projectService:ProjectService) { }
+  createProjectForm:FormGroup;
+
+  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService) { }
 
   ngOnInit(): void {
+
+    this.sessions = this.fb.array([]);
+    this.annotLevels = this.fb.array([]);
+    this.annotLevelLinks = this.fb.array([]);
+
+    this.createProjectForm = this.fb.group({
+      projectName: new FormControl('', {
+        validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+        updateOn: 'blur'
+      }),
+      genEmuDb: new FormControl(true),
+      sessions: this.sessions,
+      annotLevels: this.annotLevels,
+      annotLevelLinks: this.annotLevelLinks
+    });
+
+    this.createProjectForm.valueChanges.subscribe((values) => {
+      console.log(this.createProjectForm)
+      if(this.createProjectForm.status != "INVALID") {
+        this.submitBtnEnabled = true;
+      }
+      else {
+        this.submitBtnEnabled = false;
+      }
+    });
+
     this.addSession();
+    this.addAnnotLevel("Word", "ITEM");
+    this.addAnnotLevel("Phonetic", "SEGMENT");
+  }
+
+  get annotLevelsForm() {
+    return this.annotLevels.value as FormArray;
+  }
+
+  get projectName() {
+    return this.createProjectForm.get('projectName');
+  }
+
+  get sessionForms() {
+    return this.createProjectForm.get('sessions') as FormArray;
+  }
+
+  get annotLevelForms() {
+    return this.createProjectForm.get('annotLevels') as FormArray;
+  }
+
+  get annotLevelLinkForms() {
+    return this.createProjectForm.get('annotLevelLinks') as FormArray;
+  }
+
+  addAnnotLevel(name = "", type = "ITEM") {
+    const annotLevel = this.fb.group({
+      name: new FormControl(name, [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")]),
+      type: new FormControl(type, Validators.required)
+    });
+
+    this.annotLevelForms.push(annotLevel);
+  }
+
+  deleteAnnotLevel(index) {
+    this.annotLevelForms.removeAt(index);
+  }
+
+  addAnnotLevelLink(superLevel = null, subLevel = null, type = "ONE_TO_MANY") {
+    const annotLevelLink = this.fb.group({
+      superLevel: new FormControl(superLevel, Validators.required),
+      subLevel: new FormControl(subLevel, Validators.required),
+      type: new FormControl(type, Validators.required)
+    });
+
+    this.annotLevelLinkForms.push(annotLevelLink);
+  }
+
+  deleteAnnotLevelLink(index) {
+    this.annotLevelLinkForms.removeAt(index);
   }
 
   addSession() {
-    let session:EmuSession = {
-      name: "Session "+(this.sessions.length+1),
+    const session = this.fb.group({
+      name: new FormControl('Session '+(this.sessionForms.length+1), {
+        validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+        updateOn: 'blur'
+      }),
       files: []
-    }
-    this.sessions.push(session);
+    });
+
+    this.sessionForms.push(session);
   }
 
-  deleteSession(session) {
-    let index = this.sessions.indexOf(session);
-    this.sessions.splice(index, 1);
-  }
-
-  getSession(session) {
-    return this.sessions[this.sessions.indexOf(session)];
+  deleteSession(index) {
+    this.sessionForms.removeAt(index);
   }
 
   onSelect(event, session) {
-    session.files.push(...event.addedFiles);
-    console.log(session);
+    console.log(event, session);
+    if(!session.value.files) {
+      session.value.files = [];
+    }
+
+    session.value.files.push(...event.addedFiles);
 
     this.submitBtnEnabled = false;
     this.submitBtnLabel = "Uploading...";
@@ -79,7 +172,7 @@ export class CreateProjectDialogComponent implements OnInit {
           filename: file.name,
           file: fileContents,
           context: this.createProjectContextId,
-          session: session.name
+          session: session.controls.name.value
         };
         this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
           console.log("Uploaded "+file.name);
@@ -91,7 +184,8 @@ export class CreateProjectDialogComponent implements OnInit {
   }
   
   onRemove(event, session) {
-    session.files.splice(session.files.indexOf(event), 1);
+    session.value.files.splice(session.value.files.indexOf(event), 1);
+    //TODO: Remove the uploaded file from the server?
   }
 
 
@@ -117,38 +211,15 @@ export class CreateProjectDialogComponent implements OnInit {
     });
   }
 
-
-
-  dumpSession() {
-    console.log("Dump Session");
-    let obs = this.http.get("/api/v1/magick", {
-      responseType: "text"
-    });
-    obs.subscribe((data) => {
-      console.log(data);
-    });
-  }
-
-  createProject() {
-    if(!this.submitBtnEnabled) {
+  createProject(form) {
+    if(this.createProjectForm.status != "INVALID" && !this.submitBtnEnabled) {
       console.log("Can't submit project - not ready yet");
       return false;
     }
 
-    console.log("Submitting project");
-
     this.projectManager.projectsLoaded = false;
-    let projectCreate$ = this.projectService.createProject(
-      this.createProjectForm.controls.projectName.value,
-      this.createProjectForm.controls.genEmuDb.value,
-      this.createProjectContextId
-      );
-    projectCreate$.subscribe((data) => {
-      console.log(data);
-      //this.projectsLoaded = true;
-      this.createProjectForm.reset();
-    });
-
+    this.projectService.createProject(form.value, this.createProjectContextId);
+    this.createProjectForm.reset();
     this.closeCreateProjectDialog();
   }
 

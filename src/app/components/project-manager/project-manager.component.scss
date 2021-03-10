@@ -1,6 +1,16 @@
 @import '../../../colors.scss';
 @import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
+h3 {
+    display:flex;
+    align-items: center;
+}
+
+h3 img {
+    margin-right: 0.5em;
+    height: 1em;
+    width: 1em;
+}
 
 app-create-project-dialog {
     display:flex;
@@ -16,27 +26,62 @@ app-create-project-dialog {
     
 }
 
+.ghost-project {
+    background-color: $lightgrey;
+    border-radius: 4px;
+    padding: 1rem;
+    list-style: none;
+    margin-right: 1rem;
+    border-style: solid;
+    border-color: #ddd;
+    border-width: 1px;
+}
+
+.ghost-project ul li {
+    list-style-type: circle;
+}
+
+.ghost-project ul li.done {
+    list-style-type: disc;
+}
+
+#project-manager-root {
+    margin-top: 2em;
+}
+
+.project-manager-title-container {
+    display:flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.project-manager-title-container > h2 {
+    margin-right: 1em;
+}
+
 #create-project-btn {
     padding:0.8em;
-    background-color: $crimson;
+    padding-top:0.15em;
+    padding-bottom:0.15em;
+    height: 100%;
     cursor:pointer;
     font-weight: bold;
     font-family: "Open Sans Condensed", sans-serif;
     font-size:1.2em;
-    color: #fff;
+    background-color: #fff;
+    border-color: #fff;
 }
 
-#create-project-btn:hover {
-    background-color:lighten($crimson, 10%);
+#create-project-btn > i {
+    color: $crimson;
 }
 
 
 button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    background-color: $crimson;
-    border-radius: 4px;
-    color: #fff;
+    color: #333;
+    border-color: #ccc;
 }
 
 #create-project-dialog button {
@@ -44,7 +89,7 @@ button {
 }
 
 button:hover {
-    background-color:lighten($crimson, 10%);
+    background-color:lighten(#ccc, 10%);
     cursor:pointer;
 }
 

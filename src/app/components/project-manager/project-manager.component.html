@@ -1,13 +1,33 @@
-<div>
-    <!--<button id="magick-btn" (click)="dumpSession()">Dump Session</button>-->
-    <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
-        <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        &nbsp;Create new project
-    </button>
-    <h2>Your Projects</h2>
+<div id="project-manager-root">
     
-    <ul *ngFor="let project of projects">
-        <app-project-item [project]="project"></app-project-item>
+    <div class="project-manager-title-container">
+        <h2>Your Projects</h2>
+        <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;Create new project
+        </button>
+    </div>
+
+
+    <ul>
+        <div *ngIf="projectCreateInProgress" class="ghost-project">
+            <h3>
+                <img src="../../../assets/logo-loading.gif">
+                Setting up your project...
+            </h3>
+            <!--
+            <ul>
+                <li>Creating Gitlab project</li>
+                <li>Creating EmuDB</li>
+                <li>Importing wav files</li>
+                <li>Creating bundlelist</li>
+                <li>Creating & linking annotation levels</li>
+                <li>Pushing to Gitlab</li>
+            </ul>
+            -->
+        </div>
+
+        <app-project-item *ngFor="let project of projects" [project]="project"></app-project-item>
     </ul>
 
     <div *ngIf="!projectsLoaded">

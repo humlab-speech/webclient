@@ -45,14 +45,36 @@ export class ProjectService {
     return this.http.get<ApiResponse>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
 
-  createProject(name:string, genEmuDb:boolean, createProjectContextId:string) {
+  createProject(formValues:object, createProjectContextId:string) {
+    window.dispatchEvent(new Event("project-create-in-progress"));
+
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      form: formValues,
+      context: createProjectContextId
+    };
+
+    console.log("Posting project");
+    this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+      console.log(response);
+      this.updateProjects();
+      console.log(JSON.parse(response.body));
+      window.dispatchEvent(new Event("project-create-done"));
+    });
+    console.log("Project posted");
+  }
+  /*
+  createProject(name:string, genEmuDb:boolean, createProjectContextId:string, annotStruct:object) {
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
     let body = {
       name: name,
       genEmuDb: genEmuDb,
-      context: createProjectContextId
+      context: createProjectContextId,
+      annotStruct: annotStruct
     };
 
     return new Observable((observer) => {
@@ -65,8 +87,8 @@ export class ProjectService {
 
       });
     });
-    
   }
+  */
 
   deleteProject(project:Project) {
     let headers = {

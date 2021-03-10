@@ -87,7 +87,7 @@ export class AppctrlComponent implements OnInit {
 
       let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
       let projectId:number = this.project.id;
-      let emuDBname:string  = "default";
+      let emuDBname:string  = "humlabspeech";
       let bundleListName:string = "user.user";
       let privateToken:string = data.body.personalAccessToken;
 

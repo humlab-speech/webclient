@@ -1,6 +1,13 @@
 @import '../../../../colors.scss';
 @import '../../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
+h3 {
+    background-color: rgb(48, 65, 158);
+    color: #fff;
+    padding: 0.2em;
+}
+
+
 #create-project-btn {
     padding:0.8em;
     background-color: $crimson;
@@ -23,12 +30,18 @@
     border-radius:4px;
     background-color: #fff !important;
     box-shadow: 0px 0px 10px 5px #666;
+    max-height: 95vh;
+    overflow:auto;
 }
 
 fieldset {
     display:flex;
     flex-direction: column;
     border-width:0;
+    background-color: #eee;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-radius: 0.25em;
 }
 
 fieldset label {
@@ -39,15 +52,14 @@ fieldset input {
     border-color: #ccc;
     border-style: solid;
     border-radius: 4px;
-    font-size: 1.2rem;
 }
 
 button {
     font-size: 1.5rem;
     padding: 0.5rem;
     background-color: $crimson;
-    border-radius: 4px;
     color: #fff;
+    border-width:0px;
 }
 
 #create-project-dialog button {
@@ -59,20 +71,15 @@ button:hover {
     cursor:pointer;
 }
 
-input[type=checkbox] {
-    width:2rem;
-    height:2rem;
-}
-
 #dialog-close-btn {
     position: relative;
-    width: 2rem;
-    height: 2rem;
+    width: 1rem;
+    height: 1rem;
     border-radius: 25%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     border: 1px solid #666;
 }
 
@@ -106,13 +113,14 @@ li {
     top: 0.2em;
 }
 
-.upload-container {
+.section-container {
     margin-bottom: 1em;
 }
 
 #submitBtn.disabled {
-    background-color: #fff !important;
+    background-color: #eee !important;
     color: #333;
+    cursor: default;
 }
 
 #submitBtn img {
@@ -126,22 +134,89 @@ li {
     font-size: 1em;
 }
 
-#sessions-container {
-    background-color: #eee;
-    border-radius: 0.25em;
-}
-
-.session-header-container {
+.section-header-container {
     display:flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.session-header-container > i {
+.annotation-level-container {
+    margin-top: 0.25em;
+    background-color: #eee;
+    align-items: baseline;
+    padding: 0.1em;
+    border-radius: 0.25em;
+}
+
+.annotation-level-container h4 {
+    margin:0;
+    padding:0;
+}
+
+.section-header-container > span {
     visibility: hidden;
 }
 
-.session-header-container:hover > i {
+.itemDeleteBtn {
+    margin-left: 0.5em;
+    cursor:pointer;
+}
+
+.section-header-container:hover > .itemDeleteBtn {
     visibility: visible;
     cursor:pointer;
+}
+
+.section-header-container button {
+    padding:0;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 1rem;
+}
+
+form label {
+    display:block;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.link-arrow {
+    margin-left:1em;
+    margin-right:1em;
+    align-self:flex-end;
+}
+
+.link-tags {
+    margin-left:1em;
+    margin-right:0.1em;
+    align-self:flex-end;
+}
+
+.itemBtn:hover {
+    cursor:pointer;
+}
+
+.itemDeleteBtn {
+    visibility:hidden;
+}
+
+.section-header-container:hover .itemDeleteBtn {
+    visibility: visible;
+}
+
+.input-context-container label {
+    margin-bottom: 0.2em;
+}
+
+.session-name-input {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+
+.form-error-msg {
+    color: $crimson;
+    font-size: 0.8em;
 }

@@ -1,7 +1,5 @@
 <div>
-    <div *ngIf="!userIsSignedIn">
-        <app-signin-ctrl></app-signin-ctrl>
-        <app-infobox-manager></app-infobox-manager>
-    </div>
+    <app-signin-ctrl *ngIf="!userIsSignedIn"></app-signin-ctrl>
+    <app-infobox-manager></app-infobox-manager>
     <app-project-manager *ngIf="userIsSignedIn"></app-project-manager>
 </div>
