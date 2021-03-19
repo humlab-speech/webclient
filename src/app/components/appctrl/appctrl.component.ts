@@ -14,16 +14,23 @@ export class AppctrlComponent implements OnInit {
   @Input() project: Project;
   @Input() hsApp: HsApp;
 
-  appSaveInProgress:boolean = false;
-  appDeleteInProgress:boolean = false;
+  showLoadingIndicator:boolean = false;
+  hasRunningSessions:boolean = false;
   statusMsg:string = "";
   btnTitle:string;
+  appIconPath:string;
   domain:string = window.location.hostname;
 
   constructor(private http:HttpClient) { }
 
   ngOnInit(): void {
+    this.appIconPath = "/assets/"+this.hsApp.icon;
     this.btnTitle = this.hsApp.title;
+    
+    if(this.updateHasRunningSessions()) {
+      this.statusMsg = "Running";
+      this.showLoadingIndicator = false;
+    }
   }
 
   launchProjectInApp() {
@@ -40,18 +47,28 @@ export class AppctrlComponent implements OnInit {
       case "jupyter":
         this.launchContainerSession("jupyter");
       break;
+      case "script":
+        this.showScriptAppDialog();
+      break;
     }
+  }
+
+  showScriptAppDialog() {
+    console.log("Show script dialog");
+    window.dispatchEvent(new Event('show-script-dialog'));
   }
 
   goToUrl(url) {
     console.log("Performing window open on: "+url);
     this.statusMsg = "";
+    this.showLoadingIndicator = false;
     //window.open(url);
     window.location.href = url;
   }
 
   launchContainerSession(appName) {
-    this.statusMsg = "Creating your environment...";
+    this.statusMsg = "Launching";
+    this.showLoadingIndicator = true;
 
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -63,6 +80,7 @@ export class AppctrlComponent implements OnInit {
     this.http.post<any>('/api/v1/'+appName+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
       this.statusMsg = "Taking you there...";
+      this.showLoadingIndicator = true;
       
       document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain;
       this.goToUrl("https://"+appName+"."+this.domain+"/?token="+sessionAccessCode);
@@ -74,7 +92,8 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchEmuWebAppSession() {
-    this.statusMsg = "Taking you there...";
+    this.statusMsg = "Launching";
+    this.showLoadingIndicator = true;
 
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -94,6 +113,7 @@ export class AppctrlComponent implements OnInit {
       let url = "https://"+this.hsApp.name+"."+this.domain+"/?autoConnect=true&comMode=GITLAB";
       url += "&gitlabURL="+gitlabURL;
       url += "&projectID="+projectId;
+      url += "&gitlabPath=Data%2Fhumlabspeech_emuDB";
       url += "&emuDBname="+emuDBname;
       url += "&bundleListName="+bundleListName;
       url += "&privateToken="+privateToken;
@@ -103,7 +123,8 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchOctraSession() {
-    this.statusMsg = "Taking you there...";
+    this.statusMsg = "Launching";
+    this.showLoadingIndicator = true;
 
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -117,85 +138,96 @@ export class AppctrlComponent implements OnInit {
     });
   }
 
-  hasRunningSessions() {
+  updateHasRunningSessions() {
     for(let key in this.project.sessions) {
       if(this.project.sessions[key].type == this.hsApp.name) {
-        return true;
+        this.hasRunningSessions = true;
+        return this.hasRunningSessions;
       }
     }
-    return false;
+    this.hasRunningSessions = false;
+    return this.hasRunningSessions;
   }
 
   saveAndClose() {
-    this.appSaveInProgress = true;
-    //this.statusMsg = "Committing & pushing...";
-    let cookies = this.getCookies();
-    console.log("Save session", cookies['rstudioSession']);
+    this.statusMsg = "Saving";
+    this.showLoadingIndicator = true;
+
+    let sessionAccessCode = this.getSessionAccessCode();
+    console.log("Save session", sessionAccessCode);
 
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
     let body = {
       projectId: this.project.id,
-      rstudioSession: cookies['rstudioSession']
+      sessionId: sessionAccessCode
     };
 
-    this.http.post<any>('/api/v1/rstudio/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      this.statusMsg = "";
-
-      //Now that everything is saved, we can close
-      this.appSaveInProgress = false;
-      this.appDeleteInProgress = true;
+    this.http.post<any>('/api/v1/session/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       
+      //Now that everything is saved, we can close
+      /*
+      this.statusMsg = "Closing...";
+
       this.http.post<any>('/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
         for(let key in this.project.sessions) {
-          if(this.project.sessions[key].sessionCode == cookies['rstudioSession']) {
+          if(this.project.sessions[key].sessionCode == sessionAccessCode) {
             this.project.sessions.splice(key, 1);
           }
         }
-        this.appDeleteInProgress = false;
+        this.statusMsg = "";
+        this.showLoadingIndicator = false;
+        this.updateHasRunningSessions();
       });
+      */
+      this.showLoadingIndicator = false;
+      this.statusMsg = "Running";
 
     });
   }
 
   discardAndClose() {
-    this.appDeleteInProgress = true;
-    //this.statusMsg = "Deleting & closing...";
-    let cookies = this.getCookies();
-    console.log("Delete session", cookies['rstudioSession']);
+    if(!window.confirm("Are you sure? All changes made in this session will be lost.")) {
+      return;
+    }
+    let sessionAccessCode = this.getSessionAccessCode();
+
+    this.statusMsg = "Closing";
+    this.showLoadingIndicator = true;
+
+    console.log("Delete session", sessionAccessCode);
+
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
     let body = {
       projectId: this.project.id,
-      rstudioSession: cookies['rstudioSession']
+      sessionId: sessionAccessCode
     };
 
-    this.http.post<any>('/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      //this.statusMsg = "";
+    this.http.post<any>('/api/v1/session/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+      this.statusMsg = "";
+      this.showLoadingIndicator = false;
       
+
       //Clear session from local registry
       for(let key in this.project.sessions) {
-        if(this.project.sessions[key].sessionCode == cookies['rstudioSession']) {
+        if(this.project.sessions[key].sessionCode == sessionAccessCode) {
           this.project.sessions.splice(key, 1);
         }
       }
-      this.appDeleteInProgress = false;
+      this.updateHasRunningSessions();
     });
   }
 
-  getCookies() {
-    let cookiesParsed = [];
-    let cookies = document.cookie.split("; ");
-    cookies.forEach((cookie) => {
-        let cparts = cookie.split("=");
-        let key = cparts[0];
-        let value = cparts[1];
-        cookiesParsed[key] = value;
-    });
-
-    return cookiesParsed;
+  getSessionAccessCode() {
+    for(let key in this.project.sessions) {
+      if(this.project.sessions[key].type == this.hsApp.name) {
+        return this.project.sessions[key].sessionCode;
+      }
+    }
+    return false;
   }
 
 }

@@ -17,6 +17,7 @@ export class ProjectManagerComponent implements OnInit {
   projects:Project[];
   showCreateProjectDialog:boolean = false;
   projectCreateInProgress:boolean = false;
+  showScriptsDialog:boolean = false;
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
@@ -28,6 +29,14 @@ export class ProjectManagerComponent implements OnInit {
 
     window.addEventListener('project-create-done', () => {
       this.projectCreateInProgress = false;
+    });
+
+    window.addEventListener('show-script-dialog', () => {
+      this.showScriptsDialog = true;
+    });
+
+    window.addEventListener('hide-script-dialog', () => {
+      this.showScriptsDialog = false;
     });
 
     this.projectService.projects$.subscribe((projects) => {

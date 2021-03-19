@@ -1,18 +1,21 @@
 <div id="project-manager-root">
     
-    <div class="project-manager-title-container">
-        <h2>Your Projects</h2>
-        <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
-            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-            &nbsp;Create new project
-        </button>
+    <div class="project-manager-header">
+        <div class="project-manager-title-container">
+            <h2>Your Projects</h2>
+            <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
+                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                &nbsp;Create new project
+            </button>
+        </div>
+        <app-user></app-user>
     </div>
 
 
     <ul>
         <div *ngIf="projectCreateInProgress" class="ghost-project">
             <h3>
-                <img src="../../../assets/logo-loading.gif">
+                <img src="../../../assets/loading-indicator.svg">
                 Setting up your project...
             </h3>
             <!--
@@ -32,7 +35,7 @@
 
     <div *ngIf="!projectsLoaded">
         <span class="projects-loading-indicator" *ngIf="!projectsLoaded">
-            <img src="../../../assets/logo-loading.gif">
+            <img src="../../../assets/loading-indicator.svg">
         </span>
         Loading your projects...
     </div>
@@ -41,4 +44,6 @@
     </div>
 
     <app-create-project-dialog [projectManager]="this" *ngIf="showCreateProjectDialog"></app-create-project-dialog>
+
+    <app-script-app-dialog *ngIf="showScriptsDialog"></app-script-app-dialog>
 </div>

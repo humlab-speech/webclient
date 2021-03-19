@@ -1,20 +1,28 @@
 <fieldset>
     <div class="button-status-wrapper">
-        <button id="launchBtn" class="app-btn" (click)="launchProjectInApp()">{{ btnTitle }}</button>
-        <div class="status-msg-container">
-            <span *ngIf="statusMsg.length > 0"><img src="../../../assets/logo-loading.gif">{{ statusMsg }}</span>
+        <button [disabled]="showLoadingIndicator" id="launchBtn" class="app-btn" (click)="launchProjectInApp()">
+            <div class="app-btn-icon-box">
+                <img [src]="appIconPath">
+            </div>
+            <div>{{ btnTitle }}</div>
+        </button>
+
+        <div *ngIf="statusMsg.length > 0" class="status-msg-container app-btn-row-container">
+           <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator.svg">
+           {{ statusMsg }}
         </div>
+
+        <div *ngIf="hasRunningSessions" class="session-controls-container app-btn-row-container">
+            <button [disabled]="showLoadingIndicator" (click)="saveAndClose()">
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                <!--&nbsp;Save & close session-->
+            </button>
+            <button [disabled]="showLoadingIndicator" (click)="discardAndClose()">
+                <i class="fa fa-times-circle" aria-hidden="true"></i>
+                <!--&nbsp;Close session without saving-->
+            </button>
+        </div>
+
     </div>
-    <div *ngIf="hasRunningSessions()" class="sessions-container">
-        <button [disabled]="appSaveInProgress || appDeleteInProgress" [ngClass]="{'disabled-btn': appSaveInProgress}" (click)="saveAndClose()">
-            <img *ngIf="appSaveInProgress" src="../../../assets/logo-loading.gif">
-            <i *ngIf="!appSaveInProgress" class="fa fa-floppy-o" aria-hidden="true"></i>
-            &nbsp;Save & close session
-        </button>
-        <button [disabled]="appSaveInProgress || appDeleteInProgress" [ngClass]="{'disabled-btn': appDeleteInProgress}" (click)="discardAndClose()">
-            <img *ngIf="appDeleteInProgress" src="../../../assets/logo-loading.gif">
-            <i *ngIf="!appDeleteInProgress" class="fa fa-times-circle" aria-hidden="true"></i>
-            &nbsp;Close session without saving
-        </button>
-    </div>
+    
 </fieldset>

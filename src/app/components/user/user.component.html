@@ -1,0 +1,13 @@
+<div class="account" *ngIf="userIsSignedIn" (mouseover)="showAccountMenu(true)" (mouseout)="showAccountMenu(false, true)">
+    <div class="account-container">
+        <h2 class="user-displayname" (notify)="onNotify($event)">
+            <i class="fa fa-user-circle-o" aria-hidden="true"></i>
+            &nbsp;
+            {{ getUserDisplayName() }}
+        </h2>
+    </div>
+
+    <ul *ngIf="accountMenuVisible" class="account-menu-dropdown" (click)="signOut()">
+        <li><i class="fa fa-sign-out" aria-hidden="true"></i> Sign out</li>
+    </ul>
+</div>

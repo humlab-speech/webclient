@@ -1,15 +1,22 @@
 @import '../../../colors.scss';
 @import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
 
 li {
-    background-color: $lightgrey;
+    background-color: $white;
     border-radius: 4px;
     padding: 1rem;
     list-style: none;
     margin-right: 1rem;
     border-style: solid;
-    border-color: #ddd;
+    border-color: $border-light;
     border-width: 1px;
+    margin-bottom: 1em;
+    box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.1);
+}
+
+i.add-members-btn {
+    color: $primary-light;
 }
 
 h3 {
@@ -17,9 +24,20 @@ h3 {
     font-size: 1.5rem;
 }
 
+h4 {
+    font-family: Source Sans Pro;
+}
+
 .header {
     display:flex;
     justify-content: space-between;
+    align-items: baseline;
+}
+
+.header img {
+    width: 0.75em;
+    height: 0.75em;
+    margin-left: 0.5em;
 }
 
 .project-menu {
@@ -48,7 +66,7 @@ h3 {
 }
 
 .project-menu-dropdown li:hover {
-    background-color: $primary;
+    background-color: $primary-light;
     color: $white;
 }
 
@@ -67,13 +85,23 @@ h3 {
 .applications-container fieldset {
     margin-bottom: 0.25em;
     padding:0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid $border-light;
     width: 100%;
-    border-radius: 0.25em;
 }
 
 .project-links-container {
     margin-top: 1em;
+}
+/*
+@media only screen and (max-width: 1200px) {
+    .project-members-list {
+        display:none;
+    }
+}
+*/
+
+.project-members-list {
+    display:none;
 }
 
 .project-members-list ul {
@@ -89,4 +117,53 @@ h3 {
     padding:0;
     margin:0;
     font-size: 1em;
+}
+
+.gitlab-project-container li {
+    background:none;
+    box-shadow:none;
+
+}
+
+.gitlab-project-container h4 {
+    display:flex;
+    place-content: baseline;
+}
+
+.gitlab-project-container h4 img {
+    margin-right: 0.25em;
+    height: 1.25em;
+}
+
+.gitlab-menu-container {
+    display:flex;
+    align-items: center;
+    border-style: solid;
+    border-width: 0px;
+    border-radius: 0.5em;
+    border-color: $border-light;
+}
+
+.gitlab-menu-container li {
+    padding: 0em;
+    border-width:0;
+}
+
+.gitlab-menu-container a {
+    text-decoration: none;
+    color: $black;
+}
+
+.list-button {
+    border-width: 1px;
+    border-style: solid;
+    border-color: $border-light;
+    border-radius: 0.25em;
+    padding: 0.5em;
+}
+
+.list-button:hover {
+    background: $primary-light;
+    color: $white;
+    cursor:pointer;
 }

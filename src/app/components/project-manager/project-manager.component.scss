@@ -12,28 +12,14 @@ h3 img {
     width: 1em;
 }
 
-app-create-project-dialog {
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    position:fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    //padding:10%;
-    background-color:rgba(0, 0, 0, 0.5);
-    
-}
-
 .ghost-project {
-    background-color: $lightgrey;
+    background-color: $panelBg;
     border-radius: 4px;
     padding: 1rem;
     list-style: none;
     margin-right: 1rem;
     border-style: solid;
-    border-color: #ddd;
+    border-color: $border-light;
     border-width: 1px;
 }
 
@@ -49,9 +35,14 @@ app-create-project-dialog {
     margin-top: 2em;
 }
 
+.project-manager-header {
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
 .project-manager-title-container {
     display:flex;
-    flex-direction: row;
     align-items: baseline;
 }
 
@@ -60,28 +51,28 @@ app-create-project-dialog {
 }
 
 #create-project-btn {
-    padding:0.8em;
-    padding-top:0.15em;
-    padding-bottom:0.15em;
-    height: 100%;
+    padding: 0.5em;
+    border-width: 0px;
+    margin:0.5em;
+    height: auto;
     cursor:pointer;
     font-weight: bold;
     font-family: "Open Sans Condensed", sans-serif;
-    font-size:1.2em;
-    background-color: #fff;
-    border-color: #fff;
+    font-size: 1.2rem;
+    background-color: $primary-light;
+    border-color: $white;
+    color: $white;
 }
 
 #create-project-btn > i {
-    color: $crimson;
+    color: $white
 }
 
 
 button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    color: #333;
-    border-color: #ccc;
+    border-color: $border-light;
 }
 
 #create-project-dialog button {
@@ -89,7 +80,7 @@ button {
 }
 
 button:hover {
-    background-color:lighten(#ccc, 10%);
+    background-color:lighten($border-light, 10%);
     cursor:pointer;
 }
 
@@ -110,7 +101,7 @@ input[type=checkbox] {
 }
 
 li {
-    background-color: #eee;
+    background-color: $panelBg;
     padding: 1rem;
     border-radius: 4px;
     list-style-type: none;

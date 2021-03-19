@@ -2,7 +2,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap');
+@import "../node_modules/normalize.css/normalize.css";
 @import './colors.scss';
+
+
+h1 {
+    font-family: 'Saira Semi Condensed', sans-serif;
+    text-decoration: underline;
+    text-decoration-color: $primary-light;
+}
 
 #templates-container {
     display:none;
@@ -33,36 +41,7 @@ app-signin-ctrl {
 
 button {
     border-style: solid;
-}
-
-#main-container {
-    display: grid;
-    overflow:auto;
-    width: 100vw;
-    height: 100vh;
-    grid-template-columns: [left-panel]8vw [center]auto [right-panel]8vw;
-    grid-template-rows: [upper-panel]5vh [center]1fr [lower-panel]auto;
-
-    grid-template-areas:
-    "header header header"
-    "nav content side"
-    "footer footer footer";
-}
-
-#center-left-container {
-    grid-column: left-panel;
-    grid-row: center;
-}
-
-#content-container {
-    grid-column: center;
-    grid-row: center;
-    padding: 0px;
-}
-
-#dashboard-container {
-    grid-column: center;
-    grid-row: center;
+    outline: 0;
 }
 
 .project-loading-indicator {
@@ -93,8 +72,6 @@ button {
     margin: 8px;
     padding: 5px;
 }
-
-
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

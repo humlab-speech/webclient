@@ -8,7 +8,6 @@ import { LogoComponent } from './components/logo/logo.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { InfoboxComponent } from './components/infobox/infobox.component';
 import { InfoboxManagerComponent } from './components/infobox-manager/infobox-manager.component';
-import { HeaderComponent } from './components/header/header.component';
 import { SigninCtrlComponent } from './components/signin-ctrl/signin-ctrl.component';
 import { ProjectManagerComponent } from './components/project-manager/project-manager.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -26,6 +25,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
+import { UserComponent } from './components/user/user.component';
+import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
 
 
 @NgModule({
@@ -35,13 +36,14 @@ import { MatChipsModule } from '@angular/material/chips';
     FooterComponent,
     InfoboxComponent,
     InfoboxManagerComponent,
-    HeaderComponent,
     SigninCtrlComponent,
     ProjectManagerComponent,
     DashboardComponent,
     ProjectItemComponent,
     AppctrlComponent,
-    CreateProjectDialogComponent
+    CreateProjectDialogComponent,
+    UserComponent,
+    ScriptAppDialogComponent
   ],
   imports: [
     BrowserModule,

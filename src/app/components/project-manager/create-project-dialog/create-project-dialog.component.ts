@@ -60,7 +60,6 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     this.createProjectForm.valueChanges.subscribe((values) => {
-      console.log(this.createProjectForm)
       if(this.createProjectForm.status != "INVALID") {
         this.submitBtnEnabled = true;
       }
@@ -72,6 +71,8 @@ export class CreateProjectDialogComponent implements OnInit {
     this.addSession();
     this.addAnnotLevel("Word", "ITEM");
     this.addAnnotLevel("Phonetic", "SEGMENT");
+
+    document.getElementById("projectName").focus();
   }
 
   get annotLevelsForm() {
@@ -138,7 +139,6 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   onSelect(event, session) {
-    console.log(event, session);
     if(!session.value.files) {
       session.value.files = [];
     }
@@ -175,8 +175,6 @@ export class CreateProjectDialogComponent implements OnInit {
           session: session.controls.name.value
         };
         this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
-          console.log("Uploaded "+file.name);
-          console.log(data);
           resolve(data);
         });
       });

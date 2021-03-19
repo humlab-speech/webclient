@@ -18,6 +18,7 @@ export class ProjectItemComponent implements OnInit {
   rstudioSaveInProgress:boolean = false;
   rstudioDeleteInProgress:boolean = false;
   projectMenuVisible:boolean = false;
+  deleteProjectInProgress:boolean = false;
   menuTimeout:any;
   members:[];
   
@@ -29,10 +30,12 @@ export class ProjectItemComponent implements OnInit {
     let rstudioApp = new HsApp();
     rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
     rstudioApp.title = "RStudio";
+    rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
 
     let emuWebApp = new HsApp();
     emuWebApp.name = "emuwebapp";
     emuWebApp.title = "EmuWebApp";
+    emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
 
     let octraApp = new HsApp();
     octraApp.name = "octra";
@@ -41,12 +44,20 @@ export class ProjectItemComponent implements OnInit {
     let jupyterApp = new HsApp();
     jupyterApp.name = "jupyter";
     jupyterApp.title = "Jupyter";
+    jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
     
-    this.hsApplications = [rstudioApp, emuWebApp, jupyterApp];
+    let scriptApp = new HsApp();
+    scriptApp.name = "script";
+    scriptApp.title = "Scripts";
+    scriptApp.icon = "app-icons/88x88-bw/script-icon.png";
+
+    this.hsApplications = [rstudioApp, emuWebApp, jupyterApp, scriptApp];
     
+    /*
     this.projectService.fetchProjectMembers(this.project.id).subscribe((response:any) => {
       this.members = response;
     });
+    */
   }
 
   showProjectMenu(show:boolean = true, useTimer = false) {
@@ -68,6 +79,7 @@ export class ProjectItemComponent implements OnInit {
 
   deleteProject() {
     if(window.confirm('Are sure you want to delete this project? All data associated with this project will be lost.')){
+      this.deleteProjectInProgress = true;
       this.projectService.deleteProject(this.project).subscribe(() => {
         this.projectService.updateProjects();
       });

@@ -1,0 +1,232 @@
+@import '../../../colors.scss';
+@import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
+
+
+.modal-bg {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color:rgba(0, 0, 0, 0.5);
+}
+
+fieldset {
+    display:flex;
+    flex-direction: column;
+    border-width:0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-radius: 0.25em;
+}
+
+fieldset label {
+    font-weight: bold;
+}
+
+fieldset input {
+    border-color: #ccc;
+    border-style: solid;
+    border-radius: 4px;
+}
+
+button {
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    background-color: $crimson;
+    color: #fff;
+    border-width:0px;
+}
+
+button:hover {
+    background-color:lighten($crimson, 10%);
+    cursor:pointer;
+}
+
+h3 {
+    background-color: $secondary;
+    background: $gradient-horizontal;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    color: $lightgrey;
+    border-left: 0.25em solid $secondary-light;
+}
+/*
+.btn {
+    padding:0.8em;
+    background-color: $crimson;
+    cursor:pointer;
+    font-weight: bold;
+    font-family: "Open Sans Condensed", sans-serif;
+    font-size:1.2em;
+    color: #fff;
+}
+*/
+
+
+.dialog {
+    display:flex;
+    flex-direction: column;
+    padding: 2rem;
+    border-radius:4px;
+    background-color: #fff !important;
+    box-shadow: 0px 0px 10px 5px #666;
+    max-height: 95vh;
+    overflow:auto;
+}
+
+
+
+.dialog-close-btn {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    border: 1px solid #666;
+}
+
+.dialog-close-btn:hover {
+    background-color: lighten($crimson, 10%);
+    cursor: pointer;
+    color: #fff;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dialog-header h2 {
+    margin:0;
+}
+
+li {
+    background-color: #eee;
+    padding: 1rem;
+    border-radius: 4px;
+    list-style-type: none;
+}
+
+.projects-loading-indicator img {
+    height: 1.0em;
+    position:relative;
+    top: 0.2em;
+}
+
+.section-container {
+    margin-bottom: 1em;
+}
+
+#submitBtn.disabled {
+    background-color: #eee !important;
+    color: #333;
+    cursor: default;
+}
+
+#submitBtn img {
+    position:relative;
+    top: 0.1em;
+    height: 1em;
+    width: 1em;
+}
+
+.small-button {
+    font-size: 1em;
+}
+
+.section-header-container {
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.annotation-level-container {
+    margin-top: 0.25em;
+    align-items: baseline;
+    padding: 0.1em;
+    border-radius: 0.25em;
+}
+
+.annotation-level-container h4 {
+    margin:0;
+    padding:0;
+}
+
+.section-header-container > span {
+    visibility: hidden;
+}
+
+.itemDeleteBtn {
+    margin-left: 0.5em;
+    cursor:pointer;
+}
+
+.section-header-container:hover > .itemDeleteBtn {
+    visibility: visible;
+    cursor:pointer;
+}
+
+.section-header-container button {
+    padding:0;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 1rem;
+}
+
+form label {
+    display:block;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.link-arrow {
+    margin-left:1em;
+    margin-right:1em;
+    align-self:flex-end;
+}
+
+.link-tags {
+    margin-left:1em;
+    margin-right:0.1em;
+    align-self:flex-end;
+}
+
+.itemBtn:hover {
+    cursor:pointer;
+}
+
+.itemDeleteBtn {
+    visibility:hidden;
+}
+
+.section-header-container:hover .itemDeleteBtn {
+    visibility: visible;
+}
+
+.input-context-container label {
+    margin-bottom: 0.2em;
+}
+
+.session-name-input {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+
+.form-error-msg {
+    color: $crimson;
+    font-size: 0.8em;
+}

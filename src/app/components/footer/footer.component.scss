@@ -6,7 +6,7 @@
     grid-column: center;
     grid-row: lower-panel;
     */
-    background: $dark;
+    background: $secondary;
     color: #fff;
     font-size: 1.0rem;
     /*
@@ -29,7 +29,7 @@
 }
 
 #footer-container a {
-    color: #fff;
+    color: $white;
     padding:0;
     margin:0;
 }

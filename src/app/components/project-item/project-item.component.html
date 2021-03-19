@@ -1,6 +1,6 @@
 <li>
     <div class="header">
-        <h3>{{ project.name }}</h3>
+        <h3>{{ project.name }}<img *ngIf="deleteProjectInProgress" src="../../../assets/loading-indicator.svg"></h3>
         <div class="project-menu" (mouseover)="showProjectMenu(true)" (mouseout)="showProjectMenu(false, true)">
             <i class="fa fa-bars" aria-hidden="true"></i>
             <ul *ngIf="projectMenuVisible" class="project-menu-dropdown">
@@ -12,26 +12,60 @@
     <div class="project-main-panel">
         
         <div class="applications-container">
-            <h4>Applications</h4>
+            <h4>Tools</h4>
             <div *ngFor="let hsApp of hsApplications">
                 <app-appctrl [hsApp]="hsApp" [project]="project"></app-appctrl>
             </div>
         </div>
 
+        <div class="gitlab-project-container">
+            <h4><img src="assets/gitlab-icon.png">GitLab</h4> 
+            <div class="gitlab-menu-container">
+                <ul>
+                    <li>
+                        <a href="{{ project.web_url }}">
+                            <div class="list-button">
+                                <i class="fa fa-database" aria-hidden="true"></i>
+                                &nbsp;
+                                Repository
+                            </div>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ project.web_url }}/-/issues">
+                            <div class="list-button">
+                                <i class="fa fa-flag-o" aria-hidden="true"></i>
+                                &nbsp;
+                                Issues
+                            </div>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ project.web_url }}/-/project_members">
+                            <div class="list-button">
+                                <i class="fa fa-users" aria-hidden="true"></i>
+                                &nbsp;
+                                Access / members
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         <div class="project-members-list">
-            <h4>Members <a href="{{ project.web_url }}/-/project_members"><i class="fa fa-plus-circle"></i></a></h4>
+            <h4>Members <a href="{{ project.web_url }}/-/project_members"><i class="fa fa-user-plus add-members-btn"></i></a></h4>
             <ul>
                 <li *ngFor="let member of members">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                    &nbsp;
                     <a href="{{ member.web_url }}">{{ member.name }}</a>
                 </li>
             </ul>
         </div>
         
     </div>
-
-    <div class="project-links-container">
-        <a href="{{ project.web_url }}">Project in Gitlab:</a> | 
-        <a href="{{ project.web_url }}/-/wikis/home">wiki</a> | 
-        <a href="{{ project.web_url }}/-/issues">issues</a>
-    </div>
+    
 </li>

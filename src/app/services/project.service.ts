@@ -58,9 +58,8 @@ export class ProjectService {
 
     console.log("Posting project");
     this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-      console.log(response);
-      this.updateProjects();
       console.log(JSON.parse(response.body));
+      this.updateProjects();
       window.dispatchEvent(new Event("project-create-done"));
     });
     console.log("Project posted");

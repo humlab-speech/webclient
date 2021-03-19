@@ -9,20 +9,37 @@ fieldset {
 button {
     font-size: 1.0rem;
     padding: 0.25rem;
-    border-radius: 4px;
     border-style: solid;
+    border-width: 0px;
     margin:0.5rem;
     cursor:pointer;
 }
 
 .app-btn {
-    display:block;
-    background-color: $primary;
+    display:flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: $primary-light;
     color: $white;
-    width: 14em;
+    min-width: 10em;
     margin:0;
-    
-    
+    padding:0;
+    height: 2em;
+}
+
+.app-btn-icon-box {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $secondary;
+    height:1.5em;
+    width:1.5em;
+    margin:0;
+    padding:0.25em;
+    margin-right: 0.5em;
+}
+
+.app-btn-icon-box img {
 }
 
 .app-btn:hover {
@@ -34,24 +51,28 @@ button {
     margin-bottom: 2rem;
 }
 
-.sessions-container {
-    display:flex;
+.session-controls-container {
+    background-color: $lightgrey;
+    padding-left: 0em !important;
+    padding-right: 0em !important;
 }
 
-.sessions-container button {
+.session-controls-container button {
     margin:0;
-    margin-top: 0.5em;
-    margin-right:0.5em;
+    padding:0;
     background-color: $secondary;
     color: $white;
+    height: 2em;
+    width: 2em;
 }
 
-.sessions-container button:hover {
+.session-controls-container button:hover {
     background-color: lighten($secondary, 10%);
 }
 
 .status-msg-container {
-    margin: 0.25em;
+    background: $secondary-light;
+    color: $white !important;
 }
 
 .status-msg-container img {
@@ -59,9 +80,21 @@ button {
     margin-right:0.5rem;
 }
 
+.app-btn-row-container {
+    display:flex;
+    height: 2em;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding:0;
+    color: $white;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
 .disabled-btn {
-    background-color: #eee !important;
-    color: #000 !important;
+    background-color: $lightgrey !important;
+    color: $border !important;
 }
 
 button img {
@@ -85,11 +118,12 @@ button i {
 .applications-container fieldset {
     margin-bottom: 0.25em;
     padding:0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid $border-light;
     width: 100%;
     border-radius: 0.25em;
 }
 
 .button-status-wrapper {
     display:flex;
+    height: 2rem;
 }

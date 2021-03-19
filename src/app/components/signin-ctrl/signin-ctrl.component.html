@@ -1,3 +1,7 @@
-<div id="signin-btn-container" (click)="signIn()" *ngIf="!userIsSignedIn">
-    <button id="signin-btn"><img src="assets/user.svg" />Sign in with your organization</button>
+<div id="signin-btn-container" *ngIf="!userIsSignedIn">
+    <button id="signin-btn" (click)="signIn()">
+        <i class="fa fa-user-circle-o" aria-hidden="true"></i>
+        &nbsp;
+        Sign in with your organization
+    </button>
 </div>

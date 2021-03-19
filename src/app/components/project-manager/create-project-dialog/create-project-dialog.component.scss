@@ -1,12 +1,37 @@
 @import '../../../../colors.scss';
 @import '../../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
+
+
+.modal-bg {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color:rgba(0, 0, 0, 0.5);
+}
+
+h3 {
+    background-color: $secondary;
+    background: $gradient-horizontal;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    color: $lightgrey;
+    border-left: 0.25em solid $secondary-light;
+}
+/*
 h3 {
     background-color: rgb(48, 65, 158);
     color: #fff;
     padding: 0.2em;
 }
-
+*/
 
 #create-project-btn {
     padding:0.8em;
@@ -38,7 +63,6 @@ fieldset {
     display:flex;
     flex-direction: column;
     border-width:0;
-    background-color: #eee;
     margin-top: 1em;
     margin-bottom: 1em;
     border-radius: 0.25em;
@@ -142,7 +166,6 @@ li {
 
 .annotation-level-container {
     margin-top: 0.25em;
-    background-color: #eee;
     align-items: baseline;
     padding: 0.1em;
     border-radius: 0.25em;

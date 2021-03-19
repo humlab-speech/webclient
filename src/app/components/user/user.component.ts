@@ -3,11 +3,11 @@ import { UserService } from "../../services/user.service";
 import { Session } from "../../models/Session";
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  styleUrls: ['./user.component.scss']
 })
-export class HeaderComponent implements OnInit {
+export class UserComponent implements OnInit {
 
   accountMenuVisible:boolean = false;
   menuTimeout:any;
@@ -17,8 +17,11 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     window.addEventListener('userSessionUpdated', () => {
+      console.log("userSessionUpdated");
       this.userIsSignedIn = this.userService.userIsSignedIn;
     });
+
+    this.getUserDisplayName();
   }
 
   onNotify(evt) {
@@ -28,8 +31,10 @@ export class HeaderComponent implements OnInit {
   getUserDisplayName():string {
     let session = this.userService.getSession();
     if(session == null) {
+      this.userIsSignedIn = false;
       return "Not logged in";
     }
+    this.userIsSignedIn = true;
     return session.fullName;
   }
 
