@@ -27,6 +27,7 @@ export class ProjectItemComponent implements OnInit {
   constructor(private http:HttpClient, private projectService:ProjectService) { }
 
   ngOnInit(): void {
+
     let rstudioApp = new HsApp();
     rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
     rstudioApp.title = "RStudio";

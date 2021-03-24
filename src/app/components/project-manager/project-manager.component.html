@@ -11,7 +11,6 @@
         <app-user></app-user>
     </div>
 
-
     <ul>
         <div *ngIf="projectCreateInProgress" class="ghost-project">
             <h3>
@@ -39,7 +38,7 @@
         </span>
         Loading your projects...
     </div>
-    <div *ngIf="projects?.length == 0">
+    <div *ngIf="projectsLoaded && projects?.length == 0">
         You have no projects
     </div>
 

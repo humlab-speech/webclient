@@ -3,6 +3,7 @@ import { Project } from '../../models/Project';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { HsApp } from "../../models/HsApp";
 import { Url } from 'url';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-appctrl',
@@ -14,14 +15,19 @@ export class AppctrlComponent implements OnInit {
   @Input() project: Project;
   @Input() hsApp: HsApp;
 
+  private readonly notifier: NotifierService;
+
   showLoadingIndicator:boolean = false;
   hasRunningSessions:boolean = false;
   statusMsg:string = "";
   btnTitle:string;
   appIconPath:string;
   domain:string = window.location.hostname;
+  showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient) { }
+  constructor(private http:HttpClient, notifierService: NotifierService) {
+    this.notifier = notifierService;
+  }
 
   ngOnInit(): void {
     this.appIconPath = "/assets/"+this.hsApp.icon;
@@ -165,6 +171,27 @@ export class AppctrlComponent implements OnInit {
     };
 
     this.http.post<any>('/api/v1/session/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+
+      if(data.status == "error") {
+        this.showLoadingIndicator = false;
+
+        switch(data.errorType) {
+          case "nothing-to-commit":
+            this.statusMsg = "No changes";
+            this.showSaveButton = false;
+          break;
+          case "conflict-on-commit":
+            this.statusMsg = "Conflict!";
+            this.showSaveButton = false;
+          break;
+          default:
+            this.statusMsg = "Manual intervention required";
+            this.showSaveButton = false;
+        }
+        
+        this.notifier.notify('warning', data.messages[0]);
+        return;
+      }
       
       //Now that everything is saved, we can close
       /*
@@ -183,7 +210,6 @@ export class AppctrlComponent implements OnInit {
       */
       this.showLoadingIndicator = false;
       this.statusMsg = "Running";
-
     });
   }
 

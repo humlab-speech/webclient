@@ -1,6 +1,6 @@
 <div class="info-box" [ngSwitch]="infobox.name">
-    <h2>{{ infobox.title }}</h2>
-    <div *ngSwitchCase="'tools-and-resources'">
+    <h2><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;{{ infobox.title }}</h2>
+    <div class="info-box-content" *ngSwitchCase="'tools-and-resources'">
         <ul>
             <h4>Standalone tools</h4>
             <li><a href="#" (click)="redirectToOctra()">OCTRA</a></li>
@@ -10,14 +10,14 @@
             <li>Jupyter</li>
         </ul>
     </div>
-    <div *ngSwitchCase="'help-and-guides'">
+    <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
         <ul>
             <li><a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual">The EMU-SDMS Manual</a></li>
             <h4>Contact us</h4>
             <li><a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a></li>
         </ul>
     </div>
-    <div *ngSwitchCase="'data-management'">
-        We aim to provide an integrated workflow where your data is securely kept on our servers, using GitLab as a backend for cooperation and version control.
+    <div class="info-box-content" *ngSwitchCase="'data-management'">
+        We aim to provide an integrated workflow where your data is securely kept on our servers, using GitLab as a backend for collaboration and version control.
     </div>
 </div>

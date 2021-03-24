@@ -27,6 +27,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { UserComponent } from './components/user/user.component';
 import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
+import { NgxPopperjsModule } from 'ngx-popperjs';
+import { NotifierModule } from 'angular-notifier';
 
 
 @NgModule({
@@ -56,7 +58,15 @@ import { ScriptAppDialogComponent } from './components/script-app-dialog/script-
     MatSelectModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatChipsModule
+    MatChipsModule,
+    NgxPopperjsModule,
+    NotifierModule.withConfig({
+      behaviour: {
+        autoHide: false,
+        showDismissButton: true,
+        stacking: 10
+      }
+    })
   ],
   providers: [
     UserService
