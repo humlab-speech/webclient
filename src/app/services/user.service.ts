@@ -24,7 +24,7 @@ export class UserService {
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(Config.API_ENDPOINT+"/api/v1/personalaccesstoken", "{}");
+    return this.http.get<ApiResponse>(Config.API_ENDPOINT+"/api/v1/personalaccesstoken");
   }
   
   authenticate() {

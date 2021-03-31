@@ -138,7 +138,11 @@ export class CreateProjectDialogComponent implements OnInit {
     this.sessionForms.removeAt(index);
   }
 
-  onSelect(event, session) {
+  onDocUpload(event) {
+    console.log(event);
+  }
+
+  onAudioUpload(event, session) {
     if(!session.value.files) {
       session.value.files = [];
     }

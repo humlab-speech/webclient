@@ -18,4 +18,8 @@ export class InfoboxComponent implements OnInit {
   redirectToOctra() {
     window.location.href = "https://octra."+window.location.hostname;
   }
+
+  redirectToLabJs() {
+    window.location.href = "https://labjs."+window.location.hostname;
+  }
 }

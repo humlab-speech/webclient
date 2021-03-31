@@ -16,6 +16,9 @@
 }
 
 h3 {
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
     background-color: $secondary;
     background: $gradient-horizontal;
     padding-left: 1em;
@@ -95,20 +98,23 @@ button:hover {
     cursor:pointer;
 }
 
-#dialog-close-btn {
+.dialog-close-btn {
+    display:flex;
+    place-content: center;
     position: relative;
     width: 1rem;
     height: 1rem;
-    border-radius: 25%;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 0.8rem;
-    border: 1px solid #666;
+    padding: 0.25em;
 }
 
-#dialog-close-btn:hover {
+.dialog-close-btn:hover {
     background-color: lighten($crimson, 10%);
+    border: 1px solid #333;
+    border-radius: 50%;
     cursor: pointer;
     color: #fff;
 }
@@ -242,4 +248,20 @@ form label {
 .form-error-msg {
     color: $crimson;
     font-size: 0.8em;
+}
+
+.tooltip-zone {
+    color: #eee;
+}
+
+.tooltip-zone:hover {
+    color: $white;
+}
+
+.help-text {
+    margin:0;
+}
+
+popper-content h4 {
+    margin-top:0;
 }

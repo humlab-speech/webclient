@@ -24,9 +24,12 @@ export class ProjectService {
   }
 
   updateProjects() {
-    this._fetchProjects().subscribe(response => {
-      this.projects = <Project[]>response.body;
-      this._projectSource.next(this.projects);
+    return new Promise((resolve, reject) => {
+      this._fetchProjects().subscribe(response => {
+        this.projects = <Project[]>response.body;
+        this._projectSource.next(this.projects);
+        resolve(this.projects);
+      });
     });
   }
 
@@ -58,9 +61,11 @@ export class ProjectService {
 
     console.log("Posting project");
     this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-      console.log(JSON.parse(response.body));
-      this.updateProjects();
-      window.dispatchEvent(new Event("project-create-done"));
+      console.log(response);
+      this.updateProjects().then(() => {
+        window.dispatchEvent(new Event("project-create-done"));
+      });
+      
     });
     console.log("Project posted");
   }
