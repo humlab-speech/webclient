@@ -9,17 +9,10 @@ import { Infobox } from "../../models/Infobox";
 export class InfoboxComponent implements OnInit {
   
   @Input() infobox: Infobox;
+  baseDomain:string = window.location.hostname;
 
   constructor() { }
 
   ngOnInit(): void {
-  }
-
-  redirectToOctra() {
-    window.location.href = "https://octra."+window.location.hostname;
-  }
-
-  redirectToLabJs() {
-    window.location.href = "https://labjs."+window.location.hostname;
   }
 }

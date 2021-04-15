@@ -23,10 +23,22 @@ export class ProjectItemComponent implements OnInit {
   members:[];
   
   hsApplications:HsApp[];
+  projectOperations:object[] = [];
 
   constructor(private http:HttpClient, private projectService:ProjectService) { }
 
   ngOnInit(): void {
+
+    this.projectOperations.push({
+      title: "Edit emuDB",
+      callback: this.showImportAudioDialog
+    });
+    /*
+    this.projectOperations.push({
+      title: "Import documents",
+      callback: this.showImportAudioDialog
+    });
+    */
 
     let rstudioApp = new HsApp();
     rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
@@ -59,6 +71,14 @@ export class ProjectItemComponent implements OnInit {
       this.members = response;
     });
     */
+  }
+
+  showImportAudioDialog() {
+    window.dispatchEvent(new Event('show-import-audio-dialog'));
+  }
+
+  closeImportAudioDialog() {
+    window.dispatchEvent(new Event('close-import-audio-dialog'));
   }
 
   showProjectMenu(show:boolean = true, useTimer = false) {

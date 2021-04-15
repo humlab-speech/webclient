@@ -3,7 +3,7 @@
     <div class="project-manager-header">
         <div class="project-manager-title-container">
             <h2>Your Projects</h2>
-            <button id="create-project-btn" (click)="(showCreateProjectDialog=true)">
+            <button id="create-project-btn" (click)="showCreateProjectDialog()">
                 <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 &nbsp;Create new project
             </button>
@@ -42,7 +42,7 @@
         You have no projects
     </div>
 
-    <app-create-project-dialog [projectManager]="this" *ngIf="showCreateProjectDialog"></app-create-project-dialog>
-
-    <app-script-app-dialog *ngIf="showScriptsDialog"></app-script-app-dialog>
+    <app-create-project-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='create-project-dialog')" [projectManager]="this"></app-create-project-dialog>
+    <app-script-app-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='script-dialog')"></app-script-app-dialog>
+    <app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>
 </div>

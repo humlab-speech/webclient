@@ -1,11 +1,11 @@
 <div id="main-container">
-  <notifier-container *ngIf="false"></notifier-container>
   <div id="left-spacer"></div>
   <div id="sidebar">
     <h1>Humlab Speech</h1>
     <app-infobox-manager></app-infobox-manager>
   </div>
   <div id="content-container">
+    <notifier-container *ngIf="true">notifier</notifier-container>
     <router-outlet></router-outlet>
   </div>
 </div>

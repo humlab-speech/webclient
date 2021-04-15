@@ -176,3 +176,55 @@ h4 {
     color: $white;
     cursor:pointer;
 }
+
+
+
+
+
+
+
+
+
+
+
+/** NOTE SURE THE FOLLOWING SHOULD REALLY BE IN THIS FILE... **/
+
+button {
+    font-size: 1.0rem;
+    padding: 0.25rem;
+    border-style: solid;
+    border-width: 0px;
+    margin:0.5rem;
+    cursor:pointer;
+}
+
+.app-btn {
+    display:flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: $primary-light;
+    color: $white;
+    min-width: 10em;
+    margin:0;
+    padding:0;
+    height: 2em;
+}
+
+.app-btn-icon-box {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $secondary;
+    height:1.5em;
+    width:1.5em;
+    margin:0;
+    padding:0.25em;
+    margin-right: 0.5em;
+}
+
+.app-btn-icon-box img {
+}
+
+.app-btn:hover {
+    background-color: lighten($primary, 10%);
+}

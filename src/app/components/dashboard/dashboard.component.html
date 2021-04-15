@@ -1,4 +1,4 @@
 <div id="dashboard">
     <app-signin-ctrl *ngIf="!userIsSignedIn"></app-signin-ctrl>
-    <app-project-manager *ngIf="userIsSignedIn"></app-project-manager>
+    <app-project-manager *ngIf="userIsSignedIn" [dashboard]="this"></app-project-manager>
 </div>

@@ -25,6 +25,23 @@
             </div>
         </div>
 
+        <div class="applications-container">
+            <h4>
+                Operations
+            </h4>
+
+            <div *ngFor="let op of projectOperations">
+                
+                <button [disabled]="showLoadingIndicator" class="app-btn" (click)="op.callback()">
+                    <div class="app-btn-icon-box">
+                        <img [src]="appIconPath">
+                    </div>
+                    <div>{{ op.title }}</div>
+                </button>
+
+            </div>
+        </div>
+
         <div class="gitlab-project-container">
             <h4><img src="assets/gitlab-icon.png">GitLab</h4> 
             <div class="gitlab-menu-container">

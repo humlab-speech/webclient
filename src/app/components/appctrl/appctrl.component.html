@@ -13,11 +13,11 @@
         </div>
 
         <div *ngIf="hasRunningSessions" class="session-controls-container app-btn-row-container">
-            <button [disabled]="showLoadingIndicator" (click)="saveAndClose()" *ngIf="showSaveButton">
+            <button [disabled]="showLoadingIndicator" (click)="save()" *ngIf="showSaveButton">
                 <i class="fa fa-floppy-o" aria-hidden="true"></i>
                 <!--&nbsp;Save & close session-->
             </button>
-            <button [disabled]="showLoadingIndicator" (click)="discardAndClose()">
+            <button [disabled]="showLoadingIndicator" (click)="close()">
                 <i class="fa fa-times-circle" aria-hidden="true"></i>
                 <!--&nbsp;Close session without saving-->
             </button>

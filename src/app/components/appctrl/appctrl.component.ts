@@ -155,7 +155,7 @@ export class AppctrlComponent implements OnInit {
     return this.hasRunningSessions;
   }
 
-  saveAndClose() {
+  save() {
     this.statusMsg = "Saving";
     this.showLoadingIndicator = true;
 
@@ -172,26 +172,38 @@ export class AppctrlComponent implements OnInit {
 
     this.http.post<any>('/api/v1/session/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
 
-      if(data.status == "error") {
+      console.log(JSON.parse(data.body));
+
+      let statusObj = JSON.parse(data.body);
+
+      this.notifier.notify('info', statusObj.msg);
+
+      /*
+      if(statusObj.status == "error" || statusObj.status == "warn") {
         this.showLoadingIndicator = false;
 
-        switch(data.errorType) {
+        switch(statusObj.errorType) {
           case "nothing-to-commit":
-            this.statusMsg = "No changes";
-            this.showSaveButton = false;
+            //this.statusMsg = "No changes";
+            //this.showSaveButton = false;
+            this.notifier.notify('info', 'No changes to save.');
           break;
           case "conflict-on-commit":
-            this.statusMsg = "Conflict!";
-            this.showSaveButton = false;
+            //this.statusMsg = "Conflict!";
+            //this.showSaveButton = false;
+            this.notifier.notify('info', 'Saved to a different branch due to changes in repository.');
           break;
           default:
-            this.statusMsg = "Manual intervention required";
-            this.showSaveButton = false;
+            //this.statusMsg = "Manual intervention required";
+            //this.showSaveButton = false;
+            this.notifier.notify('error', 'Something went wrong. Manual intervention required.');
         }
-        
-        this.notifier.notify('warning', data.messages[0]);
-        return;
       }
+      else {
+        this.notifier.notify('info', 'Saved.');
+      }
+      */
+
       
       //Now that everything is saved, we can close
       /*
@@ -213,8 +225,8 @@ export class AppctrlComponent implements OnInit {
     });
   }
 
-  discardAndClose() {
-    if(!window.confirm("Are you sure? All changes made in this session will be lost.")) {
+  close() {
+    if(!window.confirm("Are you sure? Any unsaved changes will be lost.")) {
       return;
     }
     let sessionAccessCode = this.getSessionAccessCode();

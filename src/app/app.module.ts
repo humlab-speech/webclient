@@ -29,6 +29,9 @@ import { UserComponent } from './components/user/user.component';
 import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
 import { NgxPopperjsModule } from 'ngx-popperjs';
 import { NotifierModule } from 'angular-notifier';
+import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
+import { CreateEmudbFormComponent } from './components/forms/create-emudb-form/create-emudb-form.component';
+import { ImportAudioFormComponent } from './components/forms/import-audio-form/import-audio-form.component';
 
 
 @NgModule({
@@ -45,7 +48,10 @@ import { NotifierModule } from 'angular-notifier';
     AppctrlComponent,
     CreateProjectDialogComponent,
     UserComponent,
-    ScriptAppDialogComponent
+    ScriptAppDialogComponent,
+    DocumentationFormComponent,
+    CreateEmudbFormComponent,
+    ImportAudioFormComponent
   ],
   imports: [
     BrowserModule,
@@ -61,10 +67,21 @@ import { NotifierModule } from 'angular-notifier';
     MatChipsModule,
     NgxPopperjsModule,
     NotifierModule.withConfig({
+      position: {
+        horizontal: {
+          position: 'right',
+          distance: 12,
+        },
+        vertical: {
+          position: 'top',
+          distance: 12,
+          gap: 10,
+        }
+      },
       behaviour: {
-        autoHide: false,
+        autoHide: 5000,
         showDismissButton: true,
-        stacking: 10
+        stacking: 5
       }
     })
   ],

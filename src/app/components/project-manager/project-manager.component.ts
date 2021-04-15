@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { UserService } from "../../services/user.service";
 import { ProjectService } from "../../services/project.service";
 import { Project } from "../../models/Project";
@@ -13,15 +13,17 @@ import { CreateProjectDialogComponent } from './create-project-dialog/create-pro
 })
 export class ProjectManagerComponent implements OnInit {
 
+  @Input() dashboard;
+
   projectsLoaded:boolean = false;
   projects:Project[];
-  showCreateProjectDialog:boolean = false;
   projectCreateInProgress:boolean = false;
-  showScriptsDialog:boolean = false;
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
   ngOnInit():void {
+
+    console.log(this.dashboard);
 
     window.addEventListener('project-create-in-progress', () => {
       this.projectCreateInProgress = true;
@@ -32,16 +34,31 @@ export class ProjectManagerComponent implements OnInit {
     });
 
     window.addEventListener('show-script-dialog', () => {
-      this.showScriptsDialog = true;
+      this.dashboard.modalActive = true;
+      this.dashboard.modalName = "script-dialog";
     });
 
     window.addEventListener('hide-script-dialog', () => {
-      this.showScriptsDialog = false;
+      this.dashboard.modalActive = false;
+    });
+
+    window.addEventListener('show-import-audio-dialog', () => {
+      this.dashboard.modalActive = true;
+      this.dashboard.modalName = "import-audio-dialog";
+    });
+
+    window.addEventListener('close-import-audio-dialog', () => {
+      this.dashboard.modalActive = false;
     });
 
     this.projectService.projects$.subscribe((projects) => {
       this.projects = projects;
       this.projectsLoaded = true;
     });
+  }
+
+  showCreateProjectDialog() {
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'create-project-dialog';
   }
 }

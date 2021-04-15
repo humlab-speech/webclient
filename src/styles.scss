@@ -5,21 +5,23 @@
 @import "../node_modules/normalize.css/normalize.css";
 @import './colors.scss';
 @import '../node_modules/ngx-popperjs/scss/theme-white.scss';
+@import '../node_modules/font-awesome/scss/font-awesome.scss';
+
+@import '../node_modules/angular-notifier/styles.css';
+
+
+html, body { height: 100%; }
+
+body { 
+    margin: 0;
+    padding: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 h1 {
     font-family: 'Saira Semi Condensed', sans-serif;
     text-decoration: underline;
     text-decoration-color: $primary-light;
-}
-
-#templates-container {
-    display:none;
-}
-
-body {
-    font-family: 'Lora', serif;
-    margin:0px;
-    padding: 0px;
 }
 
 app-root {
@@ -42,6 +44,74 @@ app-signin-ctrl {
 button {
     border-style: solid;
     outline: 0;
+}
+
+popper-content h4 {
+    margin-top:0;
+}
+
+ngx-dropzone {
+    display:flex;
+    place-content: center;
+}
+
+.modal-bg {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color:rgba(0, 0, 0, 0.5);
+}
+
+.modal-dialog-container {
+    display:flex;
+    flex-direction: column;
+    padding: 2rem;
+    border-radius:4px;
+    background-color: #fff !important;
+    box-shadow: 0px 0px 10px 5px #666;
+    max-height: 95vh;
+    overflow:auto;
+}
+
+.dialog-close-btn {
+    display:flex;
+    place-content: center;
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.25em;
+}
+
+.dialog-close-btn:hover {
+    background-color: lighten($crimson, 10%);
+    border: 1px solid #333;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #fff;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.dialog-header h2 {
+    margin:0;
+}
+
+#templates-container {
+    display:none;
 }
 
 .project-loading-indicator {
@@ -73,5 +143,137 @@ button {
     padding: 5px;
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+form label {
+    display:block;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.form h3 {
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    background-color: $secondary;
+    background: $gradient-horizontal;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    color: $lightgrey;
+    border-left: 0.25em solid $secondary-light;
+}
+
+.form fieldset {
+    display:flex;
+    flex-direction: column;
+    border-width:0;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-radius: 0.25em;
+}
+
+.form fieldset label {
+    font-weight: bold;
+}
+
+.form fieldset input {
+    border-color: #ccc;
+    border-style: solid;
+    border-radius: 4px;
+}
+
+.form .small-button {
+    font-size: 1em;
+}
+
+.form button {
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    background-color: $crimson;
+    color: #fff;
+    border-width:0px;
+}
+
+.form button:hover {
+    background-color:lighten($crimson, 10%);
+    cursor:pointer;
+}
+
+.form .section-header-container {
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form .section-header-container > .itemDeleteBtn {
+    visibility: hidden;
+}
+
+.form .itemDeleteBtn {
+    margin-left: 0.5em;
+    cursor:pointer;
+}
+
+.form .section-header-container:hover > .itemDeleteBtn {
+    visibility: visible;
+    cursor:pointer;
+}
+
+.form .section-header-container button {
+    padding:0;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 1rem;
+}
+
+
+.tooltip-zone {
+    color: #eee;
+}
+
+.tooltip-zone:hover {
+    color: $white;
+}
+
+.help-text {
+    margin:0;
+}
+
+.notifier__notification--material {
+    border-radius: 0px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.notifier__notification--default {
+    background-color: #444;
+    color: #fff;
+}
+.notifier__notification--default .notifier__notification-button-icon {
+    fill: #fff;
+}
+
+.notifier__notification--error {
+    background-color: $error;
+    color: #fff;
+}
+.notifier__notification--error .notifier__notification-button-icon {
+    fill: #fff;
+}
+
+.notifier__notification--warning {
+    background-color: $warning;
+    color: #fff;
+}
+.notifier__notification--warning .notifier__notification-button-icon {
+    fill: #fff;
+}
+
+.notifier__notification--info {
+    background-color: $info;
+    color: #fff;
+}
+.notifier__notification--info .notifier__notification-button-icon {
+    fill: #fff;
+}
