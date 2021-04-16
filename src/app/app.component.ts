@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Config } from './config';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,5 @@ import { Component } from '@angular/core';
 })
 
 export class AppComponent {
-  title = 'Humlab Speech';
+  title = Config.APPLICATION_NAME;
 }

@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
+import { Config } from '../../../config';
 
 
 @Component({
@@ -12,6 +13,8 @@ import { ProjectManagerComponent } from '../project-manager.component';
   styleUrls: ['./create-project-dialog.component.scss']
 })
 export class CreateProjectDialogComponent implements OnInit {
+
+  EMUDB_INTEGRATION = Config.EMUDB_INTEGRATION;
 
   @Input() projectManager: ProjectManagerComponent;
 
@@ -31,7 +34,8 @@ export class CreateProjectDialogComponent implements OnInit {
         validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
         updateOn: 'blur'
       }),
-      genEmuDb: new FormControl(true)
+      standardDirectoryStructure: new FormControl(true),
+      createEmuDb: new FormControl(true)
     });
 
     this.form.valueChanges.subscribe((values) => {
@@ -45,11 +49,18 @@ export class CreateProjectDialogComponent implements OnInit {
 
     document.getElementById("projectName").focus();
   }
-
   
 
   get projectName() {
     return this.form.get('projectName');
+  }
+
+  get standardDirectoryStructure() {
+    return this.form.get('standardDirectoryStructure');
+  }
+
+  get createEmuDb() {
+    return this.form.get('createEmuDb');
   }
 
   createProject(form) {

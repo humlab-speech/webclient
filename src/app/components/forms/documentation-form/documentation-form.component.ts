@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid'
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { FileUploadService } from "../../../services/file-upload.service";
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-documentation-form',
@@ -16,15 +17,23 @@ export class DocumentationFormComponent implements OnInit {
 
   status:string = "";
   docFiles:object[] = [];
+  private readonly notifier: NotifierService;
 
-  constructor(private http:HttpClient, private fileUploadService:FileUploadService) { }
+  constructor(private http:HttpClient, private fileUploadService:FileUploadService, notifierService: NotifierService) {
+    this.notifier = notifierService;
+  }
 
   ngOnInit(): void {
-    console.log(this.context);
   }
 
   onUpload(event) {
-    console.log(event);
+    for(let key in event.addedFiles) {
+      if(event.addedFiles[key].type == "") {
+        this.notifier.notify('info', "File '"+event.addedFiles[key].name+"' has no type and cannot be added. Did you try to upload a directory?");
+        event.addedFiles.splice(key, 1);
+      }
+    }
+
     this.docFiles.push(...event.addedFiles);
 
     this.status = "Uploading";

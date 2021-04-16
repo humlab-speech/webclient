@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Project } from '../../models/Project';
 import { ProjectService } from '../../services/project.service';
 import { HsApp } from "../../models/HsApp";
+import { Config } from "../../config";
 
 @Component({
   selector: 'app-project-item',
@@ -13,6 +14,8 @@ export class ProjectItemComponent implements OnInit {
   
   @Input() project: Project;
 
+  enabledApps = Config.ENABLED_APPLICATIONS;
+
   statusMsg:string = "";
   domain:string = window.location.hostname;
   rstudioSaveInProgress:boolean = false;
@@ -22,7 +25,7 @@ export class ProjectItemComponent implements OnInit {
   menuTimeout:any;
   members:[];
   
-  hsApplications:HsApp[];
+  hsApplications:HsApp[] = [];
   projectOperations:object[] = [];
 
   constructor(private http:HttpClient, private projectService:ProjectService) { }
@@ -33,44 +36,45 @@ export class ProjectItemComponent implements OnInit {
       title: "Edit emuDB",
       callback: this.showImportAudioDialog
     });
-    /*
-    this.projectOperations.push({
-      title: "Import documents",
-      callback: this.showImportAudioDialog
+
+    Config.ENABLED_APPLICATIONS.forEach((hsAppName) => {
+      if(hsAppName == "rstudio") {
+        let rstudioApp = new HsApp();
+        rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
+        rstudioApp.title = "RStudio";
+        rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
+        this.hsApplications.push(rstudioApp);
+      }
+      if(hsAppName == "emuwebapp") {
+        let emuWebApp = new HsApp();
+        emuWebApp.name = "emuwebapp";
+        emuWebApp.title = "EmuWebApp";
+        emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
+        this.hsApplications.push(emuWebApp);
+      }
+      if(hsAppName == "jupyter") {
+        let jupyterApp = new HsApp();
+        jupyterApp.name = "jupyter";
+        jupyterApp.title = "Jupyter";
+        jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
+        this.hsApplications.push(jupyterApp);
+      }
+      if(hsAppName == "octra") {
+        let octraApp = new HsApp();
+        octraApp.name = "octra";
+        octraApp.title = "Octra";
+        //this.hsApplications.push(octraApp);
+      }
+      if(hsAppName == "script") {
+        let scriptApp = new HsApp();
+        scriptApp.name = "script";
+        scriptApp.title = "Scripts";
+        scriptApp.icon = "app-icons/88x88-bw/script-icon.png";
+        //this.hsApplications.push(scriptApp);
+      }
+
     });
-    */
 
-    let rstudioApp = new HsApp();
-    rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
-    rstudioApp.title = "RStudio";
-    rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
-
-    let emuWebApp = new HsApp();
-    emuWebApp.name = "emuwebapp";
-    emuWebApp.title = "EmuWebApp";
-    emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
-
-    let octraApp = new HsApp();
-    octraApp.name = "octra";
-    octraApp.title = "Octra";
-
-    let jupyterApp = new HsApp();
-    jupyterApp.name = "jupyter";
-    jupyterApp.title = "Jupyter";
-    jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
-    
-    let scriptApp = new HsApp();
-    scriptApp.name = "script";
-    scriptApp.title = "Scripts";
-    scriptApp.icon = "app-icons/88x88-bw/script-icon.png";
-
-    this.hsApplications = [rstudioApp, emuWebApp, jupyterApp, scriptApp];
-    
-    /*
-    this.projectService.fetchProjectMembers(this.project.id).subscribe((response:any) => {
-      this.members = response;
-    });
-    */
   }
 
   showImportAudioDialog() {

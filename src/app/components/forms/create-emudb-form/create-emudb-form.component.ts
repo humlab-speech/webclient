@@ -51,12 +51,13 @@ export class CreateEmudbFormComponent implements OnInit {
     this.parentForm.addControl("annotLevels", this.annotLevels);
     this.parentForm.addControl("annotLevelLinks", this.annotLevelLinks);
 
-    console.log(this.parentForm);
-
-    
-    this.addSession();
-    this.addAnnotLevel("Word", "ITEM");
-    this.addAnnotLevel("Phonetic", "SEGMENT");
+    if(this.sessionForms.length == 0) {
+      this.addSession();
+    }
+    if(this.annotLevelForms.length == 0) {
+      this.addAnnotLevel("Word", "ITEM");
+      this.addAnnotLevel("Phonetic", "SEGMENT");
+    }
     
   }
 

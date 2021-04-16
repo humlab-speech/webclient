@@ -81,3 +81,24 @@ li {
     font-size: 0.8em;
 }
 
+input[type="checkbox"] {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.flex-container {
+    display:flex;
+    flex-wrap:nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.flex-container input {
+    margin-right: 0.5em;
+}
+
+.flex-container label {
+    font-size: 1em;
+}
