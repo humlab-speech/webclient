@@ -35,7 +35,7 @@ export class CreateProjectDialogComponent implements OnInit {
         updateOn: 'blur'
       }),
       standardDirectoryStructure: new FormControl(true),
-      createEmuDb: new FormControl(true)
+      createEmuDb: new FormControl(Config.EMUDB_INTEGRATION)
     });
 
     this.form.valueChanges.subscribe((values) => {
