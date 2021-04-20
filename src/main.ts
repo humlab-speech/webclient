@@ -4,6 +4,10 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
+import { Config } from './app/config';
+
+document.getElementById('title').innerHTML = Config.APPLICATION_NAME;
+
 if (environment.production) {
   enableProdMode();
 }
