@@ -4,6 +4,8 @@ import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
+import { FileUploadService } from "../../../services/file-upload.service";
+import { NotifierService } from 'angular-notifier';
 import { Config } from '../../../config';
 
 
@@ -20,12 +22,13 @@ export class CreateProjectDialogComponent implements OnInit {
 
   submitBtnLabel:string = "Save project";
   submitBtnEnabled:boolean = false;
+  pendingUpload:boolean = false;
 
   form:FormGroup;
 
   formContextId:string = nanoid();
 
-  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService) { }
+  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService, private fileUploadService:FileUploadService, private notifierService: NotifierService) { }
 
   ngOnInit(): void {
 
@@ -39,7 +42,8 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     this.form.valueChanges.subscribe((values) => {
-      if(this.form.status != "INVALID") {
+      console.log("valuechange");
+      if(this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false) {
         this.submitBtnEnabled = true;
       }
       else {
@@ -48,6 +52,18 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     document.getElementById("projectName").focus();
+
+    document.addEventListener("pendingFormUploads", () => {
+      console.log("received: pendingFormUploads");
+      this.submitBtnEnabled = false;
+    });
+
+    document.addEventListener("pendingFormUploadsComplete", () => {
+      console.log("received: pendingFormUploadsComplete");
+      if(this.form.status != "INVALID") {
+        this.submitBtnEnabled = true;
+      }
+    });
   }
   
 
@@ -66,6 +82,11 @@ export class CreateProjectDialogComponent implements OnInit {
   createProject(form) {
     if(this.form.status != "INVALID" && !this.submitBtnEnabled) {
       console.log("Can't submit project - not ready yet");
+      return false;
+    }
+
+    if(this.fileUploadService.hasPendingUploads == true) {
+      this.notifierService.notify('info', 'There are file uploads in progress, please wait until they are complete.');
       return false;
     }
 

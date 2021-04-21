@@ -15,7 +15,7 @@ export class DocumentationFormComponent implements OnInit {
 
   @Input() context:any;
 
-  status:string = "";
+  status:string = "Ready";
   docFiles:object[] = [];
   private readonly notifier: NotifierService;
 
@@ -27,45 +27,26 @@ export class DocumentationFormComponent implements OnInit {
   }
 
   onUpload(event) {
+    /*
     for(let key in event.addedFiles) {
       if(event.addedFiles[key].type == "") {
         this.notifier.notify('info', "File '"+event.addedFiles[key].name+"' has no type and cannot be added. Did you try to upload a directory?");
         event.addedFiles.splice(key, 1);
       }
     }
+    */
 
     this.docFiles.push(...event.addedFiles);
 
     this.status = "Uploading";
-    let uploads:Promise<any>[] = [];
 
     for(let key in event.addedFiles) {
       let file:File = event.addedFiles[key];
-      uploads.push(this.uploadFile(file));
+      this.uploadFile(file);
     }
-
-    Promise.all(uploads).then((result) => {
-      this.status = "";
-    });
   }
 
   async uploadFile(file:File) {
-
-    this.fileUploadService.readFile(file).then(fileContents => {
-      let headers = {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-      };
-      let body = {
-        filename: file.name,
-        file: fileContents,
-        context: this.context.formContextId,
-        group: "docs"
-      };
-      this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
-        return data;
-      });
-    });
-    
-    
+    this.fileUploadService.upload(file, this.context.formContextId, "docs");
   }
 }

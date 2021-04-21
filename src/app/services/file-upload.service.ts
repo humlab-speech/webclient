@@ -12,9 +12,47 @@ import { Config } from '../config';
 })
 export class FileUploadService {
 
-  constructor() { }
+  hasPendingUploads:boolean = false;
+  pendingUploads:Promise<string>[] = [];
 
-  async upload(file:File) {}
+  constructor(private http:HttpClient) {
+  }
+
+  upload(file:File, context:string = "", group:string = "") {
+    console.log("Uploading "+file.name);
+    this.hasPendingUploads = true;
+    document.dispatchEvent(new Event("pendingFormUploads"));
+
+    this.pendingUploads.push(new Promise((resolve, reject) => {
+      this.readFile(file).then(fileContents => {
+        let headers = {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        };
+        let body = {
+          filename: file.name,
+          file: fileContents,
+          context: context,
+          group: group
+        };
+        this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
+          this.checkAllUploadsComplete();
+          resolve(data);
+        }, error => {
+          reject(error);
+        });
+      });
+    }));
+  }
+
+  checkAllUploadsComplete() {
+    let lastPromisesCount = this.pendingUploads.length;
+    Promise.all(this.pendingUploads).then(() => {
+      if(this.pendingUploads.length == lastPromisesCount) {
+        this.hasPendingUploads = false;
+        document.dispatchEvent(new Event("pendingFormUploadsComplete"));
+      }
+    });
+  }
 
   async readFile(file: File): Promise<string | ArrayBuffer> {
     return new Promise<string | ArrayBuffer>((resolve, reject) => {
