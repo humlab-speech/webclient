@@ -195,12 +195,19 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   onAudioUpload(event, session) {
+
+    for(let key in event.addedFiles) {
+      if(event.addedFiles[key].type != "audio/wav") {
+        this.notifierService.notify('warning', 'There file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
+        event.addedFiles.splice(key, 1);
+      }
+    }
+
+    if(event.addedFiles.length == 0) {
+      return;
+    }
+
     session.value.files.push(...event.addedFiles);
-    console.log(session);
-
-    //session.value.files.push(...event.addedFiles);
-
-    //TODO: Disable submitting form here? - until upload is done
 
     let uploads:Promise<any>[] = [];
 
@@ -211,6 +218,7 @@ export class CreateProjectDialogComponent implements OnInit {
 
     Promise.all(uploads).then((result) => {
       //upload is done
+      this.notifierService.notify('info', 'Uploads complete.');
     });
 
   }
