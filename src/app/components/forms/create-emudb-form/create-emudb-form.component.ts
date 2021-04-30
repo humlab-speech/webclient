@@ -15,7 +15,6 @@ export class CreateEmudbFormComponent implements OnInit {
 
   @Input() context:any;
   status:string = "";
-  files: File[] = [];
   sessions:FormArray;
   annotLevels:FormArray;
   annotLevelLinks:FormArray;
@@ -97,9 +96,8 @@ export class CreateEmudbFormComponent implements OnInit {
         validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
         updateOn: 'blur'
       }),
-      files: []
+      files: this.fb.array([])
     });
-
     this.sessionForms.push(session);
   }
 
@@ -108,11 +106,10 @@ export class CreateEmudbFormComponent implements OnInit {
   }
 
   onAudioUpload(event, session) {
-    if(!session.value.files) {
-      session.value.files = [];
-    }
-
     session.value.files.push(...event.addedFiles);
+    console.log(session);
+
+    //session.value.files.push(...event.addedFiles);
 
     //TODO: Disable submitting form here? - until upload is done
 

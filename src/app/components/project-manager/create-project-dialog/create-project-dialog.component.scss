@@ -102,3 +102,20 @@ input[type="checkbox"] {
 .flex-container label {
     font-size: 1em;
 }
+
+.annotation-level-container {
+    margin-top: 0.25em;
+    align-items: baseline;
+    padding: 0.1em;
+    border-radius: 0.25em;
+}
+
+.annotation-level-container h4 {
+    margin:0;
+    padding:0;
+}
+
+.session-name-input {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
