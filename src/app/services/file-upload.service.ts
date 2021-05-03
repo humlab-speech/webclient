@@ -1,11 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { Project } from "../models/Project";
-import { ApiResponse } from "../models/ApiResponse";
-import { UserService } from './user.service';
-import { Config } from '../config';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +7,6 @@ import { Config } from '../config';
 export class FileUploadService {
 
   hasPendingUploads:boolean = false;
-  //pendingUploads:Promise<string>[] = [];
   pendingUploads:any = [];
 
   constructor(private http:HttpClient) {
@@ -59,16 +52,6 @@ export class FileUploadService {
     this.hasPendingUploads = false;
     document.dispatchEvent(new Event("pendingFormUploadsComplete"));
     return true;
-
-    /*
-    let lastPromisesCount = this.pendingUploads.length;
-    Promise.all(this.pendingUploads).then(() => {
-      if(this.pendingUploads.length == lastPromisesCount) {
-        this.hasPendingUploads = false;
-        document.dispatchEvent(new Event("pendingFormUploadsComplete"));
-      }
-    });
-    */
   }
 
   async readFile(file: File): Promise<string | ArrayBuffer> {

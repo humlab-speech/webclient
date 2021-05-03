@@ -215,38 +215,12 @@ export class CreateProjectDialogComponent implements OnInit {
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file, session).then(() => {
-        //this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
       })
     }
   }
 
   async uploadFile(file:File, session) {
-
     return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.name.value);
-    /*
-    return new Promise((resolve, reject) => {
-
-      this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.name.value).then((data) => {
-        resolve(data);
-      });
-
-      this.fileUploadService.readFile(file).then(fileContents => {
-        let headers = {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        };
-        let body = {
-          filename: file.name,
-          file: fileContents,
-          context: this.formContextId,
-          group: "emudb-sessions/"+session.controls.name.value
-        };
-        this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
-          resolve(data);
-        });
-      });
-
-    });
-    */
   }
   
   onRemove(event, session) {

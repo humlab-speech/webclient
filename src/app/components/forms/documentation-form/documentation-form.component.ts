@@ -1,7 +1,4 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray } from '@angular/forms';
-import { nanoid } from 'nanoid'
-import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { FileUploadService } from "../../../services/file-upload.service";
 import { NotifierService } from 'angular-notifier';
@@ -33,7 +30,6 @@ export class DocumentationFormComponent implements OnInit {
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file).then(() => {
-        //this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
       })
     }
   }
