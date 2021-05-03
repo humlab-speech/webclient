@@ -13,17 +13,20 @@ import { Config } from '../config';
 export class FileUploadService {
 
   hasPendingUploads:boolean = false;
-  pendingUploads:Promise<string>[] = [];
+  //pendingUploads:Promise<string>[] = [];
+  pendingUploads:any = [];
 
   constructor(private http:HttpClient) {
   }
 
-  upload(file:File, context:string = "", group:string = "") {
+  upload(file, context:string = "", group:string = ""):Promise<string> {
     console.log("Uploading "+file.name);
+    file.uploadComplete = false;
     this.hasPendingUploads = true;
+    this.pendingUploads.push(file);
     document.dispatchEvent(new Event("pendingFormUploads"));
 
-    this.pendingUploads.push(new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.readFile(file).then(fileContents => {
         let headers = {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -35,16 +38,29 @@ export class FileUploadService {
           group: group
         };
         this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
+          file.uploadComplete = true;
           this.checkAllUploadsComplete();
           resolve(data);
         }, error => {
           reject(error);
         });
       });
-    }));
+    });
   }
 
   checkAllUploadsComplete() {
+    console.log("checkAllUploadsComplete");
+    for(let key in this.pendingUploads) {
+      if(this.pendingUploads[key].uploadComplete == false) {
+        this.hasPendingUploads = true;
+        return false;
+      }
+    }
+    this.hasPendingUploads = false;
+    document.dispatchEvent(new Event("pendingFormUploadsComplete"));
+    return true;
+
+    /*
     let lastPromisesCount = this.pendingUploads.length;
     Promise.all(this.pendingUploads).then(() => {
       if(this.pendingUploads.length == lastPromisesCount) {
@@ -52,6 +68,7 @@ export class FileUploadService {
         document.dispatchEvent(new Event("pendingFormUploadsComplete"));
       }
     });
+    */
   }
 
   async readFile(file: File): Promise<string | ArrayBuffer> {
@@ -74,5 +91,10 @@ export class FileUploadService {
 
       reader.readAsDataURL(file);
     });
+  }
+
+  reset() {
+    this.pendingUploads = [];
+    this.hasPendingUploads = false;
   }
 }

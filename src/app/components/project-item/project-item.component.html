@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <div class="applications-container">
+        <div *ngIf="false" class="applications-container">
             <h4>
                 Operations
             </h4>
@@ -47,7 +47,7 @@
             <div class="gitlab-menu-container">
                 <ul>
                     <li>
-                        <a href="{{ project.web_url }}">
+                        <a href="{{ project.web_url }}" target="_blank">
                             <div class="list-button">
                                 <i class="fa fa-database" aria-hidden="true"></i>
                                 &nbsp;
@@ -57,7 +57,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ project.web_url }}/-/issues">
+                        <a href="{{ project.web_url }}/-/issues" target="_blank">
                             <div class="list-button">
                                 <i class="fa fa-flag-o" aria-hidden="true"></i>
                                 &nbsp;
@@ -67,7 +67,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ project.web_url }}/-/project_members">
+                        <a href="{{ project.web_url }}/-/project_members" target="_blank">
                             <div class="list-button">
                                 <i class="fa fa-users" aria-hidden="true"></i>
                                 &nbsp;

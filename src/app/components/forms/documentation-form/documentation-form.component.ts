@@ -26,10 +26,6 @@ export class DocumentationFormComponent implements OnInit {
   }
 
   onUpload(event) {
-    for(let key in event.addedFiles) {
-      event.addedFiles[key].uploadComplete = false;
-    }
-
     this.docFiles.push(...event.addedFiles);
 
     this.status = "Uploading";
@@ -37,30 +33,13 @@ export class DocumentationFormComponent implements OnInit {
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file).then(() => {
-        this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
-        file.uploadComplete = true;
+        //this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
       })
     }
   }
 
-
-  uploadFile(file:File) {
-    return new Promise((resolve, reject) => {
-      this.fileUploadService.readFile(file).then(fileContents => {
-        let headers = {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        };
-        let body = {
-          filename: file.name,
-          file: fileContents,
-          context: this.context.formContextId,
-          group: "docs"
-        };
-        this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
-          resolve(data);
-        });
-      });
-    });
+  async uploadFile(file:File) {
+    return await this.fileUploadService.upload(file, this.context.formContextId, "docs");
   }
 
   onRemove(file) {

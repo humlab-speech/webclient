@@ -23,6 +23,7 @@ export class CreateProjectDialogComponent implements OnInit {
   submitBtnLabel:string = "Save project";
   submitBtnEnabled:boolean = false;
   pendingUpload:boolean = false;
+  formValidationInterval:any;
 
   sessions:FormArray;
   annotLevels:FormArray;
@@ -58,15 +59,9 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     this.form.valueChanges.subscribe((values) => {
-      console.log("valuechange");
-      if(this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false) {
-        this.submitBtnEnabled = true;
-      }
-      else {
-        this.submitBtnEnabled = false;
-      }
+      this.validateForm();
     });
-
+    
 
     this.sessions = this.fb.array([]);
     this.annotLevels = this.fb.array([]);
@@ -89,17 +84,25 @@ export class CreateProjectDialogComponent implements OnInit {
 
     document.addEventListener("pendingFormUploads", () => {
       console.log("received: pendingFormUploads");
-      this.submitBtnEnabled = false;
+      this.validateForm();
     });
 
     document.addEventListener("pendingFormUploadsComplete", () => {
       console.log("received: pendingFormUploadsComplete");
-      if(this.form.status != "INVALID") {
-        this.submitBtnEnabled = true;
-      }
+      this.notifierService.notify('info', 'All uploads complete.');
+      this.validateForm();
     });
   }
   
+  validateForm() {
+    console.log("validateForm");
+    if(this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false) {
+      this.submitBtnEnabled = true;
+    }
+    else {
+      this.submitBtnEnabled = false;
+    }
+  }
 
   get projectName() {
     return this.form.get('projectName');
@@ -131,7 +134,7 @@ export class CreateProjectDialogComponent implements OnInit {
 
   createProject(form) {
     if(this.form.status != "INVALID" && !this.submitBtnEnabled) {
-      console.log("Can't submit project - not ready yet");
+      this.notifierService.notify('warning', "The form is not ready to be submitted yet.");
       return false;
     }
 
@@ -147,9 +150,9 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   closeCreateProjectDialog() {
+    this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
   }
-
 
 
   addAnnotLevel(name = "", type = "ITEM") {
@@ -201,7 +204,6 @@ export class CreateProjectDialogComponent implements OnInit {
         this.notifierService.notify('warning', 'There file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
         event.addedFiles.splice(key, 1);
       }
-      event.addedFiles[key].uploadComplete = false;
     }
 
     if(event.addedFiles.length == 0) {
@@ -213,14 +215,20 @@ export class CreateProjectDialogComponent implements OnInit {
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file, session).then(() => {
-        this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
-        file.uploadComplete = true;
+        //this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
       })
     }
   }
 
-  uploadFile(file:File, session) {
+  async uploadFile(file:File, session) {
+
+    return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.name.value);
+    /*
     return new Promise((resolve, reject) => {
+
+      this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.name.value).then((data) => {
+        resolve(data);
+      });
 
       this.fileUploadService.readFile(file).then(fileContents => {
         let headers = {
@@ -238,6 +246,7 @@ export class CreateProjectDialogComponent implements OnInit {
       });
 
     });
+    */
   }
   
   onRemove(event, session) {
