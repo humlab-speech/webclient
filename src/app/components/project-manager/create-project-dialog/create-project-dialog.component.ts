@@ -201,6 +201,7 @@ export class CreateProjectDialogComponent implements OnInit {
         this.notifierService.notify('warning', 'There file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
         event.addedFiles.splice(key, 1);
       }
+      event.addedFiles[key].uploadComplete = false;
     }
 
     if(event.addedFiles.length == 0) {
@@ -209,24 +210,17 @@ export class CreateProjectDialogComponent implements OnInit {
 
     session.value.files.push(...event.addedFiles);
 
-    let uploads:Promise<any>[] = [];
-
     for(let key in event.addedFiles) {
-      let file:File = event.addedFiles[key];
-      uploads.push(this.uploadFile(file, session));
+      let file = event.addedFiles[key];
+      this.uploadFile(file, session).then(() => {
+        this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
+        file.uploadComplete = true;
+      })
     }
-
-    Promise.all(uploads).then((result) => {
-      //upload is done
-      this.notifierService.notify('info', 'Uploads complete.');
-    });
-
   }
 
   uploadFile(file:File, session) {
     return new Promise((resolve, reject) => {
-
-      //this.fileUploadService.upload(file);
 
       this.fileUploadService.readFile(file).then(fileContents => {
         let headers = {

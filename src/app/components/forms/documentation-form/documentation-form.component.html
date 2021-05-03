@@ -14,8 +14,12 @@
 
     <ngx-dropzone [expandable]="true" (change)="onUpload($event)">
         <ngx-dropzone-label>Drop your documents here</ngx-dropzone-label>
-        <ngx-dropzone-preview *ngFor="let f of docFiles" [removable]="true" (removed)="onRemove(f, session)">
-            <ngx-dropzone-label><i class="fa fa-file-o" aria-hidden="true"></i>&nbsp;{{ f.name }}</ngx-dropzone-label>
+        <ngx-dropzone-preview *ngFor="let f of docFiles" [removable]="true" (removed)="onRemove(f)">
+            <ngx-dropzone-label>
+                <i class="fa fa-file-o" aria-hidden="true"></i>
+                &nbsp;{{ f.name }}
+                <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
+            </ngx-dropzone-label>
         </ngx-dropzone-preview>
     </ngx-dropzone>
 </div>

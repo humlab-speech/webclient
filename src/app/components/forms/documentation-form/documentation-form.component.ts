@@ -19,34 +19,57 @@ export class DocumentationFormComponent implements OnInit {
   docFiles:object[] = [];
   private readonly notifier: NotifierService;
 
-  constructor(private http:HttpClient, private fileUploadService:FileUploadService, notifierService: NotifierService) {
-    this.notifier = notifierService;
+  constructor(private http:HttpClient, private fileUploadService:FileUploadService, private notifierService: NotifierService) {
   }
 
   ngOnInit(): void {
   }
 
   onUpload(event) {
-    /*
     for(let key in event.addedFiles) {
-      if(event.addedFiles[key].type == "") {
-        this.notifier.notify('info', "File '"+event.addedFiles[key].name+"' has no type and cannot be added. Did you try to upload a directory?");
-        event.addedFiles.splice(key, 1);
-      }
+      event.addedFiles[key].uploadComplete = false;
     }
-    */
 
     this.docFiles.push(...event.addedFiles);
 
     this.status = "Uploading";
 
     for(let key in event.addedFiles) {
-      let file:File = event.addedFiles[key];
-      this.uploadFile(file);
+      let file = event.addedFiles[key];
+      this.uploadFile(file).then(() => {
+        this.notifierService.notify('info', 'Upload of ' + file.name + ' complete.');
+        file.uploadComplete = true;
+      })
     }
   }
 
-  async uploadFile(file:File) {
-    this.fileUploadService.upload(file, this.context.formContextId, "docs");
+
+  uploadFile(file:File) {
+    return new Promise((resolve, reject) => {
+      this.fileUploadService.readFile(file).then(fileContents => {
+        let headers = {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        };
+        let body = {
+          filename: file.name,
+          file: fileContents,
+          context: this.context.formContextId,
+          group: "docs"
+        };
+        this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
+          resolve(data);
+        });
+      });
+    });
   }
+
+  onRemove(file) {
+    for(let key in this.docFiles) {
+      if(this.docFiles[key] == file) {
+        let keyNum:number = +key;
+        this.docFiles.splice(keyNum, 1);
+      }
+    }
+  }
+
 }
