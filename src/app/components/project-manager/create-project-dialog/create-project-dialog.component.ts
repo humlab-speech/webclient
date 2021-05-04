@@ -8,7 +8,6 @@ import { FileUploadService } from "../../../services/file-upload.service";
 import { NotifierService } from 'angular-notifier';
 import { Observable, of } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
-import { validateProjectName } from './validators/validateProjectName.validator';
 import { Config } from '../../../config';
 import { UserService } from 'src/app/services/user.service';
 
