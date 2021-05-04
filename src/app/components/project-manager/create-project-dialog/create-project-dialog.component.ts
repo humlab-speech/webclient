@@ -191,6 +191,16 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   deleteAnnotLevel(index) {
+    //Delete any links which reference this annotLevel
+    for(let key in this.annotLevelLinks.controls) {
+      let keyNum:number = +key;
+      let annotLevelLink:any = this.annotLevelLinks.controls[key];
+      let annotLevelForm:any = this.annotLevelForms.at(index);
+      if(annotLevelLink.controls.superLevel.value == annotLevelForm.controls.name.value || annotLevelLink.controls.subLevel.value == annotLevelForm.controls.name.value) {
+        this.annotLevelLinks.removeAt(keyNum);
+      }
+    }
+    
     this.annotLevelForms.removeAt(index);
   }
 
