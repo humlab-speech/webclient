@@ -161,6 +161,7 @@ form label {
     padding-right: 1em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
+    font-size: 1.4em;
     color: $lightgrey;
     border-left: 0.25em solid $secondary-light;
 }
@@ -237,6 +238,14 @@ form label {
 
 .tooltip-zone:hover {
     color: $white;
+}
+
+.tooltip-zone-dark {
+    color: #666;
+}
+
+.tooltip-zone-dark:hover {
+    color: #333;
 }
 
 .help-text {

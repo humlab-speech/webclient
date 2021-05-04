@@ -14,7 +14,12 @@
 
                 <input id="projectName" placeholder="Project name" formControlName="projectName">
 
+                <!--<div>{{ projectName.errors | json }}</div>-->
+
                 <div *ngIf="projectName.pristine == false && projectName.status == 'INVALID'" >
+                    <div class="form-error-msg" *ngIf="projectName.errors?.isFormNameFree">
+                        That name is already taken
+                    </div>
                     <div class="form-error-msg" *ngIf="projectName.errors?.required">
                         <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                         Project name is required
@@ -44,7 +49,15 @@
                 <div class="flex-container">
                     <input id="create-emudb" type="checkbox" formControlName="createEmuDb">
                     <label for="create-emudb">Create EmuDB database</label>
+                    &nbsp;<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="emuDbPopper" [popperTrigger]="'hover'"></i>
                 </div>
+
+                <popper-content #emuDbPopper>
+                    <h4><i class="fa fa-question-circle" aria-hidden="true"></i>&nbsp;EmuDB</h4>
+                    <p class="help-text">
+                        An EmuDB is required to work with the EMU suite of tools, such as the EmuWebApp. Only uncheck this if you really know what you are doing.
+                    </p>
+                </popper-content>
 
                 <!--<app-create-emudb-form *ngIf="createEmuDb.value" [context]="this"></app-create-emudb-form>-->
                 <!-- EXTRA-FORMIAL-COMPONENT-STARTS-HERE  -->
@@ -186,10 +199,8 @@
                                             </option>
                                         </select>
                                     </div>
-                
-                                    <i class="fa fa-tag" style="align-self: flex-end;margin-left:1em;"></i>
-                
-                                    <div class="input-context-container">
+
+                                    <div class="input-context-container annotation-level-type-input">
                                         <label>Type</label>
                                         <select formControlName="type">
                                             <option *ngFor="let linkType of annotLevelLinkTypes" >

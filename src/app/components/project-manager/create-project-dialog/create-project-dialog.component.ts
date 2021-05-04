@@ -1,12 +1,16 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
 import { FileUploadService } from "../../../services/file-upload.service";
 import { NotifierService } from 'angular-notifier';
+import { Observable, of } from 'rxjs';
+import { map, debounceTime } from 'rxjs/operators';
+import { validateProjectName } from './validators/validateProjectName.validator';
 import { Config } from '../../../config';
+import { UserService } from 'src/app/services/user.service';
 
 
 @Component({
@@ -20,7 +24,7 @@ export class CreateProjectDialogComponent implements OnInit {
 
   @Input() projectManager: ProjectManagerComponent;
 
-  submitBtnLabel:string = "Save project";
+  submitBtnLabel:string = "Create project";
   submitBtnEnabled:boolean = false;
   pendingUpload:boolean = false;
   formValidationInterval:any;
@@ -45,7 +49,7 @@ export class CreateProjectDialogComponent implements OnInit {
 
   formContextId:string = nanoid();
 
-  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService, private fileUploadService:FileUploadService, private notifierService: NotifierService) { }
+  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService, private userService:UserService, private fileUploadService:FileUploadService, private notifierService: NotifierService) { }
 
   ngOnInit(): void {
 
@@ -57,6 +61,8 @@ export class CreateProjectDialogComponent implements OnInit {
       standardDirectoryStructure: new FormControl(true),
       createEmuDb: new FormControl(Config.EMUDB_INTEGRATION)
     });
+
+    this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
 
     this.form.valueChanges.subscribe((values) => {
       this.validateForm();
@@ -79,23 +85,44 @@ export class CreateProjectDialogComponent implements OnInit {
       this.addAnnotLevel("Phonetic", "SEGMENT");
     }
 
+    if(this.annotLevelLinks.length == 0) {
+      this.addAnnotLevelLink("Word", "Phonetic");
+    }
+
+    this.fileUploadService.eventEmitter.subscribe((event) => {
+      if(event == "pendingFormUploads") {
+        this.validateForm();
+      }
+      if(event == "pendingFormUploadsComplete") {
+        this.notifierService.notify('info', 'All uploads complete.');
+        this.validateForm();
+      }
+    });
 
     document.getElementById("projectName").focus();
+  }
 
-    document.addEventListener("pendingFormUploads", () => {
-      console.log("received: pendingFormUploads");
-      this.validateForm();
-    });
+  validateProjectName(http:HttpClient, userService:UserService) {
 
-    document.addEventListener("pendingFormUploadsComplete", () => {
-      console.log("received: pendingFormUploadsComplete");
-      this.notifierService.notify('info', 'All uploads complete.');
-      this.validateForm();
-    });
+    return function(control:AbstractControl):Observable<ValidationErrors> | null {
+      const value: string = control.value;
+
+      let session = userService.getSession();
+      let headers = {
+        "PRIVATE-TOKEN": session.personalAccessToken
+      };
+
+      return http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
+      .pipe(
+        debounceTime(500),
+        map( (data:any) =>  {
+            if (data.length > 0) return ({ 'isFormNameFree': true })
+        })
+      );
+    }
   }
   
   validateForm() {
-    console.log("validateForm");
     if(this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false) {
       this.submitBtnEnabled = true;
     }

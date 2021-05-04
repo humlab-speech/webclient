@@ -1,10 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileUploadService {
+
+  public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
 
   hasPendingUploads:boolean = false;
   pendingUploads:any = [];
@@ -17,7 +19,7 @@ export class FileUploadService {
     file.uploadComplete = false;
     this.hasPendingUploads = true;
     this.pendingUploads.push(file);
-    document.dispatchEvent(new Event("pendingFormUploads"));
+    this.eventEmitter.emit("pendingFormUploads");
 
     return new Promise((resolve, reject) => {
       this.readFile(file).then(fileContents => {
@@ -50,7 +52,7 @@ export class FileUploadService {
       }
     }
     this.hasPendingUploads = false;
-    document.dispatchEvent(new Event("pendingFormUploadsComplete"));
+    this.eventEmitter.emit("pendingFormUploadsComplete");
     return true;
   }
 
