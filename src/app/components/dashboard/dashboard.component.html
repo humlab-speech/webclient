@@ -1,4 +1,9 @@
 <div id="dashboard">
-    <app-signin-ctrl *ngIf="!userIsSignedIn"></app-signin-ctrl>
-    <app-project-manager *ngIf="userIsSignedIn" [dashboard]="this"></app-project-manager>
+    <app-signin-ctrl *ngIf="systemIsReady && !userIsSignedIn"></app-signin-ctrl>
+    <app-project-manager *ngIf="systemIsReady && userIsSignedIn" [dashboard]="this"></app-project-manager>
+    <div *ngIf="!systemIsReady" class="systemInitMsgContainer">
+        <div class="systemInitMsg">
+            Please wait for system init
+        </div>
+    </div>
 </div>

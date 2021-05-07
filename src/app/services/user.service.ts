@@ -21,6 +21,7 @@ export class UserService {
     setInterval(() => {
       this.updateSession();
     }, 60000);
+    
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {
