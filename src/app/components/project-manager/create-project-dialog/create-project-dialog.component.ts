@@ -235,8 +235,10 @@ export class CreateProjectDialogComponent implements OnInit {
 
   onAudioUpload(event, session) {
 
+    let allowedFilesTypes = ['audio/wav', 'audio/x-wav'];
+
     for(let key in event.addedFiles) {
-      if(event.addedFiles[key].type != "audio/wav") {
+      if(allowedFilesTypes.includes(event.addedFiles[key].type) == false) {
         this.notifierService.notify('warning', 'There file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
         event.addedFiles.splice(key, 1);
       }
