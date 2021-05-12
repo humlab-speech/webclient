@@ -61,7 +61,8 @@ export class CreateProjectDialogComponent implements OnInit {
       createEmuDb: new FormControl(Config.EMUDB_INTEGRATION)
     });
 
-    this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
+    //Disabled this for now - something's wrong with it and it doesn't work right
+    //this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
 
     this.form.valueChanges.subscribe((values) => {
       this.validateForm();
@@ -114,8 +115,14 @@ export class CreateProjectDialogComponent implements OnInit {
       return http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
       .pipe(
         debounceTime(500),
-        map( (data:any) =>  {
-            if (data.length > 0) return ({ 'isFormNameFree': true })
+        map( (projects:any) =>  {
+          let isForNameTaken = false;
+          for(let key in projects) {
+            if(projects[key].name == value) {
+              isForNameTaken = true;
+            }
+          }
+          return { 'isFormNameTaken': isForNameTaken };
         })
       );
     }
@@ -158,7 +165,26 @@ export class CreateProjectDialogComponent implements OnInit {
     return this.form.get('annotLevelLinks') as FormArray;
   }
 
-  createProject(form) {
+  async isProjectNameTaken() {
+    let session = this.userService.getSession();
+    let headers = {
+      "PRIVATE-TOKEN": session.personalAccessToken
+    };
+
+    return await new Promise((resolve, reject) => {
+      this.http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + this.form.value.projectName, { headers }).subscribe((projects) => {
+        for(let key in projects) {
+          if(projects[key].name == this.form.value.projectName) {
+            resolve(true);
+            return;
+          }
+        }
+        resolve(false);
+      });
+    });
+  }
+
+  async createProject(form) {
     if(this.form.status != "INVALID" && !this.submitBtnEnabled) {
       this.notifierService.notify('warning', "The form is not ready to be submitted yet.");
       return false;
@@ -169,8 +195,19 @@ export class CreateProjectDialogComponent implements OnInit {
       return false;
     }
 
+    if(await this.isProjectNameTaken() == true) {
+      this.notifierService.notify('warning', "This project name is already taken, please choose another.");
+      return false;
+    }
+
     this.projectManager.projectsLoaded = false;
     this.projectService.createProject(form.value, this.formContextId);
+
+    /*
+    let webSocket = new WebSocket('wss://'+Config.BASE_DOMAIN+'/ws', "create-project-feed");
+    webSocket.send("Here's some text that the server is urgently awaiting!");
+    */
+
     this.form.reset();
     this.closeCreateProjectDialog();
   }

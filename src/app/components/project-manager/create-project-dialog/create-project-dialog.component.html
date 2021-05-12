@@ -17,7 +17,7 @@
                 <!--<div>{{ projectName.errors | json }}</div>-->
 
                 <div *ngIf="projectName.pristine == false && projectName.status == 'INVALID'" >
-                    <div class="form-error-msg" *ngIf="projectName.errors?.isFormNameFree">
+                    <div class="form-error-msg" *ngIf="projectName.errors?.isFormNameTaken">
                         That name is already taken
                     </div>
                     <div class="form-error-msg" *ngIf="projectName.errors?.required">
