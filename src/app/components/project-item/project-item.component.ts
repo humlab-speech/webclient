@@ -1,9 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Project } from '../../models/Project';
 import { ProjectService } from '../../services/project.service';
 import { HsApp } from "../../models/HsApp";
 import { Config } from "../../config";
+import { ProjectManagerComponent } from '../project-manager/project-manager.component';
 
 @Component({
   selector: 'app-project-item',
@@ -12,7 +13,10 @@ import { Config } from "../../config";
 })
 export class ProjectItemComponent implements OnInit {
   
+  public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
+
   @Input() project: Project;
+  @Input() projectManager: ProjectManagerComponent;
 
   enabledApps = Config.ENABLED_APPLICATIONS;
 
@@ -28,7 +32,9 @@ export class ProjectItemComponent implements OnInit {
   hsApplications:HsApp[] = [];
   projectOperations:object[] = [];
 
-  constructor(private http:HttpClient, private projectService:ProjectService) { }
+  constructor(private http:HttpClient, private projectService:ProjectService) {
+    
+  }
 
   ngOnInit(): void {
 
@@ -101,6 +107,10 @@ export class ProjectItemComponent implements OnInit {
     window.location.href = project.web_url+"/edit";
   }
   
+  editEmuDb(project:Project) {
+    this.projectManager.projectInEdit = project;
+    this.projectManager.showEditEmuDbDialog();
+  }
 
   deleteProject() {
     if(window.confirm('Are sure you want to delete this project? All data associated with this project will be lost.')){

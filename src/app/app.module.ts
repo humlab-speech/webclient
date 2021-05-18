@@ -32,6 +32,7 @@ import { NotifierModule } from 'angular-notifier';
 import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
 import { CreateEmudbFormComponent } from './components/forms/create-emudb-form/create-emudb-form.component';
 import { ImportAudioFormComponent } from './components/forms/import-audio-form/import-audio-form.component';
+import { EditEmudbFormComponent } from './components/forms/edit-emudb-form/edit-emudb-form.component';
 
 
 @NgModule({
@@ -51,7 +52,8 @@ import { ImportAudioFormComponent } from './components/forms/import-audio-form/i
     ScriptAppDialogComponent,
     DocumentationFormComponent,
     CreateEmudbFormComponent,
-    ImportAudioFormComponent
+    ImportAudioFormComponent,
+    EditEmudbFormComponent
   ],
   imports: [
     BrowserModule,

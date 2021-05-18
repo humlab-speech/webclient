@@ -29,8 +29,6 @@ export class DashboardComponent implements OnInit {
         this.systemIsReady = false;
       }
     });
-
-    console.log(systemService.isGitlabReady());
   }
 
   ngOnInit(): void {

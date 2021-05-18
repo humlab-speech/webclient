@@ -203,11 +203,6 @@ export class CreateProjectDialogComponent implements OnInit {
     this.projectManager.projectsLoaded = false;
     this.projectService.createProject(form.value, this.formContextId);
 
-    /*
-    let webSocket = new WebSocket('wss://'+Config.BASE_DOMAIN+'/ws', "create-project-feed");
-    webSocket.send("Here's some text that the server is urgently awaiting!");
-    */
-
     this.form.reset();
     this.closeCreateProjectDialog();
   }

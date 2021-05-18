@@ -76,6 +76,11 @@ export class AppctrlComponent implements OnInit {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
 
+    /* Here we want to implement some live status updates on how the process is going
+    let webSocket = new WebSocket('wss://'+Config.BASE_DOMAIN+'/ws', "launch-hsapp-session-feed");
+    webSocket.send("Here's some text that the server is urgently awaiting!");
+    */
+
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };

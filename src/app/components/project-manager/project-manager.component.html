@@ -1,5 +1,4 @@
 <div id="project-manager-root">
-    
     <div class="project-manager-header">
         <div class="project-manager-title-container">
             <h2>Your Projects</h2>
@@ -29,7 +28,7 @@
             -->
         </div>
 
-        <app-project-item *ngFor="let project of projects" [project]="project"></app-project-item>
+        <app-project-item *ngFor="let project of projects" [project]="project" [projectManager]="this"></app-project-item>
     </ul>
 
     <div *ngIf="!projectsLoaded">
@@ -44,5 +43,6 @@
 
     <app-create-project-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='create-project-dialog')" [projectManager]="this"></app-create-project-dialog>
     <app-script-app-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='script-dialog')"></app-script-app-dialog>
-    <app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>
+    <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
+    <app-edit-emudb-form *ngIf="(dashboard.modalActive && dashboard.modalName=='edit-emudb-dialog')" [projectManager]="this"></app-edit-emudb-form>
 </div>

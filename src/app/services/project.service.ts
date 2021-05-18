@@ -69,6 +69,14 @@ export class ProjectService {
     });
     console.log("Project posted");
   }
+
+  async getSession(projectId) {
+    return this.http.get<ApiResponse>('https://'+Config.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
+      console.log(response);
+      return response;
+    });
+  }
+
   /*
   createProject(name:string, genEmuDb:boolean, createProjectContextId:string, annotStruct:object) {
     let headers = {

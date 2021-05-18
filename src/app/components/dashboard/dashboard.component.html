@@ -1,9 +1,10 @@
 <div id="dashboard">
     <app-signin-ctrl *ngIf="systemIsReady && !userIsSignedIn"></app-signin-ctrl>
     <app-project-manager *ngIf="systemIsReady && userIsSignedIn" [dashboard]="this"></app-project-manager>
-    <div *ngIf="!systemIsReady" class="systemInitMsgContainer">
-        <div class="systemInitMsg">
-            Please wait for system init
+    <div *ngIf="!systemIsReady" id="systemInitMsgContainer">
+        <div id="systemInitMsg">
+            <img src="assets/loading-indicator-4-light.svg">
+            <div id="systemInitText">Waiting for GitLab</div>
         </div>
     </div>
 </div>

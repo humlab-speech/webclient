@@ -18,6 +18,7 @@ export class ProjectManagerComponent implements OnInit {
   projectsLoaded:boolean = false;
   projects:Project[];
   projectCreateInProgress:boolean = false;
+  projectInEdit:Project|null = null;
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
 
@@ -55,6 +56,11 @@ export class ProjectManagerComponent implements OnInit {
       this.projects = projects;
       this.projectsLoaded = true;
     });
+  }
+
+  showEditEmuDbDialog() {
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'edit-emudb-dialog';
   }
 
   showCreateProjectDialog() {
