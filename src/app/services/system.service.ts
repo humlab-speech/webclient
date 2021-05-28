@@ -13,6 +13,7 @@ export class SystemService {
   gitlabIsReadyInterval:any;
 
   constructor(private http:HttpClient) {
+    /*
     this.gitlabIsReadyInterval = <any>setInterval(() => {
       this.isGitlabReady().subscribe((result) => {
         if(result.body.gitlabIsReady) {
@@ -26,6 +27,7 @@ export class SystemService {
         }
       });
     }, 1000);
+    */
   }
 
   isGitlabReady() {
