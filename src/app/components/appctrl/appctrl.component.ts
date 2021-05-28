@@ -44,7 +44,7 @@ export class AppctrlComponent implements OnInit {
       case "rstudio":
         this.launchContainerSession("rstudio");
       break;
-      case "emuwebapp":
+      case "emu-webapp":
         this.launchEmuWebAppSession();
       break;
       case "octra":
@@ -117,14 +117,14 @@ export class AppctrlComponent implements OnInit {
 
       let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
       let projectId:number = this.project.id;
-      let emuDBname:string  = "humlabspeech";
+      let emuDBname:string  = "VISP";
       let bundleListName:string = "user.user";
       let privateToken:string = data.body.personalAccessToken;
 
       let url = "https://"+this.hsApp.name+"."+this.domain+"/?autoConnect=true&comMode=GITLAB";
       url += "&gitlabURL="+gitlabURL;
       url += "&projectID="+projectId;
-      url += "&gitlabPath=Data%2Fhumlabspeech_emuDB";
+      url += "&gitlabPath=Data%2FVISP_emuDB";
       url += "&emuDBname="+emuDBname;
       url += "&bundleListName="+bundleListName;
       url += "&privateToken="+privateToken;

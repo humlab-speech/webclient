@@ -51,10 +51,10 @@ export class ProjectItemComponent implements OnInit {
         rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
         this.hsApplications.push(rstudioApp);
       }
-      if(hsAppName == "emuwebapp") {
+      if(hsAppName == "emu-webapp") {
         let emuWebApp = new HsApp();
-        emuWebApp.name = "emuwebapp";
-        emuWebApp.title = "EmuWebApp";
+        emuWebApp.name = "emu-webapp";
+        emuWebApp.title = "Emu-WebApp";
         emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
         this.hsApplications.push(emuWebApp);
       }
