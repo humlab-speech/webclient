@@ -1,24 +1,42 @@
 <div class="info-box" [ngSwitch]="infobox.name">
-    <h2><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;{{ infobox.title }}</h2>
-    <div class="info-box-content" *ngSwitchCase="'tools-and-resources'">
-        <ul>
-            <h4>Standalone tools</h4>
-            <li><a href="https://octra.{{ baseDomain }}" target="_blank">OCTRA</a></li>
-            <li><a href="https://labjs.{{ baseDomain }}" target="_blank">lab.js</a></li>
-            <h4>Integrated tools</h4>
-            <li>EMU WebApp</li>
-            <li>RStudio</li>
-            <li>Jupyter</li>
-        </ul>
-    </div>
-    <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
-        <ul>
-            <li><a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual">The EMU-SDMS Manual</a></li>
-            <h4>Contact us</h4>
-            <li><a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a></li>
-        </ul>
-    </div>
-    <div class="info-box-content" *ngSwitchCase="'data-management'">
-        We aim to provide an integrated workflow where your data is securely kept on our servers, using GitLab as a backend for collaboration and version control.
+    <div class="info-box-main-container">
+        <div class="info-box-header">
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+            <h2>{{ infobox.title }}</h2>
+        </div>
+        <div class="info-box-content" *ngSwitchCase="'tools-and-resources'">
+            <ul>
+                <li class="link-button">
+                    <a href="https://octra.{{ baseDomain }}" target="_blank">
+                        <i class="fa fa-commenting" aria-hidden="true"></i><div>Octra</div>
+                    </a>
+                </li>
+                <li class="link-button">
+                    <a href="https://labjs.{{ baseDomain }}" target="_blank">
+                        <i class="fa fa-flask" aria-hidden="true"></i><div>Lab.js</div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
+            <ul>
+
+                <li class="link-button">
+                    <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual" target="_blank">
+                        <i class="fa fa-book" aria-hidden="true"></i><div>EMU Manual</div>
+                    </a>
+                </li>
+
+                <li class="link-button">
+                    <a href="mailto:support@humlab.umu.se" target="_blank">
+                        <i class="fa fa-envelope" aria-hidden="true"></i><div>E-mail</div>
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+        <div class="info-box-content" *ngSwitchCase="'data-management'">
+            We aim to provide an integrated workflow where your data is securely kept on our servers, using GitLab as a backend for collaboration and version control.
+        </div>
     </div>
 </div>

@@ -75,9 +75,7 @@ $gradient-top-left: linear-gradient(225deg, #780000ff, #c1121fff, #fdf0d5ff, #00
 $gradient-bottom-left: linear-gradient(315deg, #780000ff, #c1121fff, #fdf0d5ff, #003049ff, #669bbcff);
 $gradient-radial: radial-gradient(#780000ff, #c1121fff, #fdf0d5ff, #003049ff, #669bbcff);
 
-$gradient-horizontal: linear-gradient(90deg, #003049ff, #669bbcff);
 
-$gradient-horizontal2: linear-gradient(90deg, #669bbcff, #003049ff, #669bbcff);
 
 $a: #D87CAC;
 $b: #449DD1;
@@ -87,7 +85,8 @@ $primary: $barn-red;
 $primary-light: $carnelian;
 $bg: $ghost-white;
 $panelBg: #f4f4f5;
-$decorator: $papaya-whip;
+$tertiary: $papaya-whip;
+$tertiary-light: $papaya-whip;
 $secondary: $prussian-blue;
 $secondary-light: $air-superiority-blue;
 $border: #444;
@@ -96,6 +95,32 @@ $white: #fff;
 $black: #000;
 $lightgrey: #eee;
 $dark-font-color: #333;
+
+
+$secondary: #654C4F;
+$secondary-light: #B26E63;
+$secondary-dark: #312829;
+/*
+$primary: #990D35;
+$primary-light: #D52941;
+$bg: $ghost-white;
+$panelBg: #f4f4f5;
+$decorator: #FFF8E8;
+$tertiary: #25283D;
+$secondary: #1F363D;
+$secondary-light: #40798C;
+$border: #444;
+$border-light: #ddd;
+$white: #F7F7FF;
+$black: #000;
+$lightgrey: #eee;
+$dark-font-color: #333;
+*/
+
+
+$gradient-horizontal: linear-gradient(90deg, $primary, $primary-light);
+
+$dog-ear-gradient: linear-gradient(135deg, $secondary-dark 0%, $secondary-dark 90%, transparent 90%, transparent 100%);
 
 $info: $air-superiority-blue;
 $warning: $c;

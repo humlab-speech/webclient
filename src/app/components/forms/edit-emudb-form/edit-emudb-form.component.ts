@@ -32,7 +32,7 @@ export class EditEmudbFormComponent implements OnInit {
 
   project:Project|null = null;
 
-  constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService) { }
+  constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
