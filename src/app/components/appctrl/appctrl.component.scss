@@ -31,7 +31,7 @@ button {
     display:flex;
     align-items: center;
     justify-content: center;
-    background-color: $secondary;
+    background-color: $secondary-dark;
     height:1.5em;
     width:1.5em;
     margin:0;
@@ -60,7 +60,7 @@ button {
 .session-controls-container button {
     margin:0;
     padding:0;
-    background-color: $secondary;
+    background-color: $secondary-dark;
     color: $white;
     height: 2em;
     width: 2em;

@@ -215,10 +215,27 @@ export class CreateProjectDialogComponent implements OnInit {
 
   addAnnotLevel(name = "", type = "ITEM") {
     const annotLevel = this.fb.group({
-      name: new FormControl(name, [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")]),
+      name: new FormControl(name, {
+        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+        updateOn: 'blur'
+      } ),
       type: new FormControl(type, Validators.required)
     });
 
+    /*
+    annotLevel.get('name').valueChanges.subscribe((value) => {
+      console.log(value);
+      console.log(this.annotLevelForms);
+    });
+
+    this.annotLevelForms.statusChanges.subscribe((status) => {
+      console.log(status);
+    });
+
+    annotLevel.valueChanges.subscribe((formGroupValues) => {
+    });
+    */
+    
     this.annotLevelForms.push(annotLevel);
   }
 
@@ -251,9 +268,17 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   addSession() {
+
     const session = this.fb.group({
-      name: new FormControl('Session '+(this.sessionForms.length+1), {
-        validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+      name: new FormControl('Speaker '+(this.sessionForms.length+1), {
+        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+        updateOn: 'blur'
+      }),
+      speakerGender: new FormControl(null, {
+        updateOn: 'blur'
+      }),
+      speakerAge: new FormControl(null, {
+        validators: [Validators.pattern("[0-9]*")],
         updateOn: 'blur'
       }),
       files: this.fb.array([])

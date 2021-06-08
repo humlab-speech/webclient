@@ -47,12 +47,24 @@ button {
 }
 
 popper-content h4 {
-    margin-top:0;
+    margin-top:0em;
+    margin-bottom:0.25em;
 }
 
 ngx-dropzone {
     display:flex;
     place-content: center;
+}
+
+ngx-dropzone > ngx-dropzone-preview {
+    width: 12em !important;
+    min-width: 4em !important;
+    max-width: 12em !important;
+    min-height: 4em !important;
+    max-height: 12em !important;
+    white-space: pre-wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .modal-bg {
@@ -76,6 +88,7 @@ ngx-dropzone {
     box-shadow: 0px 0px 10px 5px #666;
     max-height: 95vh;
     overflow:auto;
+    min-width: 600px;
 }
 
 .dialog-close-btn {
@@ -206,10 +219,6 @@ form label {
     display:flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.form .section-header-container > .itemDeleteBtn {
-    visibility: hidden;
 }
 
 .form .itemDeleteBtn {

@@ -44,7 +44,19 @@ li {
     margin-bottom: 1em;
     background: $lightgrey;
     border-radius: 0.25em;
+    padding: 0em;
+    max-width: 40em;
+}
+
+.section-container .section-content {
     padding: 1em;
+    padding-bottom: 1em;
+}
+
+.horizontal-flex-content {
+    display:flex;
+    align-items: baseline;
+    justify-content: space-around;
 }
 
 #submitBtn.disabled {
@@ -63,6 +75,7 @@ li {
 .link-arrow {
     margin-left:1em;
     margin-right:1em;
+    margin-bottom: 0.75em;
     align-self:flex-end;
 }
 
@@ -77,16 +90,24 @@ li {
 }
 
 .itemDeleteBtn {
-    visibility:hidden;
+    margin-right: 1em;
 }
 
 .section-header-container {
     display: flex;
     align-items: baseline;
+    background: #ccc;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 1em;
+    border: 0px solid #000;
+    
 }
 
-.section-header-container:hover .itemDeleteBtn {
-    visibility: visible;
+.section-header-container h4 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 .input-context-container label {
@@ -131,11 +152,6 @@ input[type="checkbox"] {
     padding:0;
 }
 
-.session-name-input {
-    margin-bottom: 1em;
-    width: 80%;
-}
-
 .loading-indicator {
     height: 1em;
     width: auto;
@@ -148,6 +164,49 @@ button.small-button {
     min-width: 1em;
 }
 
+button.form-add-button {
+    background: transparent;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 0.5em;
+    max-width: 100%;
+}
+
+button.form-add-button:hover {
+    background: #eee !important;
+}
+
 .annotation-level-type-input {
     margin-left: 2em;
+}
+
+.session-metadata-container {
+    display:flex;
+    flex-direction: column;
+    margin-bottom: 1em;
+}
+
+.attribute-container {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.attribute-container label {
+    display:flex;
+    align-items: baseline;
+    
+    margin-bottom: 0.25em;
+}
+.attribute-container input {
+    margin-top: 0.25em;
+    width: 100%;
+}
+
+.attribute-container .fa {
+    color: #000;
+    margin-left: 1em;
+}
+
+.fieldset-items-container {
+    border-left: 2px solid $primary-light;
 }

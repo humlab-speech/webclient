@@ -22,6 +22,10 @@
             <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
                 <div class="section-header-container">
                     <input class="session-name-input" placeholder="Session name" formControlName="name">
+                    <!--
+                    <input class="session-gender-input" placeholder="Speaker gender" formControlName="name">
+                    <input class="session-age-input" placeholder="Speaker age" formControlName="name">
+                    -->
                     <div class="input-context-container">
                         <i (click)="deleteSession(i)" class="fa fa-minus-circle itemDeleteBtn" aria-hidden="true"></i>
                     </div>
