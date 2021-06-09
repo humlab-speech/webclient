@@ -8,6 +8,22 @@ ngx-dropzone {
     border-width: 1px;
 }
 
+h4 {
+    font-size: 1.4rem;
+    font-weight: lighter;
+    text-decoration: underline;
+    text-decoration-color: $secondary-light;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+h5 {
+    font-size: 1.1rem;
+    font-weight: lighter;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    margin-top:0.5em;
+    margin-bottom:0.5em;
+}
+
 #create-project-btn {
     padding:0.8em;
     background-color: $crimson;

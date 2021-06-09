@@ -128,7 +128,7 @@
                                 -->
 
                                 <div class="section-header-container">
-                                    <h4>Session</h4>
+                                    <h5>Session</h5>
                                     <i (click)="deleteSession(i)" class="fa fa-times itemDeleteBtn" aria-hidden="true"></i>
                                 </div>
                                 
@@ -170,7 +170,7 @@
     
                                     </div>
                     
-                                    <h4>Audio files</h4>
+                                    <h5>Audio files</h5>
                                     <ngx-dropzone [expandable]="true" (change)="onAudioUpload($event, session)">
                                         <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
                                         <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
@@ -209,13 +209,14 @@
                         </p>
                     </popper-content>
 
+                    <h4>Levels</h4>
                     <fieldset id="annotation-levels-container" class="fieldset-items-container">
                 
                         <div formArrayName="annotLevels">
 
                             <div class="section-container" *ngFor="let annotLevel of annotLevelForms.controls; let i=index" [formGroupName]="i">
                                 <div class="section-header-container">
-                                    <h4>Annotation level</h4>
+                                    <h5>Annotation level</h5>
                                     <i (click)="deleteAnnotLevel(i)" class="fa fa-times itemDeleteBtn" aria-hidden="true"></i>
                                 </div>
 
@@ -259,19 +260,16 @@
                             <i class="fa fa-plus-circle" aria-hidden="true"></i>
                             &nbsp;Add annotation level
                         </button>
-
                     </fieldset>
-                
+
+                    <h4>Links</h4>
                     <fieldset id="annotation-level-links-container" class="fieldset-items-container">
-                
                         <div formArrayName="annotLevelLinks">
-                
                             <div class="section-container" *ngFor="let annotLevelLink of annotLevelLinkForms.controls; let i=index" [formGroupName]="i">
 
-
                                 <div class="section-header-container">
-                                    <h4>Annotation level link</h4>
-                                    <i (click)="deleteAnnotLevel(i)" class="fa fa-times itemDeleteBtn" aria-hidden="true"></i>
+                                    <h5>Annotation level link</h5>
+                                    <i (click)="deleteAnnotLevelLink(i)" class="fa fa-times itemDeleteBtn" aria-hidden="true"></i>
                                 </div>
 
 
