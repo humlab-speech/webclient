@@ -24,6 +24,22 @@ h1 {
     text-decoration-color: $primary-light;
 }
 
+h4 {
+    font-size: 1.4rem;
+    font-weight: lighter;
+    text-decoration: underline;
+    text-decoration-color: $secondary-light;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+h5 {
+    font-size: 1.1rem;
+    font-weight: lighter;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    margin-top:0.5em;
+    margin-bottom:0.5em;
+}
+
 app-root {
     margin:0px;
     padding: 0px;
@@ -85,10 +101,12 @@ ngx-dropzone > ngx-dropzone-preview {
     padding: 2rem;
     border-radius:4px;
     background-color: #fff !important;
-    box-shadow: 0px 0px 10px 5px #666;
-    max-height: 95vh;
-    overflow:auto;
+    box-shadow: 0px 0px 10px 10px #666;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    max-height: 92vh;
     min-width: 600px;
+    overflow:auto;
 }
 
 .dialog-close-btn {
@@ -107,9 +125,9 @@ ngx-dropzone > ngx-dropzone-preview {
 }
 
 .dialog-close-btn:hover {
-    background-color: lighten($crimson, 10%);
+    background-color: $crimson;
     border: 1px solid #333;
-    border-radius: 50%;
+    border-radius: 25%;
     cursor: pointer;
     color: #fff;
 }
@@ -168,15 +186,14 @@ form label {
     display:flex;
     justify-content: space-between;
     align-items: baseline;
-    background-color: $secondary;
-    background: $gradient-horizontal;
-    padding-left: 1em;
+    padding-left: 0.5em;
     padding-right: 1em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
     font-size: 1.4em;
-    color: $lightgrey;
     border-left: 0.25em solid $secondary-light;
+    background: transparent;
+    color: #333;
 }
 
 .form fieldset {
@@ -190,6 +207,7 @@ form label {
 
 .form fieldset label {
     font-weight: bold;
+    margin-bottom: 0.25em;
 }
 
 .form fieldset input {
@@ -213,6 +231,11 @@ form label {
 .form button:hover {
     background-color:lighten($crimson, 10%);
     cursor:pointer;
+}
+
+.form button.disabled {
+    background: #ccc;
+    cursor: default;
 }
 
 .form .section-header-container {

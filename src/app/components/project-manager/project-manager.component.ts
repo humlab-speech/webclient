@@ -3,8 +3,6 @@ import { UserService } from "../../services/user.service";
 import { ProjectService } from "../../services/project.service";
 import { Project } from "../../models/Project";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { FormControl, FormGroup } from '@angular/forms';
-import { CreateProjectDialogComponent } from './create-project-dialog/create-project-dialog.component';
 
 @Component({
   selector: 'app-project-manager',
@@ -53,6 +51,7 @@ export class ProjectManagerComponent implements OnInit {
     });
 
     this.projectService.projects$.subscribe((projects) => {
+      console.log(projects);
       this.projects = projects;
       this.projectsLoaded = true;
     });
@@ -60,7 +59,7 @@ export class ProjectManagerComponent implements OnInit {
 
   showEditEmuDbDialog() {
     this.dashboard.modalActive = true;
-    this.dashboard.modalName = 'edit-emudb-dialog';
+    this.dashboard.modalName = 'emudb-dialog';
   }
 
   showCreateProjectDialog() {

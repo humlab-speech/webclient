@@ -1,0 +1,25 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+        
+        <div class="dialog-header"><h2>Add sessions</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <form [formGroup]="emuDbForm">
+            <app-emudb-form [project]="this.project" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
+            <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="submitForm()">
+                <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-dark.svg">
+                <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
+                &nbsp;
+                {{ submitBtnLabel }}
+            </button>
+
+        </form>
+
+    </div>
+
+    
+
+</div>

@@ -1,25 +1,28 @@
-import { Injectable, EventEmitter } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http'
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileUploadService {
 
-  public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
-
   hasPendingUploads:boolean = false;
   pendingUploads:any = [];
+  statusStream:Subject<any>;
 
   constructor(private http:HttpClient) {
+    this.statusStream = new Subject<any>();
   }
 
   upload(file, context:string = "", group:string = ""):Promise<string> {
     console.log("Uploading "+file.name);
+
+    this.statusStream.next("uploads-in-progress");
+
     file.uploadComplete = false;
     this.hasPendingUploads = true;
     this.pendingUploads.push(file);
-    this.eventEmitter.emit("pendingFormUploads");
 
     return new Promise((resolve, reject) => {
       this.readFile(file).then(fileContents => {
@@ -34,7 +37,9 @@ export class FileUploadService {
         };
         this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
           file.uploadComplete = true;
-          this.checkAllUploadsComplete();
+          if(this.isAllUploadsComplete()) {
+            this.statusStream.next("all-uploads-complete");
+          }
           resolve(data);
         }, error => {
           reject(error);
@@ -43,8 +48,7 @@ export class FileUploadService {
     });
   }
 
-  checkAllUploadsComplete() {
-    console.log("checkAllUploadsComplete");
+  isAllUploadsComplete() {
     for(let key in this.pendingUploads) {
       if(this.pendingUploads[key].uploadComplete == false) {
         this.hasPendingUploads = true;
@@ -52,7 +56,6 @@ export class FileUploadService {
       }
     }
     this.hasPendingUploads = false;
-    this.eventEmitter.emit("pendingFormUploadsComplete");
     return true;
   }
 

@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ImportAudioFormComponent } from './import-audio-form.component';
+import { EditEmudbDialogComponent } from './edit-emudb-dialog.component';
 
-describe('ImportAudioFormComponent', () => {
-  let component: ImportAudioFormComponent;
-  let fixture: ComponentFixture<ImportAudioFormComponent>;
+describe('EditEmudbDialogComponent', () => {
+  let component: EditEmudbDialogComponent;
+  let fixture: ComponentFixture<EditEmudbDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ImportAudioFormComponent ]
+      declarations: [ EditEmudbDialogComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ImportAudioFormComponent);
+    fixture = TestBed.createComponent(EditEmudbDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

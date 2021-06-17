@@ -1,0 +1,223 @@
+<div [formGroup]="form" class="form">
+    <!--START OF SESSIONS-->
+    <h3>
+        Sessions
+        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sessPopper" [popperTrigger]="'hover'"></i>
+    </h3>
+
+    <!--SESSIONS POPUP HELP-->
+    <popper-content #sessPopper>
+        <h4>Sessions</h4>
+        <p class="help-text">
+            'Sessions’ are used to group all recordings from a speaker. If you are collecting longitudinal data, we recommend that you add a new session for each recording session.
+        </p>
+        <br/>
+        <h4>Session metadata</h4>
+        <p class="help-text">
+            Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis.
+        </p>
+    </popper-content>
+    
+    <fieldset id="sessions-container">
+        <div formArrayName="sessions">
+            <!--SESSION ITEM-->
+            <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
+
+                <div class="section-header-container">
+                    <h5>Session</h5>
+                    <div class="itemDeleteBtn">
+                        <i (click)="deleteSession(i)" class="fa fa-times" aria-hidden="true"></i>
+                    </div>
+                </div>
+                
+                <div class="section-content">
+                    <div class="session-metadata-container">
+
+                        <div class="attribute-container">
+                            <label>Session name</label>
+                            <input class="session-name-input" placeholder="Session name" formControlName="name">
+                        </div>
+                        
+                        
+                        <!-- NAME INPUT ERROR HANDLING -->
+                        <div *ngIf="session.controls.name.pristine == false && session.controls.name.status == 'INVALID'" >
+                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.required">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                Name is required
+                            </div>
+                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.minlength">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                Mininum {{ session.controls.name.errors.minlength.requiredLength }} characters long
+                            </div>
+                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.pattern">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                That's not a good name
+                            </div>
+                        </div>
+
+                        <!--SESSION METADATA-->
+                        <div class="attribute-container">
+                            <label>Speaker gender</label>
+                            <input class="session-gender-input" placeholder="Speaker gender" formControlName="speakerGender">
+                        </div>
+
+                        <div class="attribute-container">
+                            <label>Speaker age</label>
+                            <input class="session-age-input" placeholder="Speaker age" formControlName="speakerAge">
+                        </div>
+
+                    </div>
+    
+                    <h5>Audio files</h5>
+                    <ngx-dropzone [expandable]="true" (change)="onAudioUpload($event, session)">
+                        <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
+                        <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
+                            <ngx-dropzone-label>
+                                <i class="fa fa-file-audio-o" aria-hidden="true"></i>
+                                &nbsp;{{ f.name }}
+                                <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
+                            </ngx-dropzone-label>
+                            
+                        </ngx-dropzone-preview>
+                    </ngx-dropzone>
+                </div>
+            </div>
+        </div>
+
+        <!--ADD SESSION BUTTON-->
+        <button class="small-button form-add-button" (click)="addSession()">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;Add session
+        </button>
+
+    </fieldset>
+    <!--END OF SESSIONS-->
+
+
+    <!--START OF ANNOTATION STRUCTURE-->
+    <h3>
+        Annotation structure
+        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="annotStructPopper" [popperTrigger]="'hover'"></i>
+    </h3>
+
+    <popper-content #annotStructPopper>
+        <h4>Annotation structure</h4>
+        <p class="help-text">
+            Here, you define the annotation levels and their relationship to one another. The default structure is Word and Phonetic, and their relationship is one-to-many, meaning that one word may consist of several phonemes. An annotation level can be of type ITEM, SEGMENT or EVENT. An ITEM level is timeless and contains labels only. A SEGMENT level has a start time and a duration. An EVENT level contains a single time point only. In the standard case, Phonetics have a label, a start time and a duration, while Words only contain labels. You may add or remove annotations levels. If you do, make sure you also add/remove the links between them.
+        </p>
+    </popper-content>
+
+    <!--ANNOTATION LEVELS-->
+    <h4>Levels</h4>
+    <fieldset id="annotation-levels-container" class="fieldset-items-container">
+
+        <div formArrayName="annotLevels">
+
+            <div class="section-container" *ngFor="let annotLevel of annotLevelForms.controls; let i=index" [formGroupName]="i">
+                <div class="section-header-container">
+                    <h5>Annotation level</h5>
+                    <div class="itemDeleteBtn">
+                        <i (click)="deleteAnnotLevel(i)" class="fa fa-times" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+
+                <div class="section-content">
+
+                    <div class="attribute-container">
+                        <label>Annotation level name</label>
+                        <input placeholder="Annotation level name" formControlName="name">
+                        <div *ngIf="annotLevel.controls.name.pristine == false && annotLevel.controls.name.status == 'INVALID'" >
+                            <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.required">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                Name is required
+                            </div>
+                            <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.minlength">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                Mininum {{ annotLevel.controls.name.errors.minlength.requiredLength }} characters long
+                            </div>
+                            <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.pattern">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                That's not a good name
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attribute-container">
+                        <label>Type</label>
+                        <select formControlName="type">
+                            <option>ITEM</option>
+                            <option>SEGMENT</option>
+                            <option>EVENT</option>
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!--ADD ANNOTATION LEVEL BUTTON-->
+        <button class="small-button form-add-button" (click)="addAnnotLevel()">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;Add annotation level
+        </button>
+    </fieldset>
+
+    <!--ANNOTATION LINKS-->
+    <h4>Links</h4>
+    <fieldset id="annotation-level-links-container" class="fieldset-items-container">
+        <div formArrayName="annotLevelLinks">
+            <div class="section-container" *ngFor="let annotLevelLink of annotLevelLinkForms.controls; let i=index" [formGroupName]="i">
+
+                <div class="section-header-container">
+                    <h5>Annotation level link</h5>
+                    <div class="itemDeleteBtn">
+                        <i (click)="deleteAnnotLevelLink(i)" class="fa fa-times" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+
+                <div class="section-content horizontal-flex-content">
+                    <div class="attribute-container">
+                        <label>Super</label>
+                        <select formControlName="superLevel">
+                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" >
+                                {{ al.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="link-arrow"><i class="fa fa-arrow-right" aria-hidden="true"></i></div>
+
+                    <div class="attribute-container">
+                        <label>Sub</label>
+                        <select formControlName="subLevel">
+                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" >
+                                {{ al.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="attribute-container">
+                        <label>Type</label>
+                        <select formControlName="type">
+                            <option *ngFor="let linkType of annotLevelLinkTypes" >
+                                {{ linkType }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+            </div>
+
+        </div>
+
+        <!--ADD ANNOTATION LINK BUTTON-->
+        <button class="small-button form-add-button" (click)="addAnnotLevelLink()">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;Add annotation level link
+        </button>
+
+    </fieldset>
+</div>
