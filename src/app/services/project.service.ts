@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
 import { Observable, Subject } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
@@ -26,6 +25,8 @@ export class ProjectService {
   updateProjects() {
     return new Promise((resolve, reject) => {
       this._fetchProjects().subscribe(response => {
+        if(response.code == 401) {
+        }
         this.projects = <Project[]>response.body;
         this._projectSource.next(this.projects);
         resolve(this.projects);
@@ -48,7 +49,7 @@ export class ProjectService {
     return this.http.get<ApiResponse>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
 
-  createProject(formValues:object, createProjectContextId:string) {
+  async createProject(formValues:object, formContextId:string):Promise<any> {
     window.dispatchEvent(new Event("project-create-in-progress"));
 
     let headers = {
@@ -56,18 +57,43 @@ export class ProjectService {
     };
     let body = {
       form: formValues,
-      context: createProjectContextId
+      context: formContextId
     };
 
-    console.log("Posting project");
-    this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-      console.log(response);
-      this.updateProjects().then(() => {
-        window.dispatchEvent(new Event("project-create-done"));
+    return new Promise((resolve, reject) => {
+      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+        this.updateProjects().then(() => {
+          window.dispatchEvent(new Event("project-create-done"));
+        });
+        resolve(response);
       });
-      
     });
-    console.log("Project posted");
+  }
+
+  emuSessionNameIsAvailable(project, sessionName) {
+    return this.http.get('/api/v1/availibility/project/'+project.id+'/session/'+sessionName);
+  }
+
+  /**
+   * Function: addSessions
+   * Add sessions to an existing project
+   */
+  addSessions(projectId:number, formValues:object, formContextId:string):Observable<any> {
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      projectId: projectId,
+      form: formValues,
+      context: formContextId
+    };
+
+    return new Observable((observer) => {
+      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/add', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+        observer.next(response)
+        //return response;
+      });
+    });
   }
 
   async getSession(projectId) {
@@ -76,31 +102,6 @@ export class ProjectService {
       return response;
     });
   }
-
-  /*
-  createProject(name:string, genEmuDb:boolean, createProjectContextId:string, annotStruct:object) {
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      name: name,
-      genEmuDb: genEmuDb,
-      context: createProjectContextId,
-      annotStruct: annotStruct
-    };
-
-    return new Observable((observer) => {
-      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-        //console.log(response);
-        this.updateProjects();
-        observer.next(response);
-
-        console.log(JSON.parse(response.body));
-
-      });
-    });
-  }
-  */
 
   deleteProject(project:Project) {
     let headers = {

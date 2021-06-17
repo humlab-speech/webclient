@@ -44,5 +44,5 @@
     <app-create-project-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='create-project-dialog')" [projectManager]="this"></app-create-project-dialog>
     <app-script-app-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='script-dialog')"></app-script-app-dialog>
     <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
-    <app-edit-emudb-form *ngIf="(dashboard.modalActive && dashboard.modalName=='edit-emudb-dialog')" [projectManager]="this"></app-edit-emudb-form>
+    <app-edit-emudb-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='emudb-dialog')" [projectManager]="this"></app-edit-emudb-dialog>
 </div>

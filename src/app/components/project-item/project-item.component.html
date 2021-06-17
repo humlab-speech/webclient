@@ -8,7 +8,7 @@
         <div class="project-menu" (mouseover)="showProjectMenu(true)" (mouseout)="showProjectMenu(false, true)">
             <i class="fa fa-bars" aria-hidden="true"></i>
             <ul *ngIf="projectMenuVisible" class="project-menu-dropdown">
-                <!--<li (click)="editEmuDb(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Edit EmuDB</li>-->
+                <li (click)="editEmuDb(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Add sessions</li>
                 <li (click)="editProject(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Edit project</li>
                 <li (click)="deleteProject()"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete project</li>
             </ul>

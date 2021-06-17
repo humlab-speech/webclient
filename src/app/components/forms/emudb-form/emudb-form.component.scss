@@ -1,3 +1,7 @@
+.dialog-header {
+    align-items: flex-start;
+}
+
 @import '../../../../colors.scss';
 
 input {
@@ -6,22 +10,6 @@ input {
 
 ngx-dropzone {
     border-width: 1px;
-}
-
-h4 {
-    font-size: 1.4rem;
-    font-weight: lighter;
-    text-decoration: underline;
-    text-decoration-color: $secondary-light;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-}
-
-h5 {
-    font-size: 1.1rem;
-    font-weight: lighter;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    margin-top:0.5em;
-    margin-bottom:0.5em;
 }
 
 #create-project-btn {
@@ -75,19 +63,17 @@ li {
     justify-content: space-around;
 }
 
-#submitBtn {
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    font-size: 1.5rem;
-    padding: 0.5rem;
-}
-
 #submitBtn.disabled {
     background-color: #eee !important;
     color: #333;
     cursor: default;
+}
+
+#submitBtn img {
+    position:relative;
+    top: 0.1em;
+    height: 1em;
+    width: 1em;
 }
 
 .link-arrow {

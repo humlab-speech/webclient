@@ -1,7 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http'
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -15,11 +14,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ProjectItemComponent } from './components/project-item/project-item.component';
 import { AppctrlComponent } from './components/appctrl/appctrl.component';
-
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
-import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
-
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,10 +25,10 @@ import { UserComponent } from './components/user/user.component';
 import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
 import { NgxPopperjsModule } from 'ngx-popperjs';
 import { NotifierModule } from 'angular-notifier';
+import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
 import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
-import { CreateEmudbFormComponent } from './components/forms/create-emudb-form/create-emudb-form.component';
-import { ImportAudioFormComponent } from './components/forms/import-audio-form/import-audio-form.component';
-import { EditEmudbFormComponent } from './components/forms/edit-emudb-form/edit-emudb-form.component';
+import { EmudbFormComponent } from './components/forms/emudb-form/emudb-form.component';
+import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
 
 
 @NgModule({
@@ -51,9 +47,8 @@ import { EditEmudbFormComponent } from './components/forms/edit-emudb-form/edit-
     UserComponent,
     ScriptAppDialogComponent,
     DocumentationFormComponent,
-    CreateEmudbFormComponent,
-    ImportAudioFormComponent,
-    EditEmudbFormComponent
+    EmudbFormComponent,
+    EditEmudbDialogComponent
   ],
   imports: [
     BrowserModule,

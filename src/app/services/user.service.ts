@@ -38,6 +38,11 @@ export class UserService {
 
   updateSession(createPersonalAccessToken:boolean = false) {
     return this.fetchSession().subscribe((response) => {
+      if(response.code == 401) {
+        this.userIsSignedIn = false;
+        this.session = null;
+        return;
+      }
       this.session = <Session>response.body;
       this.userIsSignedIn = true;
       window.dispatchEvent(new Event('userSessionUpdated'));

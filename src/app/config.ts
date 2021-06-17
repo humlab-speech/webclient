@@ -1,5 +1,5 @@
 export class Config {
-    public static APPLICATION_NAME = "Visual Speech";
+    public static APPLICATION_NAME = "Visible Speech";
     public static API_ENDPOINT = "https://localtest.me";
     public static EMUDB_INTEGRATION = true;
     public static ENABLED_APPLICATIONS = ["rstudio", "jupyter", "emu-webapp", "octra", "script"];
