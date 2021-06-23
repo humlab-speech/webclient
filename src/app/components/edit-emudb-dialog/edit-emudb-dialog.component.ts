@@ -6,6 +6,9 @@ import { ProjectManagerComponent } from '../project-manager/project-manager.comp
 import { EmudbFormComponent, EmudbFormValues } from '../forms/emudb-form/emudb-form.component';
 import { nanoid } from 'nanoid';
 import { NotifierService } from 'angular-notifier';
+import { SystemService } from 'src/app/services/system.service';
+import { UserService } from 'src/app/services/user.service';
+import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
   selector: 'app-edit-emudb-dialog',
@@ -25,8 +28,18 @@ export class EditEmudbDialogComponent {
   formContextId:string = nanoid();
   showLoadingIndicator:boolean = false;
   fileUploadsComlete:boolean = true;
+  loadingStatus:boolean = true;
+  loadingMessage:string = "Loading Status";
+  sessionAccessCode:string = null;
 
-  constructor(private formBuilder: FormBuilder, private fileUploadService: FileUploadService, private projectService: ProjectService, private notifierService: NotifierService) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private fileUploadService: FileUploadService,
+    private projectService: ProjectService,
+    private notifierService: NotifierService,
+    private systemService: SystemService,
+    private userService: UserService
+    ) {}
 
   ngOnInit() {
     this.setLoadingStatus(false);
@@ -51,7 +64,47 @@ export class EditEmudbDialogComponent {
         this.validateForm();
       }
     });
+
+    //If there's a project associated with this dialog, load it in a container so we have access to it
+    if(this.project != null) {
+      this.fetchSession().then((sessionAccessCode:string) => {
+        this.sessionAccessCode = sessionAccessCode;
+
+        //Scan the project
+        /*
+        this.systemService.getEmuDb(this.sessionAccessCode).then((emudb) => {
+        });
+        */
+      });
+    }
   }
+
+  async fetchSession() {
+    return new Promise((resolve, reject) => {
+      let userSession = this.userService.getSession();
+      const wsContext = nanoid();
+
+      this.systemService.wsSubject.subscribe((messageEvt) => {
+        let wsMessage = JSON.parse(messageEvt.data);
+        if(wsMessage.context == wsContext) {
+          if(wsMessage.type == "status-update") {
+            this.loadingMessage = wsMessage.message;
+          }
+          if(wsMessage.type == "data") {
+            setTimeout(() => { this.loadingMessage = ""; this.loadingStatus = false; }, 500);
+            resolve(wsMessage.message);
+          }
+        }
+      });
+
+      this.systemService.ws.send(new WebSocketMessage(wsContext, 'cmd', 'fetchOperationsSession', { user: userSession, project: this.project }).toJSON());
+    });
+  }
+
+  async shutdownSession() {
+    await this.systemService.shutdownOperationsSession(this.sessionAccessCode);
+  }
+
 
   validateForm() {
     if(this.emuDbForm.valid && this.fileUploadsComlete) {
@@ -111,6 +164,11 @@ export class EditEmudbDialogComponent {
   }
 
   closeDialog() {
+    if(this.sessionAccessCode == null) {
+      this.notifierService.notify('warn', 'Please wait for init to close dialog.');
+      return;
+    }
+    this.shutdownSession();
     this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
   }
