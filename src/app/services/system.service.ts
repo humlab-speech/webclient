@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ApiResponse } from '../models/ApiResponse';
 import { Config } from '../config';
 import { from, Observable, Observer, Subject } from 'rxjs';
+import { NotifierService } from 'angular-notifier';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,10 +20,16 @@ export class SystemService {
   public wsObservable: Observable<MessageEvent>;
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
+  private wsError:boolean = false;
 
-  constructor(private http:HttpClient) {
+  constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
     console.log("System service init");
-    this.initWebSocket();
+
+    window.addEventListener('userSessionUpdated', () => {
+      if(this.ws == null) {
+        this.initWebSocket();
+      }
+    });
   }
 
   fetchOperationsSession(userSession:Object, project:Object): Observable<MessageEvent>{
@@ -59,6 +67,10 @@ export class SystemService {
     }
 
     return new Promise((resolve, reject) => {
+      if(!this.userService.userIsSignedIn) {
+        resolve(null);
+      }
+
       if(this.ws != null) {
         console.log("Recreating websocket");
         this.ws.close();
@@ -70,24 +82,42 @@ export class SystemService {
       this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
         console.log('Websocket connected');
+        if(this.wsError) {
+          this.wsError = false;
+          this.notifierService.notify("info", "Connection to backend reestablished.");
+        }
         resolve(this.ws);
       };
 
       this.ws.onclose = () => {
-        console.log('Websocket closed');
         this.ws.close();
         this.ws = null;
+        console.log('Websocket closed');
       }
 
       this.ws.onerror = (error) => {
         this.ws = null;
+        if(this.wsError) {
+          this.notifierService.notify("error", "Attempt to reconnect to backend failed.");
+        }
+        else {
+          this.notifierService.notify("error", "Lost connection to backend.");
+          this.wsError = true;
+        }
         console.log('Websocket error', error);
       }
 
       this.wsSubject = new Subject();
 
       this.ws.onmessage = (messageEvent) => {
-        //console.log(messageEvent);
+        /*
+        console.log(JSON.parse(messageEvent.data));
+        const pkt = JSON.parse(messageEvent.data);
+        if(pkt.type == "status-update" && pkt.message == 'Authentication failed') {
+          console.log('close ws');
+          this.ws.close();
+        }
+        */
         this.wsSubject.next(messageEvent);
       }
     });

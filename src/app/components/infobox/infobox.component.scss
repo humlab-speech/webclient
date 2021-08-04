@@ -8,6 +8,7 @@ h2 {
     margin:0;
     text-decoration: underline;
     text-decoration-color: $secondary-light;
+    font-weight: 500;
 }
 
 h4 {
@@ -64,10 +65,10 @@ li {
     margin-bottom: 2rem;
     border-radius: 0px;
     border-left: 0.5em $primary solid;
-    border-radius: 1em;
-    padding-top: 2em;
-    padding-bottom: 2em;
-    background: #f3f3f3;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    background: #fff;
+    background: linear-gradient(45deg, #fff 0%, #fff 90%, transparent 90%, transparent 100%);
 }
 
 .info-box-content {

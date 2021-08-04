@@ -252,8 +252,8 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       speakerGender: new FormControl(null, {
         updateOn: 'blur'
       }),
-      speakerAge: new FormControl(null, {
-        validators: [Validators.pattern("[0-9]*")],
+      speakerAge: new FormControl(35, {
+        validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
       files: this.fb.array([])

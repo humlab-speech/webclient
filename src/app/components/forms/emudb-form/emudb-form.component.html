@@ -58,13 +58,35 @@
                         <!--SESSION METADATA-->
                         <div class="attribute-container">
                             <label>Speaker gender</label>
-                            <input class="session-gender-input" placeholder="Speaker gender" formControlName="speakerGender">
+                            <!--<input class="session-gender-input" placeholder="Speaker gender" formControlName="speakerGender">-->
+                            <select formControlName="speakerGender">
+                                <option value="null">Unspecified</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                            </select>
                         </div>
 
                         <div class="attribute-container">
-                            <label>Speaker age</label>
+                            <label>
+                                Speaker age 
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="speakerAgePopper" [popperTrigger]="'hover'"></i>
+                            </label>
                             <input class="session-age-input" placeholder="Speaker age" formControlName="speakerAge">
+
+                            <div *ngIf="session.controls.speakerAge.pristine == false && session.controls.speakerAge.status == 'INVALID'" >
+                                <div class="form-error-msg" *ngIf="session.controls.speakerAge.errors?.pattern">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Speaker age needs to be a number
+                                </div>
+                            </div>
                         </div>
+
+                        <popper-content #speakerAgePopper>
+                            <h4>Speaker age</h4>
+                            <p class="help-text">
+                                35 is used as a default to signify a middle-aged person since the voice does not change much between youth and old age.
+                            </p>
+                        </popper-content>
 
                     </div>
     

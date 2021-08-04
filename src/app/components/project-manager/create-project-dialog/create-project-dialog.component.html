@@ -30,6 +30,10 @@
                         <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                         Project name should be at least {{ projectName.errors.minlength.requiredLength }} characters long
                     </div>
+                    <div class="form-error-msg" *ngIf="projectName.errors?.maxlength">
+                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        Project name should be at most {{ projectName.errors.maxlength.requiredLength }} characters long
+                    </div>
                     <div class="form-error-msg" *ngIf="projectName.errors?.pattern">
                         <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                         That's not a good name

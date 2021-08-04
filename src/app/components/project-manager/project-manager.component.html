@@ -11,23 +11,6 @@
     </div>
 
     <ul>
-        <div *ngIf="projectCreateInProgress" class="ghost-project">
-            <h3>
-                <img src="../../../assets/loading-indicator.svg">
-                Setting up your project...
-            </h3>
-            <!--
-            <ul>
-                <li>Creating Gitlab project</li>
-                <li>Creating EmuDB</li>
-                <li>Importing wav files</li>
-                <li>Creating bundlelist</li>
-                <li>Creating & linking annotation levels</li>
-                <li>Pushing to Gitlab</li>
-            </ul>
-            -->
-        </div>
-
         <app-project-item *ngFor="let project of projects" [project]="project" [projectManager]="this"></app-project-item>
     </ul>
 
