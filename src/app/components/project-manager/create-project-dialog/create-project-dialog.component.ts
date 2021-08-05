@@ -211,6 +211,10 @@ export class CreateProjectDialogComponent implements OnInit {
           this.closeCreateProjectDialog();
         }
         else {
+          let progressPercent = Math.ceil((msgData.progress / 15) * 100);
+          let button = document.getElementById("submitBtn");
+          button.style.background = 'linear-gradient(90deg, #669bbcff '+progressPercent+'%, #c1121fff '+progressPercent+'%)';
+          button.style.color = "#fff";
           this.submitBtnLabel = msgData.result;
         }
         

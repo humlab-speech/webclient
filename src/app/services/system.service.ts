@@ -63,7 +63,7 @@ export class SystemService {
         if(this.ws == null || this.ws.readyState == 3) {
           this.initWebSocket();
         }
-      }, 2000);
+      }, 5000);
     }
 
     return new Promise((resolve, reject) => {

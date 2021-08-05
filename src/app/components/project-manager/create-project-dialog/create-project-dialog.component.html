@@ -67,7 +67,7 @@
             
             <br />
             <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">
-                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-dark.svg">
+                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
                 <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
                 &nbsp;
                 {{ submitBtnLabel }}
