@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
+import { SystemService } from './system.service';
 import { Config } from '../config';
 
 @Injectable({
@@ -18,7 +19,7 @@ export class ProjectService {
   public projects:Project[] = [];
   public projectObs:Observable<Project[]>;
 
-  constructor(private http:HttpClient, private userService:UserService) {
+  constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService) {
     this.updateProjects();
   }
 
@@ -49,6 +50,35 @@ export class ProjectService {
     return this.http.get<ApiResponse>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
 
+  createProject(formValues:object, formContextId:string):Observable<any> {
+    window.dispatchEvent(new Event("project-create-in-progress"));
+
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      form: formValues,
+      context: formContextId
+    };
+
+    return new Observable<any>(subscriber => {
+
+      this.systemService.wsSubject.subscribe((data:any) => {
+        console.log(data);
+        subscriber.next(data);
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'createProject',
+        data: body
+      }));
+      
+    });
+
+  }
+
+  /*
   async createProject(formValues:object, formContextId:string):Promise<any> {
     window.dispatchEvent(new Event("project-create-in-progress"));
 
@@ -69,6 +99,7 @@ export class ProjectService {
       });
     });
   }
+  */
 
   emuSessionNameIsAvailable(project, sessionName) {
     return this.http.get('/api/v1/availibility/project/'+project.id+'/session/'+sessionName);

@@ -145,6 +145,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   isFormValid() {
+    console.log(this.form.status, this.fileUploadService.hasPendingUploads);
     return this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false;
   }
 
@@ -252,8 +253,8 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       speakerGender: new FormControl(null, {
         updateOn: 'blur'
       }),
-      speakerAge: new FormControl(null, {
-        validators: [Validators.pattern("[0-9]*")],
+      speakerAge: new FormControl(35, {
+        validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
       files: this.fb.array([])

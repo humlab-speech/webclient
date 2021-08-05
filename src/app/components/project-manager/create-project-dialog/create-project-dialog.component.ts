@@ -47,6 +47,8 @@ export class CreateProjectDialogComponent implements OnInit {
     'MANY_TO_MANY'
   ];
 
+  validateWaitInterval:any = null;
+
 
   form:FormGroup;
 
@@ -69,7 +71,7 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     //Disabled this for now - something's wrong with it and it doesn't work right
-    //this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
+    this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
 
     this.form.valueChanges.subscribe((values) => {
       this.validateForm();
@@ -133,6 +135,17 @@ export class CreateProjectDialogComponent implements OnInit {
     else {
       this.submitBtnEnabled = false;
     }
+    
+    //Need to be patient with async validators
+    if(this.form.status == "PENDING" && this.validateWaitInterval == null) {
+      this.validateWaitInterval = setInterval(() => {
+        this.validateForm();
+      }, 500)
+    }
+    if(this.form.status != "PENDING") {
+      clearInterval(this.validateWaitInterval);
+      this.validateWaitInterval = null;
+    }
 
     return this.submitBtnEnabled;
   }
@@ -165,37 +178,22 @@ export class CreateProjectDialogComponent implements OnInit {
     return this.form.get('annotLevelLinks') as FormArray;
   }
 
-  async isProjectNameTaken() {
-    let session = this.userService.getSession();
-    let headers = {
-      "PRIVATE-TOKEN": session.personalAccessToken
-    };
-
-    return await new Promise((resolve, reject) => {
-      this.http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + this.form.value.projectName, { headers }).subscribe((projects) => {
-        for(let key in projects) {
-          if(projects[key].name == this.form.value.projectName) {
-            resolve(true);
-            return;
-          }
-        }
-        resolve(false);
-      });
-    });
-  }
-
   async createProject(form) {
+    this.setLoadingStatus(true);
 
     if(!this.validateForm()) {
       this.notifierService.notify('warning', "This form is not ready to be submitted yet.");
+      this.setLoadingStatus(false);
+      return false;
     }
 
     if(await this.isProjectNameTaken() == true) {
       this.notifierService.notify('warning', "This project name is already taken, please choose another.");
+      this.setLoadingStatus(false);
       return false;
     }
 
-    this.setLoadingStatus(true);
+    this.submitBtnEnabled = false;
 
     let formData = form.value;
     formData.sessions = this.emudbFormComponent.sessions.value;
@@ -204,10 +202,28 @@ export class CreateProjectDialogComponent implements OnInit {
    
     this.projectManager.projectsLoaded = false;
     
+    this.projectService.createProject(form.value, this.formContextId).subscribe(msg => {
+      let msgData = JSON.parse(msg.data);
+      if(msgData.type == "cmd-result" && msgData.cmd == "createProject") {
+        if(msgData.progress == "end") {
+          this.projectService.updateProjects();
+          this.form.reset();
+          this.closeCreateProjectDialog();
+        }
+        else {
+          this.submitBtnLabel = msgData.result;
+        }
+        
+      }
+    });
+
+    /*
     this.projectService.createProject(form.value, this.formContextId).then(() => {
       this.form.reset();
       this.closeCreateProjectDialog();
     });
+    */
+   
   }
 
   closeCreateProjectDialog() {
@@ -311,6 +327,25 @@ export class CreateProjectDialogComponent implements OnInit {
     //TODO: Remove the uploaded file from the server?
   }
 
+  async isProjectNameTaken() {
+    let session = this.userService.getSession();
+    let headers = {
+      "PRIVATE-TOKEN": session.personalAccessToken
+    };
+
+    return await new Promise((resolve, reject) => {
+      this.http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + this.form.value.projectName, { headers }).subscribe((projects) => {
+        for(let key in projects) {
+          if(projects[key].name == this.form.value.projectName) {
+            resolve(true);
+            return;
+          }
+        }
+        resolve(false);
+      });
+    });
+  }
+
   validateProjectName(http:HttpClient, userService:UserService) {
     return function(control:AbstractControl):Observable<ValidationErrors> | null {
       const value: string = control.value;
@@ -323,14 +358,14 @@ export class CreateProjectDialogComponent implements OnInit {
       return http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
       .pipe(
         debounceTime(500),
-        map( (projects:any) =>  {
-          let isForNameTaken = false;
+        map( (projects:any) => {
+          let isFormNameTaken = false;
           for(let key in projects) {
             if(projects[key].name == value) {
-              isForNameTaken = true;
+              isFormNameTaken = true;
             }
           }
-          return { 'isFormNameTaken': isForNameTaken };
+          return isFormNameTaken ? { 'isFormNameTaken': isFormNameTaken } : null;
         })
       );
     }

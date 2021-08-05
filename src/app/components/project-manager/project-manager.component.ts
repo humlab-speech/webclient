@@ -24,14 +24,6 @@ export class ProjectManagerComponent implements OnInit {
 
     console.log(this.dashboard);
 
-    window.addEventListener('project-create-in-progress', () => {
-      this.projectCreateInProgress = true;
-    });
-
-    window.addEventListener('project-create-done', () => {
-      this.projectCreateInProgress = false;
-    });
-
     window.addEventListener('show-script-dialog', () => {
       this.dashboard.modalActive = true;
       this.dashboard.modalName = "script-dialog";
