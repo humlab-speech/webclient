@@ -145,6 +145,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   isFormValid() {
+    console.log(this.form.status, this.fileUploadService.hasPendingUploads);
     return this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false;
   }
 

@@ -8,11 +8,10 @@
         <form [formGroup]="form" #f="ngForm">
 
             <fieldset class="fieldset">
-                
                 <!--
                     <div>{{ form.value | json }}</div>
+                    <div>{{ form.errors | json }}</div>
                 -->
-
                 <label>Project name</label>
                 <input id="projectName" placeholder="Project name" formControlName="projectName">
 

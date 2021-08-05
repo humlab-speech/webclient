@@ -47,6 +47,8 @@ export class CreateProjectDialogComponent implements OnInit {
     'MANY_TO_MANY'
   ];
 
+  validateWaitInterval:any = null;
+
 
   form:FormGroup;
 
@@ -133,6 +135,17 @@ export class CreateProjectDialogComponent implements OnInit {
     else {
       this.submitBtnEnabled = false;
     }
+    
+    //Need to be patient with async validators
+    if(this.form.status == "PENDING" && this.validateWaitInterval == null) {
+      this.validateWaitInterval = setInterval(() => {
+        this.validateForm();
+      }, 500)
+    }
+    if(this.form.status != "PENDING") {
+      clearInterval(this.validateWaitInterval);
+      this.validateWaitInterval = null;
+    }
 
     return this.submitBtnEnabled;
   }
@@ -166,16 +179,21 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   async createProject(form) {
+    this.setLoadingStatus(true);
+
     if(!this.validateForm()) {
       this.notifierService.notify('warning', "This form is not ready to be submitted yet.");
+      this.setLoadingStatus(false);
+      return false;
     }
 
     if(await this.isProjectNameTaken() == true) {
       this.notifierService.notify('warning', "This project name is already taken, please choose another.");
+      this.setLoadingStatus(false);
       return false;
     }
 
-    this.setLoadingStatus(true);
+    this.submitBtnEnabled = false;
 
     let formData = form.value;
     formData.sessions = this.emudbFormComponent.sessions.value;
