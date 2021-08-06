@@ -47,7 +47,7 @@ export class EditEmudbDialogComponent {
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
 
     this.emuDbForm = this.formBuilder.group({
-      emuDb: this.emudbFormComponent.createFormGroup()
+      emuDb: this.emudbFormComponent.getFormGroup()
     });
     
     this.emuDbForm.valueChanges.subscribe((values) => {

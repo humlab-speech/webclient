@@ -31,24 +31,8 @@ export class CreateProjectDialogComponent implements OnInit {
   submitBtnEnabledLockout:boolean = false;
   formValidationInterval:any;
   fileUploadsComlete:boolean = true;
-
-  sessions:FormArray;
-  annotLevels:FormArray;
-  annotLevelLinks:FormArray;
-  annotLevelTypes = [
-    'ITEM',
-    'SEGMENT',
-    'EVENT'
-  ];
-  
-  annotLevelLinkTypes = [
-    'ONE_TO_MANY',
-    'ONE_TO_ONE',
-    'MANY_TO_MANY'
-  ];
-
   validateWaitInterval:any = null;
-
+  setupEmuDbFormChangeListener:any = null;
 
   form:FormGroup;
 
@@ -67,36 +51,26 @@ export class CreateProjectDialogComponent implements OnInit {
       }),
       standardDirectoryStructure: new FormControl(true),
       createEmuDb: new FormControl(Config.EMUDB_INTEGRATION),
-      emuDb: this.emudbFormComponent.createFormGroup()
+      emuDb: this.emudbFormComponent.getFormGroup()
     });
 
-    //Disabled this for now - something's wrong with it and it doesn't work right
+
     this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
-
-    this.form.valueChanges.subscribe((values) => {
+    this.form.controls['projectName'].statusChanges.subscribe(() => {
       this.validateForm();
-    });
-    
+    })
 
-    this.sessions = this.fb.array([]);
-    this.annotLevels = this.fb.array([]);
-    this.annotLevelLinks = this.fb.array([]);
 
-    this.form.addControl("sessions", this.sessions);
-    this.form.addControl("annotLevels", this.annotLevels);
-    this.form.addControl("annotLevelLinks", this.annotLevelLinks);
-
-    if(this.sessionForms.length == 0) {
-      this.addSession();
-    }
-    if(this.annotLevelForms.length == 0) {
-      this.addAnnotLevel("Word", "ITEM");
-      this.addAnnotLevel("Phonetic", "SEGMENT");
-    }
-
-    if(this.annotLevelLinks.length == 0) {
-      this.addAnnotLevelLink("Word", "Phonetic");
-    }
+    //This is stupid, but we need to wait for the emuDb-form-module to initialize
+    this.setupEmuDbFormChangeListener = setInterval(() => {
+      if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
+        clearInterval(this.setupEmuDbFormChangeListener);
+        this.emudbFormComponent.getFormGroup().valueChanges.subscribe(() => {
+          this.validateForm();
+        });
+        this.validateForm();
+      }
+    }, 100);
 
     this.fileUploadService.statusStream.subscribe((status) => {
       if(status == "uploads-in-progress") {
@@ -129,11 +103,15 @@ export class CreateProjectDialogComponent implements OnInit {
   }
   
   validateForm() {
-    if(this.form.valid && this.fileUploadsComlete) {
+    console.log("validateForm")
+    if(this.form.valid && this.fileUploadsComlete && this.emudbFormComponent.getFormGroup().status == "VALID") {
       this.submitBtnEnabled = true;
+      console.log("FORM VALID");
     }
     else {
+      console.log(this.form.status, this.fileUploadsComlete, this.emudbFormComponent.getFormGroup().status);
       this.submitBtnEnabled = false;
+      console.log("FORM NOT VALID");
     }
     
     //Need to be patient with async validators
@@ -160,22 +138,6 @@ export class CreateProjectDialogComponent implements OnInit {
 
   get createEmuDb() {
     return this.form.get('createEmuDb');
-  }
-
-  get annotLevelsForm() {
-    return this.annotLevels.value as FormArray;
-  }
-
-  get sessionForms() {
-    return this.form.get('sessions') as FormArray;
-  }
-
-  get annotLevelForms() {
-    return this.form.get('annotLevels') as FormArray;
-  }
-
-  get annotLevelLinkForms() {
-    return this.form.get('annotLevelLinks') as FormArray;
   }
 
   async createProject(form) {
@@ -220,83 +182,12 @@ export class CreateProjectDialogComponent implements OnInit {
         
       }
     });
-
-    /*
-    this.projectService.createProject(form.value, this.formContextId).then(() => {
-      this.form.reset();
-      this.closeCreateProjectDialog();
-    });
-    */
    
   }
 
   closeCreateProjectDialog() {
     this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
-  }
-
-
-  addAnnotLevel(name = "", type = "ITEM") {
-    const annotLevel = this.fb.group({
-      name: new FormControl(name, {
-        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
-        updateOn: 'blur'
-      } ),
-      type: new FormControl(type, Validators.required)
-    });
-    
-    this.annotLevelForms.push(annotLevel);
-  }
-
-  deleteAnnotLevel(index) {
-    //Delete any links which reference this annotLevel
-    for(let key in this.annotLevelLinks.controls) {
-      let keyNum:number = +key;
-      let annotLevelLink:any = this.annotLevelLinks.controls[key];
-      let annotLevelForm:any = this.annotLevelForms.at(index);
-      if(annotLevelLink.controls.superLevel.value == annotLevelForm.controls.name.value || annotLevelLink.controls.subLevel.value == annotLevelForm.controls.name.value) {
-        this.annotLevelLinks.removeAt(keyNum);
-      }
-    }
-    
-    this.annotLevelForms.removeAt(index);
-  }
-
-  addAnnotLevelLink(superLevel = null, subLevel = null, type = "ONE_TO_MANY") {
-    const annotLevelLink = this.fb.group({
-      superLevel: new FormControl(superLevel, Validators.required),
-      subLevel: new FormControl(subLevel, Validators.required),
-      type: new FormControl(type, Validators.required)
-    });
-
-    this.annotLevelLinkForms.push(annotLevelLink);
-  }
-
-  deleteAnnotLevelLink(index) {
-    this.annotLevelLinkForms.removeAt(index);
-  }
-
-  addSession() {
-    const session = this.fb.group({
-      id: new FormControl('session-' + nanoid()),
-      name: new FormControl('Speaker_'+(this.sessionForms.length+1), {
-        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
-        updateOn: 'blur'
-      }),
-      speakerGender: new FormControl(null, {
-        updateOn: 'blur'
-      }),
-      speakerAge: new FormControl(null, {
-        validators: [Validators.pattern("[0-9]*")],
-        updateOn: 'blur'
-      }),
-      files: this.fb.array([])
-    });
-    this.sessionForms.push(session);
-  }
-
-  deleteSession(index) {
-    this.sessionForms.removeAt(index);
   }
 
   onAudioUpload(event, session) {

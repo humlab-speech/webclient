@@ -89,11 +89,20 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService, private fileUploadService: FileUploadService) {}
   
   ngOnInit(): void {
+    console.log("emudb form init")
     this.form = this.fb.group({});
 
+    this.form.valueChanges.subscribe(() => {
+      console.log("emudb value changes 1");
+    });
+
+    this.form.statusChanges.subscribe(() => {
+      console.log("emudb statusChanges 1");
+    });
+
     this.sessions = this.fb.array([]);
-    this.annotLevels = this.fb.array([]);
-    this.annotLevelLinks = this.fb.array([]);
+    this.annotLevels = this.fb.array([], this.validateAnnotLevelNameUnique);
+    this.annotLevelLinks = this.fb.array([], this.validateAnnotLevelLinkNotToSame);
 
     this.form.addControl("sessions", this.sessions);
     this.form.addControl("annotLevels", this.annotLevels);
@@ -135,7 +144,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
 
   }
 
-  createFormGroup() {
+  getFormGroup() {
     return this.form;
   }
   
@@ -191,21 +200,19 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       } ),
       type: new FormControl(type, Validators.required)
     });
-
-    /*
-    annotLevel.get('name').valueChanges.subscribe((value) => {
-      console.log(value);
-      console.log(this.annotLevelForms);
-    });
-
-    this.annotLevelForms.statusChanges.subscribe((status) => {
-      console.log(status);
-    });
-
-    annotLevel.valueChanges.subscribe((formGroupValues) => {
-    });
-    */
     this.annotLevelForms.push(annotLevel);
+  }
+
+  validateAnnotLevelNameUnique(control: AbstractControl): {[key: string]: any} | null  {
+    console.log(control);
+    for(let key in control.value) {
+      for(let key2 in control.value) {
+        if(control.value[key].name == control.value[key2].name && key != key2) {
+          return { 'annotLevelNameNotUnique': true };
+        }
+      }
+    }
+    return null;
   }
 
   deleteAnnotLevel(index) {
@@ -230,6 +237,16 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     });
 
     this.annotLevelLinkForms.push(annotLevelLink);
+  }
+
+  validateAnnotLevelLinkNotToSame(control: AbstractControl): {[key: string]: any} | null  {
+    console.log(control);
+    for(let key in control.value) {
+      if(control.value[key].superLevel == control.value[key].subLevel) {
+        return { 'annotLevelLinkCyclic': true };
+      }
+    }
+    return null;
   }
 
   deleteAnnotLevelLink(index) {

@@ -135,6 +135,14 @@
 
         <div formArrayName="annotLevels">
 
+            <div *ngIf="annotLevels.pristine == false && annotLevels.status == 'INVALID'" >
+                <div class="form-error-msg" *ngIf="annotLevels.errors?.annotLevelNameNotUnique">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    Annotation level name conflict. Each annotation level name must be unique.
+                </div>
+            </div>
+
+
             <div class="section-container" *ngFor="let annotLevel of annotLevelForms.controls; let i=index" [formGroupName]="i">
                 <div class="section-header-container">
                     <h5>Annotation level</h5>
@@ -143,13 +151,16 @@
                     </div>
                 </div>
 
-
                 <div class="section-content">
 
                     <div class="attribute-container">
                         <label>Annotation level name</label>
                         <input placeholder="Annotation level name" formControlName="name">
                         <div *ngIf="annotLevel.controls.name.pristine == false && annotLevel.controls.name.status == 'INVALID'" >
+                            <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.annotLevelNameNotUnique">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                annotLevelNameNotUnique
+                            </div>
                             <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.required">
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                                 Name is required
@@ -190,6 +201,14 @@
     <h4>Links</h4>
     <fieldset id="annotation-level-links-container" class="fieldset-items-container">
         <div formArrayName="annotLevelLinks">
+
+            <div *ngIf="annotLevelLinks.pristine == false && annotLevelLinks.status == 'INVALID'" >
+                <div class="form-error-msg" *ngIf="annotLevelLinks.errors?.annotLevelLinkCyclic">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    Annotation level link is cyclic or invalid.
+                </div>
+            </div>
+
             <div class="section-container" *ngFor="let annotLevelLink of annotLevelLinkForms.controls; let i=index" [formGroupName]="i">
 
                 <div class="section-header-container">
