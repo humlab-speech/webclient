@@ -46,13 +46,8 @@ export class SystemService {
     }
     if(this.ws && this.ws.readyState == 1) {
       this.ws.send(JSON.stringify({ cmd: "shutdownOperationsSession",  sessionAccessCode: sessionAccessCode }));
-      this.ws.close();
+      //this.ws.close();
     }
-  }
-
-  async getEmuDb(sessionAccessCode:string) {
-    this.ws.send(JSON.stringify({ cmd: "scanEmuDb", sessionAccessCode: sessionAccessCode }));
-
   }
 
   async initWebSocket() {

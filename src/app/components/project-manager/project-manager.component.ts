@@ -43,7 +43,6 @@ export class ProjectManagerComponent implements OnInit {
     });
 
     this.projectService.projects$.subscribe((projects) => {
-      console.log(projects);
       this.projects = projects;
       this.projectsLoaded = true;
     });

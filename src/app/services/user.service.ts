@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable } from 'rxjs';
-import { Session } from "../models/Session";
+import { UserSession } from "../models/UserSession";
 import { ApiResponse } from "../models/ApiResponse";
 import { Config } from '../config';
 
@@ -12,8 +12,8 @@ export class UserService {
 
   userIsSignedIn:boolean = false;
   getSessionUrl:string = Config.API_ENDPOINT+'/api/v1/session';
-  session:Session = null;
-  public sessionObs:Observable<Session>;
+  session:UserSession = null;
+  public sessionObs:Observable<UserSession>;
   constructor(private http:HttpClient) {
 
     this.updateSession(true);
@@ -43,7 +43,7 @@ export class UserService {
         this.session = null;
         return;
       }
-      this.session = <Session>response.body;
+      this.session = <UserSession>response.body;
       this.userIsSignedIn = true;
       window.dispatchEvent(new Event('userSessionUpdated'));
 
@@ -56,11 +56,11 @@ export class UserService {
     });
   }
 
-  setSession(session:Session) {
+  setSession(session:UserSession) {
     this.session = session;
   }
 
-  getSession():Session {
+  getSession():UserSession {
     return this.session;
   }
 }

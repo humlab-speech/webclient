@@ -1,6 +1,6 @@
 <div [formGroup]="form" class="form">
     <!--START OF SESSIONS-->
-    <h3>
+    <h3 *ngIf="showSessions">
         Sessions
         <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sessPopper" [popperTrigger]="'hover'"></i>
     </h3>
@@ -18,8 +18,16 @@
         </p>
     </popper-content>
     
-    <fieldset id="sessions-container">
+    <fieldset id="sessions-container" *ngIf="showSessions">
         <div formArrayName="sessions">
+
+            <div *ngIf="sessions.pristine == false && sessions.status == 'INVALID'" >
+                <div class="form-error-msg" *ngIf="sessions.errors?.sessionNameNotUnique">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    That name is already taken
+                </div>
+            </div>
+            
             <!--SESSION ITEM-->
             <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
 
@@ -38,9 +46,11 @@
                             <input class="session-name-input" placeholder="Session name" formControlName="name">
                         </div>
                         
-                        
                         <!-- NAME INPUT ERROR HANDLING -->
                         <div *ngIf="session.controls.name.pristine == false && session.controls.name.status == 'INVALID'" >
+                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.sessionNameTaken">
+                                That name is already taken
+                            </div>
                             <div class="form-error-msg" *ngIf="session.controls.name.errors?.required">
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                                 Name is required
@@ -117,7 +127,7 @@
 
 
     <!--START OF ANNOTATION STRUCTURE-->
-    <h3>
+    <h3 *ngIf="showAnnotLevels">
         Annotation structure
         <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="annotStructPopper" [popperTrigger]="'hover'"></i>
     </h3>
@@ -130,8 +140,8 @@
     </popper-content>
 
     <!--ANNOTATION LEVELS-->
-    <h4>Levels</h4>
-    <fieldset id="annotation-levels-container" class="fieldset-items-container">
+    <h4 *ngIf="showAnnotLevels">Levels</h4>
+    <fieldset id="annotation-levels-container" class="fieldset-items-container" *ngIf="showAnnotLevels">
 
         <div formArrayName="annotLevels">
 
@@ -198,8 +208,8 @@
     </fieldset>
 
     <!--ANNOTATION LINKS-->
-    <h4>Links</h4>
-    <fieldset id="annotation-level-links-container" class="fieldset-items-container">
+    <h4 *ngIf="showAnnotLevelLinks">Links</h4>
+    <fieldset id="annotation-level-links-container" class="fieldset-items-container" *ngIf="showAnnotLevelLinks">
         <div formArrayName="annotLevelLinks">
 
             <div *ngIf="annotLevelLinks.pristine == false && annotLevelLinks.status == 'INVALID'" >

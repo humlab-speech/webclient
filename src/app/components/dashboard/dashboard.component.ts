@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from "../../services/user.service";
-import { Session } from "../../models/Session";
+import { UserSession } from "../../models/UserSession";
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from '../../services/system.service';
 

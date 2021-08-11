@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { InfoboxComponent } from '../infobox/infobox.component';
 import { Infobox } from "../../models/Infobox";
 import { UserService } from "../../services/user.service";
-import { Session } from "../../models/Session";
+import { UserSession } from "../../models/UserSession";
 
 @Component({
   selector: 'app-infobox-manager',

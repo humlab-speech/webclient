@@ -54,7 +54,6 @@ export class CreateProjectDialogComponent implements OnInit {
       emuDb: this.emudbFormComponent.getFormGroup()
     });
 
-
     this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
     this.form.controls['projectName'].statusChanges.subscribe(() => {
       this.validateForm();
@@ -103,15 +102,11 @@ export class CreateProjectDialogComponent implements OnInit {
   }
   
   validateForm() {
-    console.log("validateForm")
     if(this.form.valid && this.fileUploadsComlete && this.emudbFormComponent.getFormGroup().status == "VALID") {
       this.submitBtnEnabled = true;
-      console.log("FORM VALID");
     }
     else {
-      console.log(this.form.status, this.fileUploadsComlete, this.emudbFormComponent.getFormGroup().status);
       this.submitBtnEnabled = false;
-      console.log("FORM NOT VALID");
     }
     
     //Need to be patient with async validators
@@ -149,12 +144,6 @@ export class CreateProjectDialogComponent implements OnInit {
       return false;
     }
 
-    if(await this.isProjectNameTaken() == true) {
-      this.notifierService.notify('warning', "This project name is already taken, please choose another.");
-      this.setLoadingStatus(false);
-      return false;
-    }
-
     this.submitBtnEnabled = false;
 
     let formData = form.value;
@@ -175,11 +164,10 @@ export class CreateProjectDialogComponent implements OnInit {
         else {
           let progressPercent = Math.ceil((msgData.progress / 15) * 100);
           let button = document.getElementById("submitBtn");
-          button.style.background = 'linear-gradient(90deg, #669bbcff '+progressPercent+'%, #c1121fff '+progressPercent+'%)';
+          button.style.background = 'linear-gradient(90deg, #669bbcff '+progressPercent+'%, #654c4f '+progressPercent+'%)';
           button.style.color = "#fff";
           this.submitBtnLabel = msgData.result;
         }
-        
       }
     });
    
@@ -220,25 +208,6 @@ export class CreateProjectDialogComponent implements OnInit {
   onRemove(event, session) {
     session.value.files.splice(session.value.files.indexOf(event), 1);
     //TODO: Remove the uploaded file from the server?
-  }
-
-  async isProjectNameTaken() {
-    let session = this.userService.getSession();
-    let headers = {
-      "PRIVATE-TOKEN": session.personalAccessToken
-    };
-
-    return await new Promise((resolve, reject) => {
-      this.http.get('https://gitlab.' + Config.BASE_DOMAIN + '/api/v4/projects?search=' + this.form.value.projectName, { headers }).subscribe((projects) => {
-        for(let key in projects) {
-          if(projects[key].name == this.form.value.projectName) {
-            resolve(true);
-            return;
-          }
-        }
-        resolve(false);
-      });
-    });
   }
 
   validateProjectName(http:HttpClient, userService:UserService) {

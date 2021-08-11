@@ -50,19 +50,64 @@ export class ProjectService {
     return this.http.get<ApiResponse>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/users', { "headers": headers });
   }
 
+
+  /**
+   * fetchSession
+   * 
+   * @param project 
+   */
+  fetchSession(project = null, context = null) {
+    let body = {
+      user: this.userService.getSession(),
+      project: project,
+      context: context
+    };
+
+    return new Observable<any>(subscriber => {
+      this.systemService.wsSubject.subscribe((msg:any) => {
+        let data = JSON.parse(msg.data);
+        if(data.cmd == "fetchSession") {
+          subscriber.next(msg);
+        }
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'fetchSession',
+        data: JSON.stringify(body)
+      }));
+    });
+  }
+
+  shutdownSession(sessionAccessCode) {
+    return new Observable<any>(subscriber => {
+      this.systemService.wsSubject.subscribe((msg:any) => {
+        let data = JSON.parse(msg.data);
+        if(data.type == "cmd-result" && data.cmd == "shutdownSession") {
+          subscriber.next(msg);
+          if(data.progress == "end") {
+            subscriber.complete();
+          }
+        }
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'shutdownSession',
+        sessionAccessCode: sessionAccessCode
+      }));
+    });
+  }
+
   createProject(formValues:object, formContextId:string):Observable<any> {
     window.dispatchEvent(new Event("project-create-in-progress"));
 
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
     let body = {
       form: formValues,
       context: formContextId
     };
 
     return new Observable<any>(subscriber => {
-
       this.systemService.wsSubject.subscribe((data:any) => {
         console.log(data);
         subscriber.next(data);
@@ -73,9 +118,57 @@ export class ProjectService {
         cmd: 'createProject',
         data: body
       }));
-      
+    });
+  }
+
+  /*
+  emuSessionNameIsAvailable(project, sessionName) {
+    return this.http.get('/api/v1/availibility/project/'+project.id+'/session/'+sessionName);
+  }
+  */
+
+  /**
+   * Function: addSessions
+   * Add sessions to an existing project
+   */
+  addSessions(projectId:number, formValues:object, formContextId:string, sessionAccessCode:string):Observable<any> {
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      projectId: projectId,
+      form: formValues,
+      context: formContextId,
+      sessionAccessCode: sessionAccessCode
+    };
+
+    return new Observable<any>(subscriber => {
+      this.systemService.wsSubject.subscribe((msg:any) => {
+        console.log(msg);
+        let data = JSON.parse(msg.data);
+        if(data.type == "cmd-result" && data.cmd == "addSessions") {
+          subscriber.next(msg);
+          if(data.progress == "end") {
+            subscriber.complete();
+          }
+        }
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'addSessions',
+        data: body
+      }));
     });
 
+    /*
+    return new Observable((observer) => {
+      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/add', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
+        observer.next(response)
+        //return response;
+      });
+    });
+    */
   }
 
   /*
@@ -101,32 +194,6 @@ export class ProjectService {
   }
   */
 
-  emuSessionNameIsAvailable(project, sessionName) {
-    return this.http.get('/api/v1/availibility/project/'+project.id+'/session/'+sessionName);
-  }
-
-  /**
-   * Function: addSessions
-   * Add sessions to an existing project
-   */
-  addSessions(projectId:number, formValues:object, formContextId:string):Observable<any> {
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: projectId,
-      form: formValues,
-      context: formContextId
-    };
-
-    return new Observable((observer) => {
-      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/add', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-        observer.next(response)
-        //return response;
-      });
-    });
-  }
-
   async getSession(projectId) {
     return this.http.get<ApiResponse>('https://'+Config.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
       console.log(response);
@@ -149,4 +216,25 @@ export class ProjectService {
       });
     });
    }
+
+   scanEmuDb(sessionAccessCode:string) {
+    return new Observable<any>(subscriber => {
+      this.systemService.wsSubject.subscribe((msg:any) => {
+        if(msg.data) {
+          let data = JSON.parse(msg.data);
+          if(data.type == "cmd-result" && data.cmd == "scanEmuDb") {
+            subscriber.next(msg);
+            subscriber.complete();
+          }
+        }
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'scanEmudb',
+        sessionAccessCode: sessionAccessCode
+      }));
+    });
+  }
+
 }

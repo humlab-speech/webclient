@@ -74,6 +74,13 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     'ONE_TO_ONE',
     'MANY_TO_MANY'
   ];
+
+  showSessions:boolean = true;
+  showAnnotLevels:boolean = true;
+  showAnnotLevelLinks:boolean = true;
+  storedEmuDb:any = null; //The EmuDB as it exists in Gitlab (if any)
+  sessionAccessCode:string = null;
+
   formIsValid:boolean = true;
 
   get value(): EmudbFormValues {
@@ -89,18 +96,9 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService, private fileUploadService: FileUploadService) {}
   
   ngOnInit(): void {
-    console.log("emudb form init")
     this.form = this.fb.group({});
 
-    this.form.valueChanges.subscribe(() => {
-      console.log("emudb value changes 1");
-    });
-
-    this.form.statusChanges.subscribe(() => {
-      console.log("emudb statusChanges 1");
-    });
-
-    this.sessions = this.fb.array([]);
+    this.sessions = this.fb.array([], this.validateSessionNameUnique);
     this.annotLevels = this.fb.array([], this.validateAnnotLevelNameUnique);
     this.annotLevelLinks = this.fb.array([], this.validateAnnotLevelLinkNotToSame);
 
@@ -128,20 +126,81 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       this.addAnnotLevelLink("Word", "Phonetic");
     }
 
-    /*
-    this.fileUploadService.eventEmitter.subscribe((event) => {
-      if(event == "pendingFormUploads") {
-        this.formIsValid = this.isFormValid();
-      }
-      if(event == "pendingFormUploadsComplete") {
-        this.notifierService.notify('info', 'All uploads complete.');
-        this.formIsValid = this.isFormValid();
-      }
+  }
+
+  loadEmuDbStruct(emuDbStruct) {
+    this.resetForm();
+
+    emuDbStruct.sessions.forEach(session => {
+      this.addSession(session);
     });
-    */
 
-    //this.loadEmuDb();
+    emuDbStruct.bundles.forEach(bundle => {
 
+    });
+  }
+
+  loadProject(project) {
+    return new Observable<any>(subscriber => {
+
+      this.showAnnotLevels = false;
+      this.showAnnotLevelLinks = false;
+      subscriber.next({
+        status: "loading",
+        msg: "Fetching project session"
+      });
+
+      const context = nanoid();
+
+      this.projectService.fetchSession(project, context).subscribe(msg => {
+        let msgData = JSON.parse(msg.data);
+        if(msgData.type == "cmd-result" && msgData.cmd == "fetchSession") {
+          if(msgData.progress == "end") {
+            this.sessionAccessCode = msgData.result;
+
+            subscriber.next({
+              status: "loading",
+              message: "Scanning EmuDB"
+            });
+
+            this.projectService.scanEmuDb(this.sessionAccessCode).subscribe(msg => {
+              let cmdResponse = JSON.parse(msg.data);
+              let apiResponse = JSON.parse(cmdResponse.result);
+              this.storedEmuDb = apiResponse.body;
+
+              subscriber.next({
+                status: "end",
+                message: "Done"
+              });
+
+              subscriber.complete();
+            });
+          }
+          else {
+            subscriber.next({
+              status: "loading",
+              message: msgData.result
+            });
+          }
+        }
+      });
+    });
+  }
+
+  adjustSessionNamesToAvoidConflict(externalSessions) {
+    console.log(this.sessions.value)
+
+    
+    for(let key in this.sessions.value) {
+      externalSessions.forEach(exSess => {
+        console.log(exSess.name, this.sessions.value[key].name);
+        if(exSess.name == this.sessions.value[key].name) {
+          console.log('conflicut');
+
+        }
+      });
+    }
+    
   }
 
   getFormGroup() {
@@ -154,7 +213,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   isFormValid() {
-    console.log(this.form.status, this.fileUploadService.hasPendingUploads);
     return this.form.status != "INVALID" && this.fileUploadService.hasPendingUploads == false;
   }
 
@@ -184,14 +242,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     return this.form.valid ? null : { profile: { valid: false } };
   }
 
-
-  loadEmuDb() {
-    //Spin up an operations container
-    this.projectService.getSession(this.project.id);
-    //clone out the project
-    //scan the emudb and fetch all the sessions & bundles & annotation levels & links
-  }
-
   addAnnotLevel(name = "", type = "ITEM") {
     const annotLevel = this.fb.group({
       name: new FormControl(name, {
@@ -204,7 +254,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   validateAnnotLevelNameUnique(control: AbstractControl): {[key: string]: any} | null  {
-    console.log(control);
     for(let key in control.value) {
       for(let key2 in control.value) {
         if(control.value[key].name == control.value[key2].name && key != key2) {
@@ -240,7 +289,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   validateAnnotLevelLinkNotToSame(control: AbstractControl): {[key: string]: any} | null  {
-    console.log(control);
     for(let key in control.value) {
       if(control.value[key].superLevel == control.value[key].subLevel) {
         return { 'annotLevelLinkCyclic': true };
@@ -253,18 +301,33 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     this.annotLevelLinkForms.removeAt(index);
   }
 
-  emuSessionNameIsAvailable(projectService, project) {
-    return function(control:AbstractControl):Observable<ValidationErrors> | null {
-      const sessionName: string = control.value;
-      return projectService.emuSessionNameIsAvailable(project, sessionName);
-    }
+  emuSessionNameIsAvailable(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      let sessionNameTaken:boolean = false;
+      if(this.storedEmuDb == null) {
+        return null;
+      }
+      for(let key in this.storedEmuDb.sessions) {
+        if(this.storedEmuDb.sessions[key].name == control.value) {
+          sessionNameTaken = true;
+        }
+      }
+      return sessionNameTaken ? { 'sessionNameTaken': sessionNameTaken } : null;
+    };
   }
 
-  addSession() {
-    const session = this.fb.group({
+
+  addSession(session = null) {
+    let sessionName = session != null ? session.name : 'Speaker_'+(this.sessionForms.length+1);
+
+    if(this.project != null) {
+      sessionName = "";
+    }
+
+    const sessionGroup = this.fb.group({
       id: new FormControl('session-' + nanoid()),
-      name: new FormControl('Speaker_'+(this.sessionForms.length+1), {
-        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+      name: new FormControl(sessionName, {
+        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*"), this.emuSessionNameIsAvailable()],
         updateOn: 'blur'
       }),
       speakerGender: new FormControl(null, {
@@ -277,12 +340,18 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       files: this.fb.array([])
     });
 
-    //If we are editing a project, setup validator for checking session name collisions
-    if(this.project) {
-      session.get('name').setAsyncValidators([this.emuSessionNameIsAvailable(this.projectService, this.project)]);
-    }
+    this.sessions.push(sessionGroup);
+  }
 
-    this.sessions.push(session);
+  validateSessionNameUnique(control: AbstractControl): {[key: string]: any} | null  {
+    for(let key in control.value) {
+      for(let key2 in control.value) {
+        if(control.value[key].name == control.value[key2].name && key != key2) {
+          return { 'sessionNameNotUnique': true };
+        }
+      }
+    }
+    return null;
   }
 
   deleteSession(index) {
@@ -325,6 +394,34 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
 
   closeDialog() {
     this.projectManager.dashboard.modalActive = false;
+  }
+
+  shutdownSession() {
+    this.projectService.shutdownSession(this.sessionAccessCode).subscribe(msg => {
+      if(!msg.data) {
+        return;
+      }
+      let msgDataPkt = JSON.parse(msg.data);
+      if(msgDataPkt.type == "cmd-result" && msgDataPkt.cmd == "shutdownSession") {
+        if(msgDataPkt.progress != "end") {
+          console.warn("Something went wrong with shutting down container session");
+        }
+      }
+    });
+  }
+
+  resetForm() {
+    while(this.sessions.length > 0) {
+      this.sessions.removeAt(0);
+    }
+
+    while(this.annotLevels.length > 0) {
+      this.annotLevels.removeAt(0);
+    }
+
+    while(this.annotLevelLinks.length > 0) {
+      this.annotLevelLinks.removeAt(0);
+    }
   }
 
 

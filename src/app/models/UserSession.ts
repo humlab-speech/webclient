@@ -1,8 +1,9 @@
-export class Session {
+export class UserSession {
+    id:number;
     firstName:string;
     lastName:string;
     fullName:string;
     email:string;
-    gitlabUsername:string;
+    username:string;
     personalAccessToken:string;
 }
