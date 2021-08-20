@@ -7,7 +7,7 @@ h2 {
     font-weight: lighter;
     margin:0;
     text-decoration: underline;
-    text-decoration-color: $secondary-light;
+    text-decoration-color: $comp2;
     font-weight: 500;
 }
 
@@ -59,16 +59,16 @@ li {
     display: flex;
     justify-content: flex-start;
     margin: 0.5rem;
-    margin-left: 2rem;
-    margin-right: 2rem;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin-left: 0rem;
+    margin-right: 0rem;
+    margin-top: 0rem;
+    margin-bottom: 0rem;
     border-radius: 0px;
-    border-left: 0.5em $primary solid;
+    //border-left: 0.5em $primary solid;
     padding-top: 1em;
     padding-bottom: 1em;
-    background: #fff;
-    background: linear-gradient(45deg, #fff 0%, #fff 90%, transparent 90%, transparent 100%);
+    background: $white;
+    //background: linear-gradient(45deg, #fff 0%, #fff 90%, transparent 90%, transparent 100%);
 }
 
 .info-box-content {
@@ -98,7 +98,7 @@ li {
 .link-button > a > i {
     display:flex;
     justify-content: center;
-    background: $secondary;
+    background: $primary;
     color: #fff;
     margin:0;
     padding: 0.5em;
@@ -111,12 +111,14 @@ li {
     position:relative;
     background: rgb(155, 200, 250);
     background: $dog-ear-gradient;
-    color: #fff;
+    color: $black;
     margin:0;
     padding: 0.5em;
     height: 1em;
     width: 7em;
     overflow: hidden;
-    font-family: "Roboto";
 }
 
+.link-button > a > div:hover {
+    background-color: lighten($primary, 10%);
+}

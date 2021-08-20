@@ -30,16 +30,17 @@ input.ng-invalid {
 
 #create-project-btn {
     padding:0.8em;
-    background-color: $crimson;
+    background-color: $comp3;
     cursor:pointer;
     font-weight: bold;
     font-family: "Open Sans Condensed", sans-serif;
     font-size:1.2em;
-    color: #fff;
+    color: $black;
 }
 
 .modal-dialog-container button:hover {
-    background-color:lighten($crimson, 10%);
+    //background-color:lighten($comp3, 10%);
+    color: $black;
 }
 
 .modal-dialog-container button {
@@ -88,10 +89,22 @@ li {
     padding: 0.5rem;
 }
 
+#submitBtn:hover {
+    box-shadow: 0px 0px 10px #999; 
+}
+
+#submitBtn.disabled:hover {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0); 
+}
+
 #submitBtn.disabled {
     background-color: #eee;
     color: #333;
     cursor: default;
+}
+
+#submitBtn img {
+    align-self: center;
 }
 
 .link-arrow {
@@ -195,7 +208,7 @@ button.form-add-button {
 }
 
 button.form-add-button:hover {
-    background: #eee !important;
+    //background: #eee !important;
 }
 
 .annotation-level-type-input {

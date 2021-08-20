@@ -21,13 +21,16 @@ export class SystemService {
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
+  public userIsAuthenticated:boolean = false;
 
   constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
     console.log("System service init");
 
     window.addEventListener('userSessionUpdated', () => {
       if(this.ws == null) {
-        this.initWebSocket();
+        this.initWebSocket().then(() => {
+          //this.ws.send(JSON.stringify({ cmd: "accessListCheck", username: "" }));
+        });
       }
     });
   }
@@ -51,14 +54,13 @@ export class SystemService {
   }
 
   async initWebSocket() {
-
     if(this.wsHealthCheckInterval == null) {
       this.wsHealthCheckInterval = setInterval(() => {
         //WebSocket health check
         if(this.ws == null || this.ws.readyState == 3) {
           this.initWebSocket();
         }
-      }, 5000);
+      }, 10000);
     }
 
     return new Promise((resolve, reject) => {
@@ -105,6 +107,30 @@ export class SystemService {
       this.wsSubject = new Subject();
 
       this.ws.onmessage = (messageEvent) => {
+        //console.log(JSON.parse(messageEvent.data));
+        let msg = JSON.parse(messageEvent.data);
+
+        if(msg.type == "authentication-status") {
+          if(msg.message) {
+            //User is authenticated'
+            /*
+            this.notifierService.notify("info", "You are in the access list");
+            console.log("You are in the access list");
+            */
+            this.userIsAuthenticated = true;
+            
+          }
+          else {
+            //User failed authentication
+            /*
+            this.notifierService.notify("warning", "You are not in the access list");
+            console.log("You are not in the access list");
+            */
+            this.userIsAuthenticated = false;
+          }
+          this.eventEmitter.emit("userAuthentication");
+        }
+
         /*
         console.log(JSON.parse(messageEvent.data));
         const pkt = JSON.parse(messageEvent.data);

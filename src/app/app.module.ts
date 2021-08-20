@@ -29,6 +29,7 @@ import { CreateProjectDialogComponent } from './components/project-manager/creat
 import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
 import { EmudbFormComponent } from './components/forms/emudb-form/emudb-form.component';
 import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
+import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-em
     ScriptAppDialogComponent,
     DocumentationFormComponent,
     EmudbFormComponent,
-    EditEmudbDialogComponent
+    EditEmudbDialogComponent,
+    MenuBarComponent
   ],
   imports: [
     BrowserModule,

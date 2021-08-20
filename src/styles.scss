@@ -1,13 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+/*
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap');
+*/
+@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500&display=swap');
 @import "../node_modules/normalize.css/normalize.css";
 @import './colors.scss';
 @import '../node_modules/ngx-popperjs/scss/theme-white.scss';
 @import '../node_modules/font-awesome/scss/font-awesome.scss';
-
 @import '../node_modules/angular-notifier/styles.css';
+
 
 
 html, body { height: 100%; }
@@ -16,10 +18,12 @@ body {
     margin: 0;
     padding: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-family: 'Gothic A1', sans-serif;
 }
 
 h1 {
     font-family: 'Saira Semi Condensed', sans-serif;
+    font-family: 'Gothic A1', sans-serif;
     text-decoration: underline;
     text-decoration-color: $primary-light;
 }
@@ -30,12 +34,14 @@ h4 {
     text-decoration: underline;
     text-decoration-color: $secondary-light;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-family: 'Gothic A1', sans-serif;
 }
 
 h5 {
     font-size: 1.1rem;
     font-weight: lighter;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    font-family: 'Gothic A1', sans-serif;
     margin-top:0.5em;
     margin-bottom:0.5em;
 }
@@ -93,6 +99,7 @@ ngx-dropzone > ngx-dropzone-preview {
     width: 100vw;
     height: 100vh;
     background-color:rgba(0, 0, 0, 0.5);
+    z-index:1;
 }
 
 .modal-dialog-container {
@@ -102,7 +109,7 @@ ngx-dropzone > ngx-dropzone-preview {
     padding: 2rem;
     border-radius:4px;
     background-color: #fff !important;
-    box-shadow: 0px 0px 10px 10px #666;
+    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.25);
     margin-top: 1em;
     margin-bottom: 1em;
     max-height: 92vh;
@@ -135,7 +142,7 @@ ngx-dropzone > ngx-dropzone-preview {
 }
 
 .dialog-close-btn:hover {
-    background-color: $crimson;
+    background-color: $comp3;
     border: 1px solid #333;
     border-radius: 25%;
     cursor: pointer;
@@ -233,13 +240,14 @@ form label {
 .form button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    background-color: $crimson;
-    color: #fff;
+    background-color: $comp3;
+    color: #000;
     border-width:0px;
 }
 
 .form button:hover {
-    background-color:lighten($crimson, 10%);
+    //background-color:lighten($comp3, 10%);
+    box-shadow: 0px 0px 10px #999; 
     cursor:pointer;
 }
 

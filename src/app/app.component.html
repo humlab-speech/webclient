@@ -1,11 +1,13 @@
 <div id="main-container">
-  <div id="left-spacer"></div>
-  <div id="sidebar">
-    <h1>{{ title }}</h1>
-    <app-infobox-manager></app-infobox-manager>
-  </div>
+  <app-menu-bar></app-menu-bar>
   <div id="content-container">
     <notifier-container *ngIf="true">notifier</notifier-container>
     <router-outlet></router-outlet>
+  </div>
+  <div id="sidebar">
+    <app-infobox-manager></app-infobox-manager>
+  </div>
+  <div id="footer">
+    <div id="umuLogo"></div>
   </div>
 </div>

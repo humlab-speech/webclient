@@ -9,19 +9,16 @@ import { Config } from '../config';
   providedIn: 'root'
 })
 export class UserService {
-
   userIsSignedIn:boolean = false;
   getSessionUrl:string = Config.API_ENDPOINT+'/api/v1/session';
   session:UserSession = null;
   public sessionObs:Observable<UserSession>;
+  
   constructor(private http:HttpClient) {
-
     this.updateSession(true);
-
     setInterval(() => {
       this.updateSession();
     }, 60000);
-    
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {

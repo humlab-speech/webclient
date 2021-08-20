@@ -29,7 +29,6 @@ export class SigninCtrlComponent implements OnInit {
   }
 
   signIn() {
-    console.log("Sign-in requested");
     this.userService.authenticate();
   }
 

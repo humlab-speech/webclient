@@ -15,6 +15,9 @@ export class DashboardComponent implements OnInit {
   modalActive:boolean = false;
   modalName:string = "";
   systemIsReady:boolean = true;
+  userPassedAccessListCheck:boolean = false;
+  gitlabReady:boolean = false;
+  userAccessListCheckPerformed:boolean = false;
 
   private readonly notifier: NotifierService;
 
@@ -23,10 +26,21 @@ export class DashboardComponent implements OnInit {
 
     systemService.eventEmitter.subscribe((event) => {
       if(event == "gitlabIsReady") {
+        this.gitlabReady = true;
         this.systemIsReady = true;
       }
       if(event == "gitlabIsNotReady") {
+        this.gitlabReady = false;
         this.systemIsReady = false;
+      }
+      if(event == "userAuthentication") {
+        this.userAccessListCheckPerformed = true;
+        if(!systemService.userIsAuthenticated) {
+          this.userPassedAccessListCheck = false;
+        }
+        else {
+          this.userPassedAccessListCheck = true;
+        }
       }
     });
   }

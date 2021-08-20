@@ -22,8 +22,6 @@ export class ProjectManagerComponent implements OnInit {
 
   ngOnInit():void {
 
-    console.log(this.dashboard);
-
     window.addEventListener('show-script-dialog', () => {
       this.dashboard.modalActive = true;
       this.dashboard.modalName = "script-dialog";

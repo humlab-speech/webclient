@@ -19,8 +19,9 @@ button {
     display:flex;
     align-items: center;
     justify-content: flex-start;
-    background-color: $primary-light;
-    color: $white;
+    //background-color: $comp3;
+    background: $dog-ear-gradient;
+    color: $black;
     min-width: 10em;
     margin:0;
     padding:0;
@@ -31,7 +32,7 @@ button {
     display:flex;
     align-items: center;
     justify-content: center;
-    background-color: $secondary-dark;
+    background-color: $primary;
     height:1.5em;
     width:1.5em;
     margin:0;

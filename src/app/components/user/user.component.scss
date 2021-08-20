@@ -2,12 +2,17 @@
 @import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
 h2.user-displayname {
+    
 }
 
 .account {
     display:flex;
     place-content: center;
     align-items: center;
+    color: $white;
+    width: 100%;
+    white-space: nowrap;
+    margin-right: 2em;
 }
 
 .account-container {
@@ -24,8 +29,9 @@ h2.user-displayname {
 }
 
 .account-menu-dropdown {
+    color: $black;
     display:block;
-    box-shadow: 0 0 1rem 0.25rem $border-light;
+    box-shadow: 0 0 1rem 0.25rem rgba(0, 0, 0, 0.25);
     list-style-type: none;
     margin:0;
     padding:0;

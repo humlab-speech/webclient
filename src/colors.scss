@@ -81,6 +81,7 @@ $a: #D87CAC;
 $b: #449DD1;
 $c: #E36414;
 
+/*
 $primary: $barn-red;
 $primary-light: $carnelian;
 $bg: $ghost-white;
@@ -100,6 +101,29 @@ $dark-font-color: #333;
 $secondary: #654C4F;
 $secondary-light: #B26E63;
 $secondary-dark: #312829;
+*/
+
+$primary: #2A4765;
+$primary-light: #435f7e;
+$bg: $ghost-white;
+$panelBg: #F1EFE4;
+$tertiary: $papaya-whip;
+$tertiary-light: $papaya-whip;
+$secondary: #D7B17C;
+$secondary-light: #f4cc96;
+$secondary-dark: #000000;
+$border: #444;
+$border-light: #ddd;
+$white: #fff;
+$black: #000;
+$lightgrey: #eee;
+$dark-font-color: #333;
+$comp1: #73A790;
+$comp2: #D7B17C;
+$comp3: #EABAB9;
+$comp4: #F1EFE4;
+
+
 /*
 $primary: #990D35;
 $primary-light: #D52941;
@@ -120,7 +144,7 @@ $dark-font-color: #333;
 
 $gradient-horizontal: linear-gradient(90deg, $primary, $primary-light);
 
-$dog-ear-gradient: linear-gradient(135deg, $secondary-dark 0%, $secondary-dark 90%, transparent 90%, transparent 100%);
+$dog-ear-gradient: linear-gradient(135deg, $comp3 0%, $comp3 90%, transparent 90%, transparent 100%);
 
 $info: $air-superiority-blue;
 $warning: $c;
