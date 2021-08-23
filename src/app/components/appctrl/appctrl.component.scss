@@ -19,8 +19,8 @@ button {
     display:flex;
     align-items: center;
     justify-content: flex-start;
-    //background-color: $comp3;
-    background: $dog-ear-gradient;
+    background-color: $comp3;
+    //background: $dog-ear-gradient;
     color: $black;
     min-width: 10em;
     margin:0;
@@ -44,7 +44,7 @@ button {
 }
 
 .app-btn:hover {
-    background-color: lighten($primary, 10%);
+    background-color: lighten($comp2, 10%);
 }
 
 .application-panel-container {
@@ -72,7 +72,7 @@ button {
 }
 
 .status-msg-container {
-    background: $secondary-light;
+    background: $primary;
     color: $white !important;
 }
 
