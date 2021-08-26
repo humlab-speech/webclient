@@ -16,6 +16,12 @@ export class ContainerSessionRenderComponent implements OnInit {
 
   ngOnInit(): void {
     let iframe = document.getElementById("proxied-container");
+    
+    iframe.onload = () => {
+      setTimeout(() => {
+        this.showLoadingIndicator = false;
+      }, 500);
+    }
 
     switch(window.location.pathname) {
       case "/app":
@@ -26,10 +32,6 @@ export class ContainerSessionRenderComponent implements OnInit {
         iframe.setAttribute("src", url);
         break;
     }
-
-    setTimeout(() => {
-      this.showLoadingIndicator = false;
-    }, 1000);
     
   }
 }
