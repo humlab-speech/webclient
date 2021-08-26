@@ -359,8 +359,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   onAudioUpload(event, session) {
-    //this.parentForm.fileUploadEvent(event);
-
     let allowedFilesTypes = ['audio/wav', 'audio/x-wav'];
 
     for(let key in event.addedFiles) {
@@ -387,7 +385,8 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.id.value);
   }
   
-  onRemove(event, session) {
+  onRemove(file, session) {
+    this.fileUploadService.cancelUpload(file);
     session.value.files.splice(session.value.files.indexOf(event), 1);
     //TODO: Remove the uploaded file from the server?
   }

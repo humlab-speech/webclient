@@ -48,6 +48,15 @@ export class FileUploadService {
     });
   }
 
+  cancelUpload(file) {
+    for(let key in this.pendingUploads) {
+      if(this.pendingUploads[key] === file) {
+        this.pendingUploads.splice(key, 1);
+      }
+    }
+    this.isAllUploadsComplete();
+  }
+
   isAllUploadsComplete() {
     for(let key in this.pendingUploads) {
       if(this.pendingUploads[key].uploadComplete == false) {

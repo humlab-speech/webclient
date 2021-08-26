@@ -104,7 +104,7 @@
                     <ngx-dropzone [expandable]="true" (change)="onAudioUpload($event, session)">
                         <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
                         <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
-                            <ngx-dropzone-label>
+                            <ngx-dropzone-label (change)="onAudioChange($event, session)">
                                 <i class="fa fa-file-audio-o" aria-hidden="true"></i>
                                 &nbsp;{{ f.name }}
                                 <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
