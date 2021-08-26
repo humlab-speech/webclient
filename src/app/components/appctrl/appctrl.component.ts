@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { HsApp } from "../../models/HsApp";
 import { Url } from 'url';
 import { NotifierService } from 'angular-notifier';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-appctrl',
@@ -25,8 +26,9 @@ export class AppctrlComponent implements OnInit {
   domain:string = window.location.hostname;
   showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient, notifierService: NotifierService) {
+  constructor(private http:HttpClient, notifierService: NotifierService, private router: Router) {
     this.notifier = notifierService;
+    this.router = router;
   }
 
   ngOnInit(): void {
@@ -76,11 +78,6 @@ export class AppctrlComponent implements OnInit {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
 
-    /* Here we want to implement some live status updates on how the process is going
-    let webSocket = new WebSocket('wss://'+Config.BASE_DOMAIN+'/ws', "launch-hsapp-session-feed");
-    webSocket.send("Here's some text that the server is urgently awaiting!");
-    */
-
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
@@ -93,9 +90,9 @@ export class AppctrlComponent implements OnInit {
       this.statusMsg = "Taking you there...";
       this.showLoadingIndicator = true;
       
-      document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain;
-      this.goToUrl("https://"+appName+"."+this.domain+"/?token="+sessionAccessCode);
+      document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+"; SameSite=None; Secure";
 
+      this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
     },
     (error) => {
       console.error(error);
@@ -113,8 +110,7 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      //Example: https://ips-lmu.github.io/EMU-webApp/?autoConnect=true&comMode=GITLAB&gitlabURL=https:%2F%2Fgitlab.lrz.de&projectID=44728&emuDBname=ae&bundleListName=test.user&privateToken=reQFspQnbCHbvTfHjwfP
-
+      
       let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
       let projectId:number = this.project.id;
       let emuDBname:string  = "VISP";
@@ -176,55 +172,8 @@ export class AppctrlComponent implements OnInit {
     };
 
     this.http.post<any>('/api/v1/session/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-
-      console.log(JSON.parse(data.body));
-
       let statusObj = JSON.parse(data.body);
-
       this.notifier.notify('info', statusObj.msg);
-
-      /*
-      if(statusObj.status == "error" || statusObj.status == "warn") {
-        this.showLoadingIndicator = false;
-
-        switch(statusObj.errorType) {
-          case "nothing-to-commit":
-            //this.statusMsg = "No changes";
-            //this.showSaveButton = false;
-            this.notifier.notify('info', 'No changes to save.');
-          break;
-          case "conflict-on-commit":
-            //this.statusMsg = "Conflict!";
-            //this.showSaveButton = false;
-            this.notifier.notify('info', 'Saved to a different branch due to changes in repository.');
-          break;
-          default:
-            //this.statusMsg = "Manual intervention required";
-            //this.showSaveButton = false;
-            this.notifier.notify('error', 'Something went wrong. Manual intervention required.');
-        }
-      }
-      else {
-        this.notifier.notify('info', 'Saved.');
-      }
-      */
-
-      
-      //Now that everything is saved, we can close
-      /*
-      this.statusMsg = "Closing...";
-
-      this.http.post<any>('/api/v1/rstudio/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-        for(let key in this.project.sessions) {
-          if(this.project.sessions[key].sessionCode == sessionAccessCode) {
-            this.project.sessions.splice(key, 1);
-          }
-        }
-        this.statusMsg = "";
-        this.showLoadingIndicator = false;
-        this.updateHasRunningSessions();
-      });
-      */
       this.showLoadingIndicator = false;
       this.statusMsg = "Running";
     });

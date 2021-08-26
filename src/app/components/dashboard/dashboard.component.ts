@@ -18,11 +18,13 @@ export class DashboardComponent implements OnInit {
   userPassedAccessListCheck:boolean = false;
   gitlabReady:boolean = false;
   userAccessListCheckPerformed:boolean = false;
+  systemService:any = null;
 
   private readonly notifier: NotifierService;
 
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
     this.notifier = notifierService;
+    this.systemService = systemService;
 
     systemService.eventEmitter.subscribe((event) => {
       if(event == "gitlabIsReady") {
@@ -46,6 +48,21 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    let session = this.userService.getSession();
+    if(session != null) {
+      this.userIsSignedIn = true;
+    }
+
+    if(this.systemService.getUserAuthenticationStatus() == "authenticated") {
+      this.userPassedAccessListCheck = true;
+      this.userAccessListCheckPerformed = true;
+    }
+
+    if(this.systemService.getUserAuthenticationStatus() == "rejected") {
+      this.userPassedAccessListCheck = false;
+      this.userAccessListCheckPerformed = true;
+    }
+
     window.addEventListener('userSessionUpdated', () => {
       this.userIsSignedIn = this.userService.userIsSignedIn;
     });

@@ -12,9 +12,7 @@ app-menu-bar {
 }
 #content-container {
     overflow: auto;
-    grid-area: main-content;
-    padding-left: 2em;
-    padding-right: 2em;
+    width: 100vw;
 }
 
 #main-container {
@@ -24,8 +22,11 @@ app-menu-bar {
     height: 100vh;
     background: $panelBg;
 
-    grid-template-columns: [main-content]minmax(600px, auto) [info-panel]minmax(400px, 25vw);
+    //grid-template-columns: [main-content]minmax(600px, auto) [info-panel]minmax(400px, 25vw);
+    grid-template-columns: [main-content]minmax(600px, auto);
     grid-template-rows: [menu]minmax(50px, 6vh) 1fr [footer]40px;
+
+
 
     grid-template-areas:
     "menu menu"
@@ -48,25 +49,5 @@ app-menu-bar {
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left center;
-}
-
-#sidebar {
-    display:grid;
-    grid-area: info-panel;
-
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr;
-
-    background: $white;
-    background: #efefef;
-    background: $comp4;
-    //box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.1);
-    /*
-    place-content: center;
-    align-items: center;
-    justify-content: center;
-    flex-direction:column;
-    */
-    height: 100%;
 }
 

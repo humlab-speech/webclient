@@ -1,0 +1,78 @@
+@import '../../../colors.scss';
+@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500&display=swap');
+
+body {
+    margin:0;
+    padding:0;
+}
+
+h1 {
+    font-family: 'Gothic A1', sans-serif;
+}
+
+a {
+    text-decoration-line: none;
+}
+
+#main-container {
+    height: 100%;
+    width: 100%;
+    margin:0;
+    padding:0;
+    display:grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+#top-menu {
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    background: $primary;
+    margin:0;
+    padding:0;
+    color: #fff;
+}
+
+#back-button-container > a {
+    display:flex;
+    color: #fff;
+}
+
+#back-button-container > a:hover h1 {
+    text-decoration: underline;
+}
+
+#visp-back-button {
+    font-size: 4em;
+    color: #fff;
+    margin-right: 0.1em;
+}
+
+#visp-logo {
+    max-height: 100%;
+}
+
+#visp-logo > img {
+    height: 70%;
+    width: auto;
+    object-fit: contain;
+}
+
+#save-button {
+    min-height: 50%;
+    margin-right: 1em;
+}
+
+#save-button:hover {
+    cursor:pointer;
+}
+
+#proxied-container {
+    height: 100%;
+    width: 100%;
+    margin:0;
+    padding:0;
+    border-width:0;
+}
+

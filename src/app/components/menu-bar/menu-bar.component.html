@@ -1,4 +1,10 @@
 <div id="menu-bar">
+    <div id="back-button-container" *ngIf="containerSessionViewActive">
+        <div id="visp-back-button" (click)="backButtonClicked()">
+            <div id="visp-back-button-arrow">&#8678;</div>
+            <p>Back to dashboard</p>
+        </div>
+    </div>
     <div id="system-logo-container">
         <img src="/assets/VISP-logo-white.png">
     </div>

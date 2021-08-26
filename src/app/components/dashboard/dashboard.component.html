@@ -1,27 +1,35 @@
 <div id="dashboard">
-    <div id="final-authentication" *ngIf="userIsSignedIn && !userAccessListCheckPerformed">
-        <img src="assets/loading-indicator-4-dark.svg">
-        <p>Performing final authentication</p>
-    </div>
-    <div id="signed-out-content-container" *ngIf="systemIsReady && !userIsSignedIn">
-        <div id="about-container">
-            <h2>About</h2>
-            Visual Speech is a collection of research tools for speech analysis.
-            If you do not have an account, you may visit the <a href="https://speech.humlab.umu.se">demo-site</a> for a tour of its capabilties. If you wish to setup a project on the live system, 
-            please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.<br /><br />Visual Speech is being developed by Umeå university.
+    <div id="main-content">
+        <div id="final-authentication" *ngIf="userIsSignedIn && !userAccessListCheckPerformed">
+            <img src="assets/loading-indicator-4-dark.svg">
+            <p>Performing final authentication</p>
         </div>
-        <app-signin-ctrl></app-signin-ctrl>
+        <div id="signed-out-content-container" *ngIf="systemIsReady && !userIsSignedIn">
+            <div id="about-container">
+                <h2>About</h2>
+                Visual Speech is a collection of research tools for speech analysis.
+                If you do not have an account, you may visit the <a href="https://speech.humlab.umu.se">demo-site</a> for a tour of its capabilties. If you wish to setup a project on the live system, 
+                please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.<br /><br />Visual Speech is being developed by Umeå university.
+            </div>
+            <app-signin-ctrl></app-signin-ctrl>
+        </div>
+        
+        <app-project-manager *ngIf="systemIsReady && userIsSignedIn && userPassedAccessListCheck && userAccessListCheckPerformed" [dashboard]="this"></app-project-manager>
+        <div *ngIf="!systemIsReady" id="systemInitMsgContainer">
+            <div id="systemInitMsg">
+                <img src="assets/loading-indicator-4-light.svg">
+                <div id="systemInitText">Waiting for GitLab</div>
+            </div>
+        </div>
+        <div id="userFailedAccessListCheckContainer" *ngIf="systemIsReady && userIsSignedIn && !userPassedAccessListCheck && userAccessListCheckPerformed">
+            <h2>Missing access grant</h2>
+            <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
+        </div>
     </div>
     
-    <app-project-manager *ngIf="systemIsReady && userIsSignedIn && userPassedAccessListCheck && userAccessListCheckPerformed" [dashboard]="this"></app-project-manager>
-    <div *ngIf="!systemIsReady" id="systemInitMsgContainer">
-        <div id="systemInitMsg">
-            <img src="assets/loading-indicator-4-light.svg">
-            <div id="systemInitText">Waiting for GitLab</div>
-        </div>
+    
+    <div id="sidebar">
+        <app-infobox-manager></app-infobox-manager>
     </div>
-    <div id="userFailedAccessListCheckContainer" *ngIf="systemIsReady && userIsSignedIn && !userPassedAccessListCheck && userAccessListCheckPerformed">
-        <h2>Missing access grant</h2>
-        <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
-    </div>
+
 </div>

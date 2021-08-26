@@ -15,12 +15,36 @@ export class ProjectService {
 
   private getProjectsUrl:string = '/api/v1/user/project';
   private _projectSource = new Subject<Project[]>();
-  public projects$ = this._projectSource.asObservable();
   public projects:Project[] = [];
   public projectObs:Observable<Project[]>;
+  public projects$:Subject<Project[]>;
+  public projectsLoaded:boolean = false;
 
   constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService) {
     this.updateProjects();
+  }
+
+  fetchProjects(forceNewFetch:boolean = false) {
+    return new Observable(sub => {
+      if(this.projectsLoaded && !forceNewFetch) {
+        sub.next(this.projects);
+        sub.complete();
+      }
+      else {
+        this.http.get<ApiResponse>(this.getProjectsUrl).subscribe(response => {
+          if(response.code == 200) {
+            this.projects = <Project[]>response.body;
+            sub.next(this.projects);
+            sub.complete();
+          }
+          else {
+            console.log("Failed loading projects!", response);
+            sub.next(this.projects);
+            sub.complete();
+          }
+        });
+      }
+    });
   }
 
   updateProjects() {
@@ -29,6 +53,7 @@ export class ProjectService {
         if(response.code == 401) {
         }
         this.projects = <Project[]>response.body;
+        this.projectsLoaded = true;
         this._projectSource.next(this.projects);
         resolve(this.projects);
       });
@@ -121,12 +146,6 @@ export class ProjectService {
     });
   }
 
-  /*
-  emuSessionNameIsAvailable(project, sessionName) {
-    return this.http.get('/api/v1/availibility/project/'+project.id+'/session/'+sessionName);
-  }
-  */
-
   /**
    * Function: addSessions
    * Add sessions to an existing project
@@ -160,39 +179,7 @@ export class ProjectService {
         data: body
       }));
     });
-
-    /*
-    return new Observable((observer) => {
-      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/add', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-        observer.next(response)
-        //return response;
-      });
-    });
-    */
   }
-
-  /*
-  async createProject(formValues:object, formContextId:string):Promise<any> {
-    window.dispatchEvent(new Event("project-create-in-progress"));
-
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      form: formValues,
-      context: formContextId
-    };
-
-    return new Promise((resolve, reject) => {
-      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project', "data="+JSON.stringify(body), { headers }).subscribe((response:any) => {
-        this.updateProjects().then(() => {
-          window.dispatchEvent(new Event("project-create-done"));
-        });
-        resolve(response);
-      });
-    });
-  }
-  */
 
   async getSession(projectId) {
     return this.http.get<ApiResponse>('https://'+Config.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {

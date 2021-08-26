@@ -31,3 +31,29 @@
     height:70%;
     object-fit: contain;
 }
+
+#back-button-container {
+    background: $comp3;
+    margin:0;
+    padding:0;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+#back-button-container #visp-back-button {
+    display:flex;
+    align-items:center;
+    color: #000;
+    text-decoration-line: none;
+    font-size: 1.6em;
+    cursor:pointer;
+}
+
+#back-button-container:hover {
+    background: $comp2;
+}
+
+#visp-back-button-arrow {
+    margin-right: 0.1em;
+    font-size: 2em;
+}

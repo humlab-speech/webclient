@@ -5,10 +5,12 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SpeechrecorderngComponent, SpeechRecorderConfig, SpeechrecorderngModule } from 'speechrecorderng';
+import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
 
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
+  { path: 'app', component: ContainerSessionRenderComponent },
   { path: 'auth', redirectTo: '/', pathMatch: 'full' }
 ];
 

@@ -21,6 +21,7 @@ export class SystemService {
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
+  userAuthenticationPerformed:boolean = false;
   public userIsAuthenticated:boolean = false;
 
   constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
@@ -128,6 +129,7 @@ export class SystemService {
             */
             this.userIsAuthenticated = false;
           }
+          this.userAuthenticationPerformed = true;
           this.eventEmitter.emit("userAuthentication");
         }
 
@@ -142,6 +144,21 @@ export class SystemService {
         this.wsSubject.next(messageEvent);
       }
     });
+  }
+
+  getUserAuthenticationStatus() {
+    if(!this.userAuthenticationPerformed) {
+      return "not performed";
+    }
+    else {
+      if(this.userIsAuthenticated) {
+        return "authenticated";
+      }
+      else {
+        return "rejected";
+      }
+    }
+    
   }
 
   isGitlabReady() {

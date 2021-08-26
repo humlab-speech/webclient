@@ -30,6 +30,7 @@ import { DocumentationFormComponent } from './components/forms/documentation-for
 import { EmudbFormComponent } from './components/forms/emudb-form/emudb-form.component';
 import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
 import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
+import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
 
 
 @NgModule({
@@ -50,7 +51,8 @@ import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
     DocumentationFormComponent,
     EmudbFormComponent,
     EditEmudbDialogComponent,
-    MenuBarComponent
+    MenuBarComponent,
+    ContainerSessionRenderComponent
   ],
   imports: [
     BrowserModule,

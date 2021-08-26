@@ -8,8 +8,14 @@ div#dashboard {
     place-content: center;
     */
     display:grid;
-    grid-template-columns: 1fr;
+    //grid-template-columns: 1fr;
+    grid-template-columns: [main-content]minmax(600px, 1fr) [info-panel]minmax(400px, 25vw);
     grid-template-rows: 1fr;
+}
+
+#main-content {
+    grid-column: main-content;
+    padding: 1em;
 }
 
 #systemInitMsgContainer {
