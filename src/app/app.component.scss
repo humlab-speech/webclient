@@ -24,30 +24,10 @@ app-menu-bar {
 
     //grid-template-columns: [main-content]minmax(600px, auto) [info-panel]minmax(400px, 25vw);
     grid-template-columns: [main-content]minmax(600px, auto);
-    grid-template-rows: [menu]minmax(50px, 6vh) 1fr [footer]40px;
-
-
+    grid-template-rows: [menu]minmax(50px, 6vh) 1fr;
 
     grid-template-areas:
     "menu menu"
     "main-content info-panel"
     "footer footer";
 }
-
-#footer {
-    grid-area: footer;
-    background: $black;
-}
-
-#umuLogo {
-    display:block;
-    width: auto;
-    height: 100%;
-    padding: 0em;
-    margin:0;
-    background-image: url('/assets/umu-logo-left-neg-EN.png');
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: left center;
-}
-
