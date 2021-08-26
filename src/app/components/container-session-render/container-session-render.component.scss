@@ -76,3 +76,16 @@ a {
     border-width:0;
 }
 
+#loading-indicator-container {
+    position:fixed;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width: 100vw;
+    height: 100%;
+}
+
+#loading-indicator-container img {
+    width: 4em;
+    height: 4em;
+}

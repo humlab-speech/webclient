@@ -7,6 +7,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ContainerSessionRenderComponent implements OnInit {
   public token:string = "";
+  public showLoadingIndicator:boolean = true;
 
   constructor() {
     let token = window.location.search.substr(window.location.search.indexOf("token=")+6);
@@ -22,10 +23,13 @@ export class ContainerSessionRenderComponent implements OnInit {
         break;
       case "/emu-webapp":
         let url = "https://emu-webapp."+window.location.hostname+window.location.search+"&autoConnect=true&comMode=GITLAB";
-        console.log(url);
         iframe.setAttribute("src", url);
         break;
     }
+
+    setTimeout(() => {
+      this.showLoadingIndicator = false;
+    }, 1000);
     
   }
 }
