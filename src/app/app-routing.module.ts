@@ -11,6 +11,7 @@ import { ContainerSessionRenderComponent } from './components/container-session-
 const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'app', component: ContainerSessionRenderComponent },
+  { path: 'emu-webapp', component: ContainerSessionRenderComponent },
   { path: 'auth', redirectTo: '/', pathMatch: 'full' }
 ];
 

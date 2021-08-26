@@ -111,12 +111,14 @@ export class AppctrlComponent implements OnInit {
     };
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
       
-      let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
+      //let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
+      let gitlabURL:string = "https://gitlab."+window.location.hostname
       let projectId:number = this.project.id;
       let emuDBname:string  = "VISP";
       let bundleListName:string = "user.user";
       let privateToken:string = data.body.personalAccessToken;
 
+      /*
       let url = "https://"+this.hsApp.name+"."+this.domain+"/?autoConnect=true&comMode=GITLAB";
       url += "&gitlabURL="+gitlabURL;
       url += "&projectID="+projectId;
@@ -124,8 +126,18 @@ export class AppctrlComponent implements OnInit {
       url += "&emuDBname="+emuDBname;
       url += "&bundleListName="+bundleListName;
       url += "&privateToken="+privateToken;
-      
       this.goToUrl(url);
+      */
+     
+      this.router.navigate(['/emu-webapp'], { queryParams: {
+        gitlabURL: gitlabURL,
+        projectID: projectId,
+        gitlabPath: "Data/VISP_emuDB",
+        emuDBname: emuDBname,
+        bundleListName: bundleListName,
+        privateToken: privateToken
+      }});
+      
     });
   }
 

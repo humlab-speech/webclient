@@ -18,7 +18,7 @@ export class MenuBarComponent implements OnInit {
     this.router.events.subscribe((value) => {
       if(value instanceof NavigationEnd) {
         let path = value.url.substr(0, value.url.indexOf("?"));
-        this.containerSessionViewActive = path == "/app";
+        this.containerSessionViewActive = path == "/app" || path == "/emu-webapp";
       }
     });
   }

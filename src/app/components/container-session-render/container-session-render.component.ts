@@ -15,6 +15,17 @@ export class ContainerSessionRenderComponent implements OnInit {
 
   ngOnInit(): void {
     let iframe = document.getElementById("proxied-container");
-    iframe.setAttribute("src", "https://app."+window.location.hostname+"?token="+this.token);
+
+    switch(window.location.pathname) {
+      case "/app":
+        iframe.setAttribute("src", "https://app."+window.location.hostname+"?token="+this.token);
+        break;
+      case "/emu-webapp":
+        let url = "https://emu-webapp."+window.location.hostname+window.location.search+"&autoConnect=true&comMode=GITLAB";
+        console.log(url);
+        iframe.setAttribute("src", url);
+        break;
+    }
+    
   }
 }
