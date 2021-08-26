@@ -157,7 +157,9 @@ export class CreateProjectDialogComponent implements OnInit {
       let msgData = JSON.parse(msg.data);
       if(msgData.type == "cmd-result" && msgData.cmd == "createProject") {
         if(msgData.progress == "end") {
-          this.projectService.updateProjects();
+          this.projectService.fetchProjects(true).subscribe(msg => {
+            console.log(msg);
+          });
           this.form.reset();
           this.closeCreateProjectDialog();
         }

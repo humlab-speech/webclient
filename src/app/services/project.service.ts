@@ -14,13 +14,13 @@ import { Config } from '../config';
 export class ProjectService {
 
   private getProjectsUrl:string = '/api/v1/user/project';
-  private _projectSource = new Subject<Project[]>();
   public projects:Project[] = [];
   public projectObs:Observable<Project[]>;
   public projects$:Subject<Project[]>;
   public projectsLoaded:boolean = false;
 
   constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService) {
+    this.projects$ = new Subject<Project[]>();
     this.updateProjects();
   }
 
@@ -34,12 +34,15 @@ export class ProjectService {
         this.http.get<ApiResponse>(this.getProjectsUrl).subscribe(response => {
           if(response.code == 200) {
             this.projects = <Project[]>response.body;
+            this.projectsLoaded = true;
             sub.next(this.projects);
+            this.projects$.next(this.projects);
             sub.complete();
           }
           else {
             console.log("Failed loading projects!", response);
             sub.next(this.projects);
+            this.projectsLoaded = false;
             sub.complete();
           }
         });
@@ -54,7 +57,7 @@ export class ProjectService {
         }
         this.projects = <Project[]>response.body;
         this.projectsLoaded = true;
-        this._projectSource.next(this.projects);
+        this.projects$.next(this.projects);
         resolve(this.projects);
       });
     });

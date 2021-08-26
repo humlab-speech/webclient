@@ -116,9 +116,10 @@ export class ProjectItemComponent implements OnInit {
     if(window.confirm('Are sure you want to delete this project? All data associated with this project will be lost.')){
       this.deleteProjectInProgress = true;
       this.projectService.deleteProject(this.project).subscribe(() => {
-        this.projectService.updateProjects();
+        this.projectService.fetchProjects(true).subscribe();
       });
     }
+    
   }
 
 }

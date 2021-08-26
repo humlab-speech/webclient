@@ -40,6 +40,11 @@ export class ProjectManagerComponent implements OnInit {
       this.dashboard.modalActive = false;
     });
 
+    this.projectService.projects$.subscribe(projects => {
+      this.projects = <Project[]>projects;
+      this.projectsLoaded = true;
+    })
+
     this.projectService.fetchProjects(true).subscribe(projects => {
       this.projects = <Project[]>projects;
       this.projectsLoaded = true;
