@@ -14,7 +14,7 @@ export class DashboardComponent implements OnInit {
   userIsSignedIn:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
-  systemIsReady:boolean = true;
+  systemIsReady:boolean = false;
   userPassedAccessListCheck:boolean = false;
   gitlabReady:boolean = false;
   userAccessListCheckPerformed:boolean = false;
@@ -25,6 +25,9 @@ export class DashboardComponent implements OnInit {
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
     this.notifier = notifierService;
     this.systemService = systemService;
+    
+    this.gitlabReady = this.systemService.gitlabIsReady;
+    this.systemIsReady = this.gitlabReady;
 
     systemService.eventEmitter.subscribe((event) => {
       if(event == "gitlabIsReady") {

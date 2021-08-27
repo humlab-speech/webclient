@@ -34,6 +34,8 @@ export class SystemService {
         });
       }
     });
+
+    this.isGitlabReady();
   }
 
   fetchOperationsSession(userSession:Object, project:Object): Observable<MessageEvent>{
@@ -161,7 +163,25 @@ export class SystemService {
     
   }
 
-  isGitlabReady() {
-    return this.http.get<any>("/api/v1/isgitlabready");
+  async isGitlabReady() {
+    this.gitlabIsReadyInterval = setInterval(() => {
+      this.gitlabReadyCheck();
+    }, 5000);
+    this.gitlabReadyCheck();
+  }
+
+  gitlabReadyCheck() {
+    this.http.get<any>("/api/v1/isgitlabready").subscribe(msg => {
+      this.gitlabIsReady = msg.body.gitlabIsReady;
+      if(msg.body.gitlabIsReady) {
+        clearInterval(this.gitlabIsReadyInterval);
+        console.log("gitlabIsReady");
+        this.eventEmitter.emit("gitlabIsReady");
+      }
+      else {
+        console.log("gitlabIsNotReady");
+        this.eventEmitter.emit("gitlabIsNotReady");
+      }
+    });
   }
 }
