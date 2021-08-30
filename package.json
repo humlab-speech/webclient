@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --output-path dist",
+    "build": "ng build --configuration=production --output-path dist",
+    "build-datalab": "ng build --configuration=datalab --output-path dist",
+    "build-visp": "ng build --configuration=visp --output-path dist",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",

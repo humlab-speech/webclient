@@ -5,6 +5,7 @@ import { HsApp } from "../../models/HsApp";
 import { Url } from 'url';
 import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-appctrl',
@@ -14,6 +15,7 @@ import { Router } from '@angular/router';
 export class AppctrlComponent implements OnInit {
 
   @Input() project: Project;
+  @Input() projectItem: any;
   @Input() hsApp: HsApp;
 
   private readonly notifier: NotifierService;
@@ -42,6 +44,16 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchProjectInApp() {
+    if(this.hsApp.disabled) {
+      this.notifier.notify("info", "Prevented launch of "+this.hsApp.title+". Please close other applications first.");
+      return;
+    }
+
+    this.projectItem.sessionUpdateFromAppCtrlCallback({
+      type: "launch",
+      app: this.hsApp.name
+    });
+
     switch(this.hsApp.name) {
       case "rstudio":
         this.launchContainerSession("rstudio");
@@ -222,6 +234,12 @@ export class AppctrlComponent implements OnInit {
         }
       }
       this.updateHasRunningSessions();
+
+      this.projectItem.sessionUpdateFromAppCtrlCallback({
+        type: "close",
+        app: this.hsApp.name
+      });
+
     });
   }
 

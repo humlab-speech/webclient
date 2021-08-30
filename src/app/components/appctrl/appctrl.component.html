@@ -1,6 +1,6 @@
 <fieldset>
     <div class="button-status-wrapper">
-        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
+        <button [disabled]="showLoadingIndicator" [ngClass]="{'buttonDisabled': this.hsApp.disabled}" class="app-btn" (click)="launchProjectInApp()">
             <div class="app-btn-icon-box">
                 <img [src]="appIconPath">
             </div>

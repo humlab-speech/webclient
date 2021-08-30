@@ -3,6 +3,7 @@ import { UserService } from "../../services/user.service";
 import { UserSession } from "../../models/UserSession";
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from '../../services/system.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,9 +24,11 @@ export class DashboardComponent implements OnInit {
   private readonly notifier: NotifierService;
 
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
+    console.log(environment);
+
     this.notifier = notifierService;
     this.systemService = systemService;
-    
+
     this.gitlabReady = this.systemService.gitlabIsReady;
     this.systemIsReady = this.gitlabReady;
 

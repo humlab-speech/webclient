@@ -129,3 +129,12 @@ button i {
     height: 2rem;
 }
 
+.buttonDisabled {
+    background: #ccc;
+    cursor: default;
+}
+
+.buttonDisabled:hover {
+    background: #ccc;
+    cursor: default;
+}

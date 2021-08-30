@@ -4,4 +4,5 @@ export class HsApp {
     icon?:string;
     saveInProgress?:boolean;
     deleteInProgress?:boolean;
+    disabled:boolean = false;
 }
