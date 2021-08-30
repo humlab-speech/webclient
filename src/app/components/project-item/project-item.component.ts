@@ -92,18 +92,6 @@ export class ProjectItemComponent implements OnInit {
 
     });
 
-    /*
-    this.systemService.wsSubject.subscribe(msg => {
-      console.log(msg);
-    });
-
-    this.systemService.ws.send(JSON.stringify({
-      type: 'cmd',
-      cmd: 'createProject',
-      data: body
-    }));
-    */
-
   }
 
   shouldAppBeDisabled(appName) {

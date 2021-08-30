@@ -1,10 +1,10 @@
 export const environment = {
-    APPLICATION_NAME: "Visible Speech",
-    API_ENDPOINT: "https://localtest.me",
-    EMUDB_INTEGRATION: true,
-    ENABLED_APPLICATIONS: ["rstudio", "jupyter", "emu-webapp", "octra", "script"],
-    BASE_DOMAIN: "localtest.me",
-    GITLAB_API_ENDPOINT: "https://gitlab.localtest.me/api/v4",
+    APPLICATION_NAME: "DataLab",
+    API_ENDPOINT: "https://datalab.humlab.umu.se",
+    EMUDB_INTEGRATION: false,
+    ENABLED_APPLICATIONS: ["rstudio", "jupyter"],
+    BASE_DOMAIN: "datalab.humlab.umu.se",
+    GITLAB_API_ENDPOINT: "https://gitlab.datalab.humlab.umu.se/api/v4",
     GITLAB_PERSONAL_ACCESS_TOKEN: null,
     production: true
   };
