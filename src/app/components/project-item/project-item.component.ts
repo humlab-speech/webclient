@@ -35,8 +35,6 @@ export class ProjectItemComponent implements OnInit {
 
   ngOnInit(): void {
 
-    console.log(this.project.sessions);
-
     this.projectOperations.push({
       title: "Edit emuDB",
       callback: this.showImportAudioDialog
@@ -101,7 +99,7 @@ export class ProjectItemComponent implements OnInit {
 
     for(let key in this.project.sessions) {
       let session = this.project.sessions[key];
-      if(session.type == appName) {
+      if(session.type == appName || session.type == "operations") {
         return false;
       }
     }
