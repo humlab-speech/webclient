@@ -3,10 +3,6 @@
 div#dashboard {
     width: 100%;
     height: 100%;
-    /*
-    display:flex;
-    place-content: center;
-    */
     display:grid;
     //grid-template-columns: 1fr;
     grid-template-columns: [main-content]minmax(600px, 1fr) [info-panel]minmax(400px, 25vw);
@@ -16,6 +12,11 @@ div#dashboard {
 #main-content {
     grid-column: main-content;
     padding: 1em;
+}
+
+#sidebar {
+    grid-column: info-panel;
+    height: 100%;
 }
 
 #systemInitMsgContainer {

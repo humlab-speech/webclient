@@ -4,30 +4,26 @@ app-menu-bar {
     grid-area: menu;
 }
 
-#sidebar {
-    height: 100vh;
-}
-#sidebar h1 {
-    font-size: 3em;
-}
 #content-container {
-    overflow: auto;
     width: 100vw;
+    overflow:auto;
+    padding:0;
+    margin:0;
 }
 
 #main-container {
     display: grid;
-    overflow: auto;
     width: 100vw;
     height: 100vh;
+    padding:0;
+    margin:0;
     background: $panelBg;
 
     //grid-template-columns: [main-content]minmax(600px, auto) [info-panel]minmax(400px, 25vw);
     grid-template-columns: [main-content]minmax(600px, auto);
-    grid-template-rows: [menu]minmax(50px, 6vh) 1fr;
+    grid-template-rows: [menu]minmax(80px, 6vh) 1fr;
 
     grid-template-areas:
     "menu menu"
-    "main-content info-panel"
-    "footer footer";
+    "main-content info-panel";
 }
