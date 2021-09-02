@@ -20,11 +20,12 @@ export class DashboardComponent implements OnInit {
   gitlabReady:boolean = false;
   userAccessListCheckPerformed:boolean = false;
   systemService:any = null;
+  applicationName:string = environment.APPLICATION_NAME;
 
   private readonly notifier: NotifierService;
 
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
-    console.log(environment);
+    console.log(environment.APPLICATION_NAME);
 
     this.notifier = notifierService;
     this.systemService = systemService;

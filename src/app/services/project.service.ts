@@ -5,7 +5,7 @@ import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
 import { SystemService } from './system.service';
-import { Config } from '../config';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -185,7 +185,7 @@ export class ProjectService {
   }
 
   async getSession(projectId) {
-    return this.http.get<ApiResponse>('https://'+Config.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
+    return this.http.get<ApiResponse>('https://'+environment.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
       console.log(response);
       return response;
     });
@@ -200,7 +200,7 @@ export class ProjectService {
     };
 
     return new Observable((observer) => {
-      this.http.post<ApiResponse>(Config.API_ENDPOINT+'/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
+      this.http.post<ApiResponse>(environment.API_ENDPOINT+'/api/v1/user/project/delete', "data="+JSON.stringify(body), { headers }).subscribe((response) => {
         console.log(response);
         this.updateProjects();
       });

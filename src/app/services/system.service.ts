@@ -1,10 +1,9 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { ApiResponse } from '../models/ApiResponse';
-import { Config } from '../config';
 import { from, Observable, Observer, Subject } from 'rxjs';
 import { NotifierService } from 'angular-notifier';
 import { UserService } from './user.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -77,7 +76,7 @@ export class SystemService {
         this.ws = null;
       }
 
-      const wsUrl = 'wss://'+Config.BASE_DOMAIN;
+      const wsUrl = 'wss://'+environment.BASE_DOMAIN;
       console.log("Connecting websocket to "+wsUrl);
       this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {

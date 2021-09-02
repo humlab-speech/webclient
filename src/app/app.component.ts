@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Config } from './config';
+import { environment } from 'src/environments/environment';
+
 
 @Component({
   selector: 'app-root',
@@ -8,5 +9,5 @@ import { Config } from './config';
 })
 
 export class AppComponent {
-  title = Config.APPLICATION_NAME;
+  title = environment.APPLICATION_NAME;
 }

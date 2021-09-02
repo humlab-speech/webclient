@@ -43,27 +43,7 @@
 
             <app-documentation-form *ngIf="standardDirectoryStructure.value" [context]="this"></app-documentation-form>
             
-            <!--
-            <div *ngIf="EMUDB_INTEGRATION">
-                <div class="flex-container">
-                    <input id="create-emudb" type="checkbox" formControlName="createEmuDb">
-                    <label for="create-emudb">Create EmuDB database</label>
-                    &nbsp;<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="emuDbPopper" [popperTrigger]="'hover'"></i>
-                </div>
-
-                <popper-content #emuDbPopper>
-                    <h4>EmuDB</h4>
-                    <p class="help-text">
-                        An EmuDB is required to work with the EMU tools (e.g., EmuWebApp for transcription, Emu-R for analyses). You should only uncheck this box if you really know what you are doing. Your EmuDB is stored in the Data folder on your project server.
-                    </p>
-                </popper-content>
-
-                <div *ngIf="createEmuDb.value" class="form">
-                    <app-emudb-form [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
-                </div>
-            </div>
-            -->
-            <app-emudb-form [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
+            <app-emudb-form *ngIf="emuDbIntegrationEnabled" [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
             
             <br />
             <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">

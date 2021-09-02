@@ -10,7 +10,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "devbuild": "ng build --output-path dist --watch"
+    "devbuild": "ng build --output-path dist --watch",
+    "devbuild-datalab": "ng build --configuration=datalab.dev --output-path dist --watch"
   },
   "private": true,
   "dependencies": {

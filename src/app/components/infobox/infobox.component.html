@@ -6,12 +6,12 @@
         </div>
         <div class="info-box-content" *ngSwitchCase="'tools-and-resources'">
             <ul>
-                <li class="link-button">
+                <li class="link-button" *ngIf="octraEnabled">
                     <a href="https://octra.{{ baseDomain }}" target="_blank">
                         <i class="fa fa-commenting" aria-hidden="true"></i><div>Octra</div>
                     </a>
                 </li>
-                <li class="link-button">
+                <li class="link-button" *ngIf="labjsEnabled">
                     <a href="https://labjs.{{ baseDomain }}" target="_blank">
                         <i class="fa fa-flask" aria-hidden="true"></i><div>Lab.js</div>
                     </a>
@@ -21,7 +21,7 @@
         <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
             <ul>
 
-                <li class="link-button">
+                <li *ngIf="emuWebAppEnabled" class="link-button">
                     <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual" target="_blank">
                         <i class="fa fa-book" aria-hidden="true"></i><div>EMU Manual</div>
                     </a>

@@ -3,9 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Project } from '../../models/Project';
 import { ProjectService } from '../../services/project.service';
 import { HsApp } from "../../models/HsApp";
-import { Config } from "../../config";
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
 import { SystemService } from 'src/app/services/system.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-project-item',
@@ -19,7 +19,7 @@ export class ProjectItemComponent implements OnInit {
   @Input() project: Project;
   @Input() projectManager: ProjectManagerComponent;
 
-  enabledApps = Config.ENABLED_APPLICATIONS;
+  enabledApps = environment.ENABLED_APPLICATIONS;
 
   statusMsg:string = "";
   domain:string = window.location.hostname;
@@ -40,7 +40,7 @@ export class ProjectItemComponent implements OnInit {
       callback: this.showImportAudioDialog
     });
 
-    Config.ENABLED_APPLICATIONS.forEach((hsAppName) => {
+    environment.ENABLED_APPLICATIONS.forEach((hsAppName) => {
       if(hsAppName == "rstudio") {
         let rstudioApp = new HsApp();
         rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!

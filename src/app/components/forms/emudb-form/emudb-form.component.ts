@@ -23,7 +23,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { FileUploadService } from "../../../services/file-upload.service";
 import { Observable, of } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
-import { Config } from '../../../config';
 import { UserService } from 'src/app/services/user.service';
 import { nanoid } from 'nanoid';
 
