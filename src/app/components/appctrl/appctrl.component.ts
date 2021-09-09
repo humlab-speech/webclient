@@ -66,6 +66,9 @@ export class AppctrlComponent implements OnInit {
       break;
       case "jupyter":
         this.launchContainerSession("jupyter");
+        break;
+      case "vscode":
+        this.launchContainerSession("vscode");
       break;
       case "script":
         this.showScriptAppDialog();

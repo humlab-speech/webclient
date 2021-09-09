@@ -87,6 +87,15 @@ export class ProjectItemComponent implements OnInit {
         scriptApp.icon = "app-icons/88x88-bw/script-icon.png";
         //this.hsApplications.push(scriptApp);
       }
+      if(hsAppName == "vscode") {
+        let vscodeApp = new HsApp();
+        vscodeApp.name = "vscode";
+        vscodeApp.title = "VS Code";
+        vscodeApp.icon = "app-icons/88x88-color/vscode-icon.png";
+        vscodeApp.disabled = this.shouldAppBeDisabled(vscodeApp.name);
+
+        this.hsApplications.push(vscodeApp);
+      }
 
     });
 
