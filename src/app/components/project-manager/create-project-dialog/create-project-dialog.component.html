@@ -43,7 +43,7 @@
 
             <app-documentation-form *ngIf="standardDirectoryStructure.value" [context]="this"></app-documentation-form>
             
-            <app-emudb-form *ngIf="emuDbIntegrationEnabled" [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
+            <app-emudb-form [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
             
             <br />
             <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">

@@ -33,7 +33,7 @@ export class CreateProjectDialogComponent implements OnInit {
   fileUploadsComlete:boolean = true;
   validateWaitInterval:any = null;
   setupEmuDbFormChangeListener:any = null;
-  emuDbIntegrationEnabled:boolean = false;
+  emuDbIntegrationEnabled:boolean = true;
 
   form:FormGroup;
 
@@ -57,10 +57,11 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     if(this.emuDbIntegrationEnabled) {
-      this.form.addControl("emuDb", this.emudbFormComponent.getFormGroup());
       //This is stupid, but we need to wait for the emuDb-form-module to initialize
       this.setupEmuDbFormChangeListener = setInterval(() => {
         if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
+          console.log("emudbFormComponent init");
+          this.form.addControl("emuDb", this.emudbFormComponent.getFormGroup());
           clearInterval(this.setupEmuDbFormChangeListener);
           this.emudbFormComponent.getFormGroup().valueChanges.subscribe(() => {
             this.validateForm();
