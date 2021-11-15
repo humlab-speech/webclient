@@ -283,7 +283,6 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       subLevel: new FormControl(subLevel, Validators.required),
       type: new FormControl(type, Validators.required)
     });
-
     this.annotLevelLinkForms.push(annotLevelLink);
   }
 

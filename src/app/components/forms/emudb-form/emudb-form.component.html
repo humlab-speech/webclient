@@ -229,11 +229,13 @@
                 </div>
 
 
+                <!-- <pre>{{annotLevelLink.value | json}}</pre> -->
+
                 <div class="section-content horizontal-flex-content">
                     <div class="attribute-container">
                         <label>Super</label>
                         <select formControlName="superLevel">
-                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" >
+                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" [selected]="al.name == annotLevelLink.value.superLevel">
                                 {{ al.name }}
                             </option>
                         </select>
@@ -244,7 +246,7 @@
                     <div class="attribute-container">
                         <label>Sub</label>
                         <select formControlName="subLevel">
-                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" >
+                            <option [value]="al.name" *ngFor="let al of annotLevelsForm" [selected]="al.name == annotLevelLink.value.subLevel">
                                 {{ al.name }}
                             </option>
                         </select>

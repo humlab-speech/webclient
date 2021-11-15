@@ -11,17 +11,42 @@
 }
 
 #signin-btn-container button {
+    padding: 1em;
+    cursor: pointer;
+    background-color: $comp1;
+    color: #fff;
+    border-width: 0;
+    font-size: 1.6em;
+}
+
+/*
+#signin-btn-container button {
     font-family: 'Oswald', sans-serif;
     font-weight: normal;
     font-size: 1.2rem;
     padding: 1rem;
-    background: $comp1;
-    border: 1px solid $primary;
+    //background: $comp1;
+    background: transparent;
+    background: url('/assets/sign-in-button.svg');
+    background-size: contain;
+    background-position:center center;
+    background-repeat: no-repeat;
+    width: 11em;
+    height: auto;
+
+    border: 0px solid $primary;
     border-radius: 0px;
     
     color: $white;
     cursor:pointer;
 }
+*/
+/*
+#signin-btn img {
+    min-width: 100px;
+    max-width: 15em;
+}
+*/
 
 #signin-btn-container button:hover {
     box-shadow: 0px 0px 10px #999;
