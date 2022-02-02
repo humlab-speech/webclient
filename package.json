@@ -30,6 +30,7 @@
     "@popperjs/core": "^2.9.1",
     "angular-notifier": "^9.0.1",
     "font-awesome": "^4.7.0",
+    "jszip": "^3.7.1",
     "nanoid": "^3.1.20",
     "ngx-dropzone": "^3.0.0",
     "ngx-popperjs": "^10.0.1",

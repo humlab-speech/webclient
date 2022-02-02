@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import * as JSZip from 'jszip';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +9,7 @@ import { Subject } from 'rxjs';
 export class FileUploadService {
 
   hasPendingUploads:boolean = false;
+  zipBeforeUpload = false;
   pendingUploads:any = [];
   statusStream:Subject<any>;
 
@@ -15,8 +17,83 @@ export class FileUploadService {
     this.statusStream = new Subject<any>();
   }
 
-  upload(file, context:string = "", group:string = ""):Promise<string> {
+  async upload(file, context:string = "", group:string = ""):Promise<Subscription> {
     console.log("Uploading "+file.name);
+
+    this.statusStream.next("uploads-in-progress");
+
+    file.uploadComplete = false;
+    this.hasPendingUploads = true;
+    this.pendingUploads.push(file);
+
+    let zipBlob = null;
+    if(this.zipBeforeUpload) {
+      console.log("Zipping uploaded file");
+      console.time("Zip complete");
+      const zip = new JSZip.default();
+      zip.file(file.name, file);
+
+     zipBlob = await zip.generateAsync({
+        type : "blob",
+        platform: "UNIX",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 1
+        }
+      });
+
+      console.timeEnd("Zip complete");
+    }
+
+    console.log("Uploading file");
+
+    let formData = new FormData();
+    let fileMeta = {
+      filename: file.name,
+      context: context,
+      group: group
+    };
+    
+    if(this.zipBeforeUpload) {
+      let parts = fileMeta.filename.split(".");
+      parts.pop();
+      fileMeta.filename = parts.join(".")+".zip";
+    }
+    formData.append("fileMeta", JSON.stringify(fileMeta));
+
+    if(this.zipBeforeUpload) {
+      formData.append("fileData", zipBlob);
+    }
+    else {
+      formData.append("fileData", file);
+    }
+    
+    let headers = {};
+    return this.http.post<any>("/api/v1/upload", formData, { headers }).subscribe(data => {
+      file.uploadComplete = true;
+        if(this.isAllUploadsComplete()) {
+          this.statusStream.next("all-uploads-complete");
+        }
+        return data;
+    }, error => {
+      console.error(error)
+      return error;
+    });
+    
+  }
+
+  uploadOld(file, context:string = "", group:string = ""):Promise<string> {
+    console.log("Uploading "+file.name);
+
+
+    /* This might potentially work, taken from:
+    https://stackoverflow.com/questions/5587973/javascript-upload-file
+    
+    let formData = new FormData();
+    formData.append("audiofile", file);
+    fetch('/api/v1/upload', { method: "POST", body: formData });
+    */
+
 
     this.statusStream.next("uploads-in-progress");
 
@@ -68,7 +145,7 @@ export class FileUploadService {
     return true;
   }
 
-  async readFile(file: File): Promise<string | ArrayBuffer> {
+  async readFile(file: File, returnAsDataUrl = true): Promise<string | ArrayBuffer> {
     return new Promise<string | ArrayBuffer>((resolve, reject) => {
       const reader = new FileReader();
 
@@ -86,7 +163,14 @@ export class FileUploadService {
         return reject(null);
       }
 
-      reader.readAsDataURL(file);
+      
+      if(returnAsDataUrl) {
+        reader.readAsDataURL(file);
+      }
+      else {
+        reader.readAsArrayBuffer(file);
+      }
+      
     });
   }
 
