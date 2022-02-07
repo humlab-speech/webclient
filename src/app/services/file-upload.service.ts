@@ -53,23 +53,19 @@ export class FileUploadService {
       context: context,
       group: group
     };
+    formData.append("fileMeta", JSON.stringify(fileMeta));
     
     if(this.zipBeforeUpload) {
       let parts = fileMeta.filename.split(".");
       parts.pop();
       fileMeta.filename = parts.join(".")+".zip";
-    }
-    formData.append("fileMeta", JSON.stringify(fileMeta));
-
-    if(this.zipBeforeUpload) {
       formData.append("fileData", zipBlob);
     }
     else {
       formData.append("fileData", file);
     }
     
-    let headers = {};
-    return this.http.post<any>("/api/v1/upload", formData, { headers }).subscribe(data => {
+    return this.http.post<any>("/api/v1/upload", formData).subscribe(data => {
       file.uploadComplete = true;
         if(this.isAllUploadsComplete()) {
           this.statusStream.next("all-uploads-complete");
