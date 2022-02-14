@@ -357,7 +357,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   onAudioUpload(event, session) {
-    let allowedFilesTypes = ['audio/wav', 'audio/x-wav'];
+    let allowedFilesTypes = ['audio/wav', 'audio/x-wav', 'application/zip', 'application/x-zip-compressed'];
 
     for(let key in event.addedFiles) {
       if(allowedFilesTypes.includes(event.addedFiles[key].type) == false) {
