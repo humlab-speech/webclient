@@ -83,7 +83,7 @@ export class SystemService {
         console.log('Websocket connected');
         if(this.wsError) {
           this.wsError = false;
-          this.notifierService.notify("info", "Connection to backend reestablished.");
+          //this.notifierService.notify("info", "Connection to backend reestablished.");
         }
         resolve(this.ws);
       };
@@ -100,7 +100,7 @@ export class SystemService {
           this.notifierService.notify("error", "Attempt to reconnect to backend failed.");
         }
         else {
-          this.notifierService.notify("error", "Lost connection to backend.");
+          //this.notifierService.notify("error", "Lost connection to backend.");
           this.wsError = true;
         }
         console.log('Websocket error', error);
