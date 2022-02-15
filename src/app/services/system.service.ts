@@ -89,7 +89,9 @@ export class SystemService {
       };
 
       this.ws.onclose = () => {
-        this.ws.close();
+        if(this.ws != null) {
+          this.ws.close();
+        }
         this.ws = null;
         console.log('Websocket closed');
       }
