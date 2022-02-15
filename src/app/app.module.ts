@@ -31,6 +31,7 @@ import { EmudbFormComponent } from './components/forms/emudb-form/emudb-form.com
 import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
 import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
 import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
+import { AboutComponent } from './components/about/about.component';
 
 
 @NgModule({
@@ -52,7 +53,8 @@ import { ContainerSessionRenderComponent } from './components/container-session-
     EmudbFormComponent,
     EditEmudbDialogComponent,
     MenuBarComponent,
-    ContainerSessionRenderComponent
+    ContainerSessionRenderComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
