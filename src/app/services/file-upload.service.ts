@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http'
 import { Subject, Subscription } from 'rxjs';
 import * as JSZip from 'jszip';
 
@@ -64,7 +64,7 @@ export class FileUploadService {
     else {
       formData.append("fileData", file);
     }
-    
+
     return this.http.post<any>("/api/v1/upload", formData).subscribe(data => {
       file.uploadComplete = true;
         if(this.isAllUploadsComplete()) {
@@ -75,7 +75,7 @@ export class FileUploadService {
       console.error(error)
       return error;
     });
-    
+
   }
 
   uploadOld(file, context:string = "", group:string = ""):Promise<string> {

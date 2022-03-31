@@ -32,6 +32,8 @@ import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-em
 import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
 import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
 import { AboutComponent } from './components/about/about.component';
+import { ManageProjectMembersDialogComponent } from './components/manage-project-members-dialog/manage-project-members-dialog.component';
+import { ManageProjectMembersFormComponent } from './components/forms/manage-project-members-form/manage-project-members-form.component';
 
 
 @NgModule({
@@ -54,7 +56,9 @@ import { AboutComponent } from './components/about/about.component';
     EditEmudbDialogComponent,
     MenuBarComponent,
     ContainerSessionRenderComponent,
-    AboutComponent
+    AboutComponent,
+    ManageProjectMembersDialogComponent,
+    ManageProjectMembersFormComponent
   ],
   imports: [
     BrowserModule,

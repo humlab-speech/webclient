@@ -185,14 +185,29 @@ export class CreateProjectDialogComponent implements OnInit {
           this.closeCreateProjectDialog();
         }
         else {
+          this.setTaskProgress(msgData.progress, 16, "submitBtn", msgData.result);
+          /*
           let progressPercent = Math.ceil((msgData.progress / 16) * 100);
           let button = document.getElementById("submitBtn");
           button.style.background = 'linear-gradient(90deg, #73A790 '+progressPercent+'%, #654c4f '+progressPercent+'%)';
           button.style.color = "#fff";
           this.submitBtnLabel = msgData.result;
+          */
         }
       }
     });
+  }
+
+  setTaskProgress(progressStep, totalNumSteps, targetElementId = null, msg = null) {
+    let progressPercent = Math.ceil((progressStep / totalNumSteps) * 100);
+    if(targetElementId != null) {
+      let targetEl = document.getElementById(targetElementId);
+      targetEl.style.background = 'linear-gradient(90deg, #73A790 '+progressPercent+'%, #654c4f '+progressPercent+'%)';
+      targetEl.style.color = "#fff";
+    }
+    if(msg != null) {
+      this.submitBtnLabel = msg;
+    }
   }
 
   closeCreateProjectDialog() {

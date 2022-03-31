@@ -101,6 +101,11 @@ export class ProjectItemComponent implements OnInit {
 
   }
 
+  manageMembers(project) {
+    this.projectManager.projectInEdit = project;
+    this.projectManager.showManageProjectMembersDialog();
+  }
+
   shouldAppBeDisabled(appName) {
     if(this.project.sessions.length == 0) {
       return false;

@@ -1,0 +1,16 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+
+        
+
+        <div class="dialog-header">
+            <h2>Manage members of {{ this.project.name }}</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <app-manage-project-members-form [project]="project"></app-manage-project-members-form>
+
+    </div>
+</div>

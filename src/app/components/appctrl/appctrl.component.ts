@@ -6,6 +6,7 @@ import { Url } from 'url';
 import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-appctrl',
@@ -18,6 +19,7 @@ export class AppctrlComponent implements OnInit {
   @Input() projectItem: any;
   @Input() hsApp: HsApp;
 
+  private userService: UserService;
   private readonly notifier: NotifierService;
 
   showLoadingIndicator:boolean = false;
@@ -28,8 +30,9 @@ export class AppctrlComponent implements OnInit {
   domain:string = window.location.hostname;
   showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient, notifierService: NotifierService, private router: Router) {
+  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, private router: Router) {
     this.notifier = notifierService;
+    this.userService = userService;
     this.router = router;
   }
 
@@ -125,12 +128,13 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      
+
       //let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
       let gitlabURL:string = "https://gitlab."+window.location.hostname
       let projectId:number = this.project.id;
       let emuDBname:string  = "VISP";
       let bundleListName:string = "user.user";
+      //let bundleListName:string = this.userService.getBundleListName();
       let privateToken:string = data.body.personalAccessToken;
 
       /*

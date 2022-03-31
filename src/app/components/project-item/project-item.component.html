@@ -66,15 +66,14 @@
                             </div>
                         </a>
                     </li>
-
                     <li>
-                        <a href="{{ project.web_url }}/-/project_members" target="_blank">
+                        <div (click)="manageMembers(this.project)">
                             <div class="list-button">
                                 <i class="fa fa-users" aria-hidden="true"></i>
                                 &nbsp;
-                                Access / members
+                                Members & bundles
                             </div>
-                        </a>
+                        </div>
                     </li>
                 </ul>
             </div>

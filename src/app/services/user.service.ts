@@ -67,4 +67,15 @@ export class UserService {
   getSession():UserSession {
     return this.session;
   }
+
+  getBundleListName() {
+    return this.session.firstName.toLocaleLowerCase()+"."+this.session.lastName.toLocaleLowerCase();
+  }
+
+  searchUser(userSearchString) {
+    let headers = {
+      "PRIVATE-TOKEN": this.getSession().personalAccessToken
+    };
+    return this.http.get<any>("https://gitlab."+window.location.hostname+"/api/v4/users?search="+userSearchString, { "headers": headers })
+  }
 }

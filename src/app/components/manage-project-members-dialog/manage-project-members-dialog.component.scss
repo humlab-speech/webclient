@@ -1,0 +1,12 @@
+@import '../../../colors.scss';
+@import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap');
+
+.list-button {
+}
+
+.list-button:hover {
+    background: $primary-light;
+    color: $white;
+    cursor:pointer;
+}
