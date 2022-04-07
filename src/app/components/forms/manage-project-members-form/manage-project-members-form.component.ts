@@ -61,6 +61,15 @@ export class ManageProjectMembersFormComponent implements OnInit {
     });
   }
 
+  userIsProjectMaintainer() {
+    for(let key in this.projectMembers) {
+      if(this.projectMembers[key].username == this.userService.getSession().username && this.projectMembers[key].access_level > 30) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   onChange(value) {
     console.log("change", value);
   }
@@ -159,7 +168,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
         //Try to get the bundleList of each project member
         this.projectMembers.forEach(member => {
           member.bundles = [];
-          this.projectService.fetchBundleList(this.project, member).subscribe(bundleListResponse => {
+          this.projectService.fetchBundleList(this.project, member.username).subscribe(bundleListResponse => {
             let bundleList = JSON.parse(atob(bundleListResponse.content));
             member.bundleList = bundleList;
             member.createBundleList = false;

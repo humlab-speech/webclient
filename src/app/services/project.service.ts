@@ -115,13 +115,15 @@ export class ProjectService {
     });
   }
 
-  fetchBundleList(project, member) {
+  fetchBundleList(project, username = null) {
+    let userSession = this.userService.getSession();
+    if(username == null) {
+      username = userSession.username;
+    }
     let headers = {
-      "PRIVATE-TOKEN": this.userService.getSession().personalAccessToken
+      "PRIVATE-TOKEN": userSession.personalAccessToken
     };
-    let bundleListName = member.username;
-    //bundleListName = "user.user";
-    let filePath = encodeURIComponent("Data/VISP_emuDB/bundleLists/"+bundleListName+"_bundleList.json");
+    let filePath = encodeURIComponent("Data/VISP_emuDB/bundleLists/"+username+"_bundleList.json");
     let requestUrl = "https://gitlab."+window.location.hostname+"/api/v4/projects/"+project.id+"/repository/files/"+filePath+"?ref=master";
 
     return this.http.get<any>(requestUrl, { "headers": headers });
@@ -223,7 +225,7 @@ export class ProjectService {
     let headers = {
       "PRIVATE-TOKEN": this.userService.getSession().personalAccessToken
     };
-    return this.http.get<any>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/users', { "headers": headers });
+    return this.http.get<any>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/members', { "headers": headers });
   }
 
 

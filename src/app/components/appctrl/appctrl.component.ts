@@ -2,11 +2,10 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Project } from '../../models/Project';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { HsApp } from "../../models/HsApp";
-import { Url } from 'url';
 import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
+import { ProjectService } from 'src/app/services/project.service';
 
 @Component({
   selector: 'app-appctrl',
@@ -20,6 +19,7 @@ export class AppctrlComponent implements OnInit {
   @Input() hsApp: HsApp;
 
   private userService: UserService;
+  private projectService: ProjectService;
   private readonly notifier: NotifierService;
 
   showLoadingIndicator:boolean = false;
@@ -30,9 +30,10 @@ export class AppctrlComponent implements OnInit {
   domain:string = window.location.hostname;
   showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, private router: Router) {
+  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, projectService: ProjectService, private router: Router) {
     this.notifier = notifierService;
     this.userService = userService;
+    this.projectService = projectService;
     this.router = router;
   }
 
@@ -127,35 +128,31 @@ export class AppctrlComponent implements OnInit {
     let body = {
       projectId: this.project.id
     };
+
+    let bundleListName:string = "user.user";
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+      let session = this.userService.getSession();
+      
+      this.projectService.fetchBundleList(this.project, session.username).subscribe(bundleList => {
+        bundleListName = session.username;
 
-      //let gitlabURL:string = encodeURIComponent("https://gitlab."+window.location.hostname);
-      let gitlabURL:string = "https://gitlab."+window.location.hostname
-      let projectId:number = this.project.id;
-      let emuDBname:string  = "VISP";
-      let bundleListName:string = "user.user";
-      //let bundleListName:string = this.userService.getBundleListName();
-      let privateToken:string = data.body.personalAccessToken;
+        let gitlabURL:string = "https://gitlab."+window.location.hostname;
+        let projectId:number = this.project.id;
+        let emuDBname:string  = "VISP";
+        let privateToken:string = data.body.personalAccessToken;
+        
+        this.router.navigate(['/emu-webapp'], { queryParams: {
+          gitlabURL: gitlabURL,
+          projectID: projectId,
+          gitlabPath: "Data/VISP_emuDB",
+          emuDBname: emuDBname,
+          bundleListName: bundleListName,
+          privateToken: privateToken
+        }});
 
-      /*
-      let url = "https://"+this.hsApp.name+"."+this.domain+"/?autoConnect=true&comMode=GITLAB";
-      url += "&gitlabURL="+gitlabURL;
-      url += "&projectID="+projectId;
-      url += "&gitlabPath=Data%2FVISP_emuDB";
-      url += "&emuDBname="+emuDBname;
-      url += "&bundleListName="+bundleListName;
-      url += "&privateToken="+privateToken;
-      this.goToUrl(url);
-      */
-     
-      this.router.navigate(['/emu-webapp'], { queryParams: {
-        gitlabURL: gitlabURL,
-        projectID: projectId,
-        gitlabPath: "Data/VISP_emuDB",
-        emuDBname: emuDBname,
-        bundleListName: bundleListName,
-        privateToken: privateToken
-      }});
+      }, (err) => {
+        console.log("No such bundle list! Going with user.user");
+      });
       
     });
   }

@@ -7,7 +7,7 @@
     -->
 
     <h3>Members</h3>
-        <div class="form-control-pair-container">
+        <div *ngIf="userIsProjectMaintainer()" class="form-control-pair-container">
             <div (click)="toggleMemberSearch()" class="form-control-pair-label">
                 <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 &nbsp;
@@ -27,9 +27,10 @@
                     </div>
                 </div>
             </div>
+            <br />
         </div>
 
-        <br />
+        
         
         
         <ul *ngFor="let member of projectMemberForms.controls">
@@ -55,10 +56,8 @@
                                 
                             </ul>
                         </div>
-                        
 
-
-                        <div *ngIf="member.controls.member.value.id != project.owner.id" class="remove-button-container">
+                        <div *ngIf="member.controls.member.value.id != project.owner.id && userIsProjectMaintainer()" class="remove-button-container">
                             <div (click)="removeMember(member.controls.member.value)" class="list-button remove-member-button">
                                 <div>
                                     <i class="fa fa-times" aria-hidden="true"></i> Remove member
