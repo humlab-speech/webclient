@@ -130,13 +130,19 @@ export class AppctrlComponent implements OnInit {
     };
 
     let bundleListName:string = "user.user";
-    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
+    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe(async (data) => {
       let session = this.userService.getSession();
       
+      bundleListName = await new Promise((resolve, reject) => {
       this.projectService.fetchBundleList(this.project, session.username).subscribe(bundleList => {
-        bundleListName = session.username;
+          resolve(session.username);
+        }, (err) => {
+          console.log("No such bundle list! Going with user.user");
+          resolve(bundleListName);
+        });
+      });
 
-        let gitlabURL:string = "https://gitlab."+window.location.hostname;
+      let gitlabURL:string = "https://gitlab."+window.location.hostname;
         let projectId:number = this.project.id;
         let emuDBname:string  = "VISP";
         let privateToken:string = data.body.personalAccessToken;
@@ -149,11 +155,6 @@ export class AppctrlComponent implements OnInit {
           bundleListName: bundleListName,
           privateToken: privateToken
         }});
-
-      }, (err) => {
-        console.log("No such bundle list! Going with user.user");
-      });
-      
     });
   }
 
