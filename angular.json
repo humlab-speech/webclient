@@ -85,6 +85,14 @@
                 }
               ]
             },
+            "visp-demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.visp-demo.ts"
+                }
+              ]
+            },
             "visp.dev": {
               "fileReplacements": [
                 {

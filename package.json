@@ -7,6 +7,7 @@
     "build": "ng build --configuration=production --output-path dist",
     "datalab-build": "ng build --configuration=datalab --output-path dist",
     "visp-build": "ng build --configuration=visp --output-path dist",
+    "visp-demo-build": "ng build --configuration=visp-demo --output-path dist",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
