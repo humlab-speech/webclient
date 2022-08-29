@@ -30,7 +30,7 @@ export class UserService {
   }
   
   authenticate() {
-    window.location.href = '/auth'; //This url does not exist in the application, it is specified in apache as the trigger-url for shibboleth auth
+    window.location.href = '/DS/Login'; //This url does not exist in the application, it is specified in apache as the trigger-url for shibboleth auth
   }
 
   fetchSession():Observable<ApiResponse> {

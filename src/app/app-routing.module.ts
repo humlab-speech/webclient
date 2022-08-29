@@ -14,7 +14,7 @@ const routes: Routes = [
   { path: 'emu-webapp', component: ContainerSessionRenderComponent },
   { path: 'about', component: AboutComponent },
   { path: 'om', component: AboutComponent },
-  { path: 'auth', redirectTo: '/', pathMatch: 'full' }
+  { path: 'DS/Login', redirectTo: '/', pathMatch: 'full' }
 ];
 
 
