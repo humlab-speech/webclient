@@ -13,8 +13,7 @@
     "e2e": "ng e2e",
     "devbuild": "ng build --output-path dist --watch",
     "visp-dev": "ng build --configuration=visp.dev --output-path dist --watch",
-    "datalab-dev": "ng build --configuration=datalab.dev --output-path dist --watch",
-    "postbuild" : "node ./src/link_index.js"
+    "datalab-dev": "ng build --configuration=datalab.dev --output-path dist --watch"
   },
   "private": true,
   "dependencies": {
