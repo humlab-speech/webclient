@@ -44,7 +44,16 @@ if($shibHeadersFound) {
 }
 
 if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
-    
+  if($_GET['user'] == "test2") {
+    $_SESSION['firstName'] = "Test2";
+    $_SESSION['lastName'] = "User2";
+    $_SESSION['fullName'] = "Test2 User2";
+    $_SESSION['email'] = "testuser2@example.com";
+    $_SESSION['eppn'] = "testuser2@example.com";
+    $_SESSION['username'] = formatEppn($_SESSION['eppn']);
+    $_SESSION['authorized'] = true;
+  }
+  else {
     $_SESSION['firstName'] = "Test";
     $_SESSION['lastName'] = "User";
     $_SESSION['fullName'] = "Test User";
@@ -52,6 +61,7 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['eppn'] = "testuser@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
     $_SESSION['authorized'] = true;
+  }
 }
 
 //include("./index.html");
@@ -60,7 +70,7 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title id="title">VISP</title>
+  <title id="title">Visible Speech</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">

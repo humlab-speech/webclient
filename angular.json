@@ -15,6 +15,7 @@
       "prefix": "app",
       "architect": {
         "build": {
+          "defaultConfiguration": "development",
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/webclient-ng",
@@ -47,7 +48,7 @@
                 }
               ],
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -66,6 +67,7 @@
               ]
             },
             "datalab": {
+              "sourceMap": true,
               "optimization": {
                 "styles": {
                   "inlineCritical": false
@@ -79,7 +81,9 @@
               ]
             },
             "datalab.dev": {
+              "sourceMap": true,
               "optimization": {
+                "scripts": false,
                 "styles": {
                   "inlineCritical": false
                 }
@@ -92,6 +96,7 @@
               ]
             },
             "visp": {
+              "sourceMap": true,
               "optimization": {
                 "styles": {
                   "inlineCritical": false
@@ -105,6 +110,7 @@
               ]
             },
             "visp-demo": {
+              "sourceMap": true,
               "optimization": {
                 "styles": {
                   "inlineCritical": false
@@ -118,7 +124,9 @@
               ]
             },
             "visp.dev": {
+              "sourceMap": true,
               "optimization": {
+                "scripts": false,
                 "styles": {
                   "inlineCritical": false
                 }

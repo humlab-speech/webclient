@@ -21,9 +21,11 @@ export class ManageProjectMembersDialogComponent implements OnInit {
   }
 
   closeDialog() {
+    /*
     if(this.manageProjectMembersFormComponent.sessionAccessCode != null) {
       this.manageProjectMembersFormComponent.shutdownSession();
     }
+    */
     this.projectManager.dashboard.modalActive = false;
   }
 

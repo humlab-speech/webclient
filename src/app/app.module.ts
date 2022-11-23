@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http'
@@ -17,6 +18,8 @@ import { AppctrlComponent } from './components/appctrl/appctrl.component';
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
 import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -34,7 +37,8 @@ import { ContainerSessionRenderComponent } from './components/container-session-
 import { AboutComponent } from './components/about/about.component';
 import { ManageProjectMembersDialogComponent } from './components/manage-project-members-dialog/manage-project-members-dialog.component';
 import { ManageProjectMembersFormComponent } from './components/forms/manage-project-members-form/manage-project-members-form.component';
-
+import { MatTreeModule } from '@angular/material/tree';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
@@ -58,9 +62,10 @@ import { ManageProjectMembersFormComponent } from './components/forms/manage-pro
     ContainerSessionRenderComponent,
     AboutComponent,
     ManageProjectMembersDialogComponent,
-    ManageProjectMembersFormComponent
+    ManageProjectMembersFormComponent,
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
@@ -73,6 +78,10 @@ import { ManageProjectMembersFormComponent } from './components/forms/manage-pro
     MatCheckboxModule,
     MatChipsModule,
     NgxPopperjsModule,
+    MatFormFieldModule,
+    MatTreeModule,
+    MatIconModule,
+    MatTooltipModule,
     NotifierModule.withConfig({
       position: {
         horizontal: {

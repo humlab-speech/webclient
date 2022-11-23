@@ -54,7 +54,6 @@ export class ProjectService {
             bundleFetchPromises.push(p);
             p.then(bundles => {
               session.bundles = bundles;
-              console.log(bundles)
             })
           });
           
@@ -73,7 +72,6 @@ export class ProjectService {
           */
 
           Promise.all(bundleFetchPromises).then(() => {
-            console.log("RETURNING")
             subscriber.next(sessions);
             subscriber.complete();
           });
@@ -447,6 +445,8 @@ export class ProjectService {
 
     //"data="+JSON.stringify(data)
 
+    console.log(data);
+
     return new Promise((resolve, reject) => {
       this.http.post<any>('https://gitlab.'+window.location.hostname+'/api/v4/projects/'+projectId+'/repository/commits', JSON.stringify(data), { "headers": headers }).subscribe(result => {
         console.log(result);
@@ -461,7 +461,44 @@ export class ProjectService {
     });
   }
 
-  updateBundleLists(sessionAccessCode:string, projectMembers) {
+  updateBundleLists(sessionAccessCode:string, bundleLists) {
+
+    return new Observable<any>(subscriber => {
+      this.systemService.wsSubject.subscribe((msg:any) => {
+        let progressSteps = null; //Total number of progress steps for this op, hopefully the server will supply this in the first message/step
+        let progress = "0";
+        if(msg.data) {
+          let data = JSON.parse(msg.data);
+          if(data.type == "cmd-result" && data.cmd == "updateBundleLists") {
+            let regExpResult = /([0-9]*)\/([0-9]*)/.exec(data.progress);
+            if(regExpResult != null) {
+              progress = regExpResult[1];
+              progressSteps = regExpResult[2];
+            }
+            else {
+              progress = data.progress;
+            }
+            
+            subscriber.next(msg);
+            if(progress == progressSteps || progressSteps == null) {
+              subscriber.complete();
+            }
+            
+          }
+        }
+      });
+
+      this.systemService.ws.send(JSON.stringify({
+        type: 'cmd',
+        cmd: 'updateBundleLists',
+        data: bundleLists,
+        sessionAccessCode: sessionAccessCode
+      }));
+    });
+
+  }
+
+  updateBundleListsOLD(sessionAccessCode:string, projectMembers) {
 
     let bundleLists = [];
     projectMembers.forEach(member => {
