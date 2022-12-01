@@ -2,12 +2,29 @@
 $domain = getenv("HS_DOMAIN_NAME");
 session_set_cookie_params(60*60*8, "/", ".".$domain);
 session_start();
+$sid = session_id();
 $_SESSION['projectName'] = getenv("PROJECT_NAME");
 
 function formatEppn($eppn) {
   $eppn = preg_replace("/@/", "_at_", $eppn);
   $eppn = preg_replace("/\./", "_dot_", $eppn);
   return $eppn;
+}
+
+function addLog($msg, $level = "info") {
+  $level = strtolower($level);
+
+  if(is_object($msg)) {
+      $msg = serialize($msg);
+  }
+
+  if($level == "info" || $level == "error") {
+      file_put_contents("/var/log/api/webapi.log", date("Y-m-d H:i:s")." [".strtoupper($level)."] ".$msg."\n", FILE_APPEND);
+      file_put_contents("/var/log/api/webapi.debug.log", date("Y-m-d H:i:s")." [".strtoupper($level)."] ".$msg."\n", FILE_APPEND);
+  }
+  if($level == "debug") {
+      file_put_contents("/var/log/api/webapi.debug.log", date("Y-m-d H:i:s")." [".strtoupper($level)."] ".$msg."\n", FILE_APPEND);
+  }
 }
 
 $shibHeadersFound = false;
@@ -41,6 +58,8 @@ if($shibHeadersFound) {
     }
 
     $_SESSION['authorized'] = true;
+
+    addLog(print_r($_SESSION, true), "debug");
 }
 
 if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
@@ -62,7 +81,11 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
     $_SESSION['authorized'] = true;
   }
+
+  
 }
+
+addLog("Started session ".$sid."", "info");
 
 //include("./index.html");
 ?>

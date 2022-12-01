@@ -279,11 +279,20 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   getBundleListByItemFlatNode(bundleNode:ItemFlatNode) {
+    if(!bundleNode) {
+      console.warn("getBundleListByItemFlatNode received an invalid argument", bundleNode);
+    }
     let sessNode = this.getParentNode(bundleNode);
+    if(sessNode == null) {
+      console.warn("Couldn't get parent of bundleNode", bundleNode);
+    }
     let userNode = this.getParentNode(sessNode);
-    
+    if(userNode == null) {
+      console.warn("Couldn't get parent of sessNode", sessNode);
+    }
     for(let key in this.projectMembers) {
       let user = this.projectMembers[key];
+
       if(user.username == userNode.id) {
         return user.bundleList;
       } 
