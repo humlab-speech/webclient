@@ -289,6 +289,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
     let userNode = this.getParentNode(sessNode);
     if(userNode == null) {
       console.warn("Couldn't get parent of sessNode", sessNode);
+      return null;
     }
     for(let key in this.projectMembers) {
       let user = this.projectMembers[key];
@@ -596,7 +597,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
   validateForm() {
     console.log("validateForm");
-   return true;
+    return true;
   }
 
   get projectMemberForms() {
