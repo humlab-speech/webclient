@@ -386,8 +386,12 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   
   onRemove(file, session) {
     this.fileUploadService.cancelUpload(file);
-    session.value.files.splice(session.value.files.indexOf(event), 1);
-    //TODO: Remove the uploaded file from the server?
+    for(let key in session.value.files) {
+      if(session.value.files[key].name == file.name) {
+        session.value.files.splice(key, 1);
+      }
+    }
+    //TODO: Remove the uploaded file from the server? - hah! as if...
   }
 
   closeDialog() {
