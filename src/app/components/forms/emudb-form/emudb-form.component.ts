@@ -140,7 +140,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   //Perhaps this func should be in the project.service instead?
-  loadProject(project) {
+  loadProject(project, sparse = false) {
     return new Observable<any>(subscriber => {
 
       this.showAnnotLevels = false;

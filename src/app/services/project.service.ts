@@ -232,10 +232,11 @@ export class ProjectService {
    * 
    * @param project 
    */
-  fetchSession(project = null, context = null) {
+  fetchSession(project = null, context = null, options = []) {
     let body = {
       user: this.userService.getSession(),
       project: project,
+      options: options,
       context: context
     };
 
