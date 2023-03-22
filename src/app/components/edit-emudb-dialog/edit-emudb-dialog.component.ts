@@ -3,7 +3,7 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { FileUploadService } from 'src/app/services/file-upload.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
-import { EmudbFormComponent, EmudbFormValues } from '../forms/emudb-form/emudb-form.component';
+import { SessionsFormComponent, EmudbFormValues } from '../forms/sessions-form/sessions-form.component';
 import { nanoid } from 'nanoid';
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from 'src/app/services/system.service';
@@ -16,7 +16,7 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
   styleUrls: ['./edit-emudb-dialog.component.scss'],
 })
 export class EditEmudbDialogComponent {
-  @ViewChild(EmudbFormComponent, { static: true }) public emudbFormComponent: EmudbFormComponent;
+  @ViewChild(SessionsFormComponent, { static: true }) public emudbFormComponent: SessionsFormComponent;
 
   @Input() projectManager: ProjectManagerComponent;
 
@@ -32,6 +32,7 @@ export class EditEmudbDialogComponent {
   loadingMessage:string = "Loading Status";
   sessionAccessCode:string = null;
   setupEmuDbFormChangeListener:any = null;
+  emuDb:any = null;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -45,7 +46,7 @@ export class EditEmudbDialogComponent {
   ngOnInit() {
     this.setLoadingStatus(false);
 
-    this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
+    this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null;
 
     this.emuDbForm = this.formBuilder.group({
       emuDb: this.emudbFormComponent.getFormGroup()
@@ -75,45 +76,18 @@ export class EditEmudbDialogComponent {
 
     //If there's a project associated with this dialog, load it in a container so we have access to it
     if(this.project != null) {
-      this.emudbFormComponent.loadProject(this.project).subscribe(msg => {
-        if(msg.status == "loading") {
-          this.loadingMessage = msg.message;
-          this.loadingStatus = true;
-        }
-        if(msg.status == "end") {
-          this.loadingStatus = false;
-          this.validateForm();
-        }
+      console.log("Going into edit mode");
+      
+      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
+        this.emuDb = emuDb;
+        this.loadingStatus = false;
+        this.validateForm();
       });
     }
   }
 
-  /*
-  async fetchSession() {
-    return new Promise((resolve, reject) => {
-      let userSession = this.userService.getSession();
-      const wsContext = nanoid();
-
-      this.systemService.wsSubject.subscribe((messageEvt) => {
-        let wsMessage = JSON.parse(messageEvt.data);
-        if(wsMessage.context == wsContext) {
-          if(wsMessage.type == "status-update") {
-            this.loadingMessage = wsMessage;
-          }
-          if(wsMessage.type == "data") {
-            setTimeout(() => { this.loadingMessage = ""; this.loadingStatus = false; }, 500);
-            resolve(wsMessage.message);
-          }
-        }
-      });
-
-      this.systemService.ws.send(new WebSocketMessage(wsContext, 'cmd', 'fetchOperationsSession', { user: userSession, project: this.project }).toJSON());
-    });
-  }
-  */
-
   validateForm() {
-    if(this.emudbFormComponent.getFormGroup().status == "VALID" && this.emuDbForm.valid && this.fileUploadsComlete) {
+    if(this.emudbFormComponent.getFormGroup().status == "VALID" && this.emuDbForm.valid && this.fileUploadsComlete && this.loadingStatus == false) {
       this.submitBtnEnabled = true;
     }
     else {
@@ -139,11 +113,32 @@ export class EditEmudbDialogComponent {
     }
   }
 
-  submitForm() {
-    if(this.fileUploadService.isAllUploadsComplete() === false) {
-      this.notifierService.notify('warning', 'There are uploads in progress, please wait until they complete.');
-      return false;
-    }
+  
+
+  async submitForm() {
+    console.log(this.project);
+    
+    //set pristine=false on all controls below in order to trigger validation
+    console.log(this.emudbFormComponent);
+    this.emudbFormComponent.getFormGroup().markAllAsTouched();
+    this.emudbFormComponent.getFormGroup().markAsDirty();
+    this.emudbFormComponent.getFormGroup().updateValueAndValidity();
+    this.emudbFormComponent.getFormGroup().get('sessions').markAllAsTouched();
+    this.emudbFormComponent.getFormGroup().get('sessions').markAsDirty();
+
+    console.log(this.emudbFormComponent.getFormGroup().get('sessions'))
+
+    //validate form
+    //this.emudbFormComponent.validate();
+
+
+
+    this.projectService.saveProject(this.emudbFormComponent);
+    return;
+
+    console.log("submitForm");
+    console.log(this.emudbFormComponent);
+    let projectId = this.emudbFormComponent.project.id;
 
     if(!this.emuDbForm.valid) {
       this.notifierService.notify('warning', 'This form contains errors, please review them first.');
@@ -152,14 +147,27 @@ export class EditEmudbDialogComponent {
 
     this.setLoadingStatus();
 
+    
+
+    /*
+    if(this.fileUploadService.isAllUploadsComplete() === false) {
+      this.notifierService.notify('warning', 'There are uploads in progress, please wait until they complete.');
+      return false;
+    }
+    */
+    
+
     let formValues = {
       sessions: this.emudbFormComponent.sessions.value
     };
 
+    this.projectService.pushSessions(this.emudbFormComponent.project.id, this.emudbFormComponent.sessions);
+    //this.projectService.deleteSessions(); //implement me!
+
+    return;
     let progressSteps = 1;
-    this.projectService.addSessions(this.projectManager.projectInEdit.id, formValues, this.emudbFormComponent.formContextId, this.emudbFormComponent.sessionAccessCode).subscribe((msg) => {
-      console.log(msg);
-      let data = JSON.parse(msg.data);
+    this.projectService.addSessions(this.projectManager.projectInEdit.id, formValues, this.emudbFormComponent.formContextId, this.emudbFormComponent.sessionAccessCode).subscribe((data) => {
+      console.log(data);
       //this.notifierService.notify('info', data.result);
       
       let slashPos = data.progress.indexOf("/");
@@ -180,14 +188,18 @@ export class EditEmudbDialogComponent {
         this.submitBtnLabel = "Save";
       }
     });
+    
   }
 
   closeDialog() {
+    /*
     if(this.emudbFormComponent.sessionAccessCode == null) {
       this.notifierService.notify('warn', 'Please wait for init to close dialog.');
       return;
     }
+    
     this.emudbFormComponent.shutdownSession();
+    */
     this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
   }

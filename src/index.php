@@ -1,6 +1,9 @@
 <?php
-$domain = getenv("HS_DOMAIN_NAME");
-session_set_cookie_params(60*60*8, "/", ".".$domain);
+//$domain = getenv("HS_DOMAIN_NAME");
+
+$domain = ($_SERVER['HTTP_HOST'] != 'localhost') ? $_SERVER['HTTP_HOST'] : false;
+
+session_set_cookie_params(60*60*8, "/", $domain);
 session_start();
 $sid = session_id();
 $_SESSION['projectName'] = getenv("PROJECT_NAME");
@@ -62,8 +65,12 @@ if($shibHeadersFound) {
     addLog(print_r($_SESSION, true), "debug");
 }
 
+addLog("get: ".$_GET['login'], "debug");
+addLog("env: ".getenv("TEST_USER_LOGIN_KEY"), "debug");
+
 if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
   if($_GET['user'] == "test2") {
+    addLog("Starting session for testuser2@example.com", "info");
     $_SESSION['firstName'] = "Test2";
     $_SESSION['lastName'] = "User2";
     $_SESSION['fullName'] = "Test2 User2";
@@ -73,6 +80,7 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['authorized'] = true;
   }
   else {
+    addLog("Starting session for testuser@example.com", "info");
     $_SESSION['firstName'] = "Test";
     $_SESSION['lastName'] = "User";
     $_SESSION['fullName'] = "Test User";
@@ -81,8 +89,9 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
     $_SESSION['authorized'] = true;
   }
-
-  
+}
+else {
+  addLog("Not starting session for any testuser", "info");
 }
 
 addLog("Started session ".$sid."", "info");

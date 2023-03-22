@@ -2,7 +2,7 @@
     <div class="project-manager-header">
         <div class="project-manager-title-container">
             <h2>Your Projects</h2>
-            <button id="create-project-btn" (click)="showCreateProjectDialog()">
+            <button id="create-project-btn" (click)="showProjectDialog()">
                 <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 Create new project
             </button>
@@ -28,4 +28,5 @@
     <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
     <app-edit-emudb-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='emudb-dialog')" [projectManager]="this"></app-edit-emudb-dialog>
     <app-manage-project-members-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-project-members-dialog')" [projectManager]="this"></app-manage-project-members-dialog>
+    <app-manage-sessions-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-sessions-dialog')" [projectManager]="this"></app-manage-sessions-dialog>
 </div>

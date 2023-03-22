@@ -8,8 +8,8 @@
         <div class="project-menu" (mouseover)="showProjectMenu(true)" (mouseout)="showProjectMenu(false, true)">
             <i class="fa fa-bars" aria-hidden="true"></i>
             <ul *ngIf="projectMenuVisible" class="project-menu-dropdown">
-                <li (click)="editEmuDb(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Add sessions</li>
-                <li (click)="editProject(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Edit project</li>
+                <!--<li (click)="editEmuDb(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Add sessions</li>-->
+                <li (click)="editProject(this.project)"><img class="button-icon" src="assets/gitlab-icon.png" /> Edit project</li>
                 <li (click)="deleteProject()"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete project</li>
             </ul>
         </div>
@@ -44,37 +44,59 @@
         </div>
 
         <div class="gitlab-project-container">
-            <h4><img src="assets/gitlab-icon.png">GitLab</h4> 
+            <h4>Operations</h4>
             <div class="gitlab-menu-container">
                 <ul>
-                    <li>
-                        <a href="{{ project.web_url }}" target="_blank">
-                            <div class="list-button">
-                                <i class="fa fa-database" aria-hidden="true"></i>
-                                &nbsp;
-                                Repository
-                            </div>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ project.web_url }}/-/issues" target="_blank">
-                            <div class="list-button">
-                                <i class="fa fa-flag-o" aria-hidden="true"></i>
-                                &nbsp;
-                                Issues
-                            </div>
-                        </a>
-                    </li>
+                    <!--
                     <li>
                         <div (click)="manageMembers(this.project)">
                             <div class="list-button">
                                 <i class="fa fa-users" aria-hidden="true"></i>
                                 &nbsp;
-                                Members & bundles
+                                Members
                             </div>
                         </div>
                     </li>
+                    -->
+                    <!--
+                    <li>
+                        <div (click)="sessionsDialog(this.project)">
+                            <div class="list-button">
+                                <i class="fa fa-microphone" aria-hidden="true"></i>
+                                &nbsp;
+                                Sessions
+                            </div>
+                        </div>
+                    </li>
+                    -->
+                    <li>
+                        <div (click)="editEmuDb(this.project)">
+                            <div class="list-button">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                &nbsp;
+                                Edit sessions
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="{{ projectMembersUrl }}" target="_blank">
+                            <div class="list-button">
+                                <img class="button-icon" src="assets/gitlab-icon.png" />
+                                &nbsp;
+                                Members
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ project.web_url }}" target="_blank">
+                            <div class="list-button">
+                                <img class="button-icon" src="assets/gitlab-icon.png" />
+                                &nbsp;
+                                Repository
+                            </div>
+                        </a>
+                    </li>
+                    
                 </ul>
             </div>
         </div>

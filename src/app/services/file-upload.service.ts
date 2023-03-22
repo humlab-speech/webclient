@@ -16,6 +16,7 @@ export class FileUploadService {
   constructor(private http:HttpClient) {
     this.statusStream = new Subject<any>();
   }
+  
 
   async upload(file, context:string = "", group:string = ""):Promise<Subscription> {
     console.log("Uploading "+file.name);

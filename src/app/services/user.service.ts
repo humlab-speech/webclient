@@ -10,7 +10,7 @@ import { environment } from 'src/environments/environment';
 })
 export class UserService {
   userIsSignedIn:boolean = false;
-  getSessionUrl:string = environment.API_ENDPOINT+'/api/v1/session';
+  getSessionUrl:string = window.location.protocol+'//'+environment.API_ENDPOINT+'/api/v1/session';
   session:UserSession = null;
   //public sessionObs:Observable<UserSession>;
   public sessionObs:Subject<UserSession>;
@@ -26,7 +26,7 @@ export class UserService {
   }
 
   createPersonalAccessToken():Observable<ApiResponse> {
-    return this.http.get<ApiResponse>("https://"+environment.BASE_DOMAIN+"/api/v1/personalaccesstoken");
+    return this.http.get<ApiResponse>(window.location.protocol+"//"+environment.BASE_DOMAIN+"/api/v1/personalaccesstoken");
   }
   
   authenticate() {
@@ -76,6 +76,6 @@ export class UserService {
     let headers = {
       "PRIVATE-TOKEN": this.getSession().personalAccessToken
     };
-    return this.http.get<any>("https://gitlab."+window.location.hostname+"/api/v4/users?search="+userSearchString, { "headers": headers })
+    return this.http.get<any>(window.location.protocol+"//gitlab."+window.location.hostname+"/api/v4/users?search="+userSearchString, { "headers": headers })
   }
 }

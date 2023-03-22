@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl, FormControlName } from '@angular/forms';
 import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
@@ -9,7 +9,7 @@ import { NotifierService } from 'angular-notifier';
 import { Observable, of } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
-import { EmudbFormComponent } from '../../forms/emudb-form/emudb-form.component';
+import { SessionsFormComponent as SessionsFormComponent } from '../../forms/sessions-form/sessions-form.component';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -18,7 +18,7 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./create-project-dialog.component.scss']
 })
 export class CreateProjectDialogComponent implements OnInit {
-  @ViewChild(EmudbFormComponent, { static: true }) public emudbFormComponent: EmudbFormComponent;
+  @ViewChild(SessionsFormComponent, { static: true }) public emudbFormComponent: SessionsFormComponent;
 
   EMUDB_INTEGRATION = environment.EMUDB_INTEGRATION;
 
@@ -34,6 +34,10 @@ export class CreateProjectDialogComponent implements OnInit {
   validateWaitInterval:any = null;
   setupEmuDbFormChangeListener:any = null;
   emuDbIntegrationEnabled:boolean = true;
+  docFiles:FormArray;
+  project:any = null;
+  emuDb:any = null;
+  dialogTitle:string = "Create new project";
 
   form:FormGroup;
 
@@ -46,18 +50,21 @@ export class CreateProjectDialogComponent implements OnInit {
   ngOnInit(): void {
     this.setLoadingStatus(false);
 
+    this.docFiles = this.fb.array([]);
+
     this.form = this.fb.group({
       projectName: new FormControl('', {
         validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
         updateOn: 'blur'
       }),
+      docFiles: this.docFiles,
       standardDirectoryStructure: new FormControl(true),
       createEmuDb: new FormControl(environment.EMUDB_INTEGRATION),
       //emuDb: this.emudbFormComponent.getFormGroup()
     });
 
     if(this.emuDbIntegrationEnabled) {
-      //This is stupid, but we need to wait for the emuDb-form-module to initialize
+      //This is stupid, but we need to wait for the sessions-form-module to initialize
       this.setupEmuDbFormChangeListener = setInterval(() => {
         if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
           console.log("emudbFormComponent init");
@@ -92,20 +99,75 @@ export class CreateProjectDialogComponent implements OnInit {
     });
 
     document.getElementById("projectName").focus();
+    
+
+    this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
+
+    /*
+    this.emuDbForm = this.formBuilder.group({
+      emuDb: this.emudbFormComponent.getFormGroup()
+    });
+    */
+
+    //This is stupid, but we need to wait for the emuDb-form-module to initialize - not sure this is needed anymore
+    /*
+    this.setupEmuDbFormChangeListener = setInterval(() => {
+      if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
+        clearInterval(this.setupEmuDbFormChangeListener);
+        this.emudbFormComponent.getFormGroup().valueChanges.subscribe(() => {
+          this.validateForm();
+        });
+        this.validateForm();
+      }
+    }, 100);
+
+    this.fileUploadService.statusStream.subscribe((status) => {
+      if(status == "uploads-in-progress") {
+        this.fileUploadsComlete = false;
+        this.validateForm();
+      }
+      if(status == "all-uploads-complete") {
+        this.fileUploadsComlete = true;
+        this.validateForm();
+      }
+    });
+    */
+
+    //If there's a project associated with this dialog, load it in a container so we have access to it
+    if(this.project != null) {
+      this.dialogTitle = "Edit project "+this.project.name;
+      this.form.addControl("project", new FormControl(this.project));
+      this.form.controls.projectName.setValue(this.project.name);
+      this.form.controls.projectName.disable();
+
+      this.setLoadingStatus(true);
+      console.log("Going into edit mode");
+      
+      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
+        this.emuDb = emuDb;
+        console.log(this.emuDb)
+        this.validateForm();
+        this.setLoadingStatus(false);
+      });
+    }
+    else {
+      this.setLoadingStatus(false);
+    }
+
   }
 
-  setLoadingStatus(isLoading = true) {
+  setLoadingStatus(isLoading = true, label = "Loading") {
     if(isLoading) {
       //Set loading indicator
       this.submitBtnEnabled = false;
       this.showLoadingIndicator = true;
-      this.submitBtnLabel = "Creating project";
+      this.submitBtnLabel = label;
       this.submitBtnEnabledLockout = true;
     }
     else {
       this.submitBtnEnabled = true;
       this.showLoadingIndicator = false;
-      this.submitBtnLabel = "Create project";
+      this.submitBtnLabel = "Save project";
       this.submitBtnEnabledLockout = false;
     }
   }
@@ -154,7 +216,7 @@ export class CreateProjectDialogComponent implements OnInit {
     return this.form.get('createEmuDb');
   }
 
-  async createProject(form) {
+  async saveProject(form) {
     this.setLoadingStatus(true);
 
     if(!this.validateForm()) {
@@ -163,38 +225,13 @@ export class CreateProjectDialogComponent implements OnInit {
       return false;
     }
 
-    this.submitBtnEnabled = false;
-
-    let formData = form.value;
-    if(this.emuDbIntegrationEnabled) {
-      formData.sessions = this.emudbFormComponent.sessions.value;
-      formData.annotLevels = this.emudbFormComponent.annotLevels.value;
-      formData.annotLevelLinks = this.emudbFormComponent.annotLevelLinks.value;
-    }
-   
-    this.projectManager.projectsLoaded = false;
-    
-    this.projectService.createProject(form.value, this.formContextId).subscribe(msg => {
-      let msgData = JSON.parse(msg.data);
-      if(msgData.type == "cmd-result" && msgData.cmd == "createProject") {
-        if(msgData.progress == "end") {
-          this.projectService.fetchProjects(true).subscribe(msg => {
-            console.log(msg);
-          });
-          this.form.reset();
-          this.closeCreateProjectDialog();
-        }
-        else {
-          this.setTaskProgress(msgData.progress, 16, "submitBtn", msgData.result);
-          /*
-          let progressPercent = Math.ceil((msgData.progress / 16) * 100);
-          let button = document.getElementById("submitBtn");
-          button.style.background = 'linear-gradient(90deg, #73A790 '+progressPercent+'%, #654c4f '+progressPercent+'%)';
-          button.style.color = "#fff";
-          this.submitBtnLabel = msgData.result;
-          */
-        }
-      }
+    this.projectService.saveProject(form.form).then(result => {
+      console.log(result);
+      this.projectService.fetchProjects(true).subscribe(msg => {
+        console.log(msg);
+        this.setLoadingStatus(false);
+        this.closeCreateProjectDialog();
+      });
     });
   }
 
@@ -256,7 +293,7 @@ export class CreateProjectDialogComponent implements OnInit {
         "PRIVATE-TOKEN": session.personalAccessToken
       };
 
-      return http.get('https://gitlab.' + environment.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
+      return http.get(window.location.protocol+'//gitlab.' + environment.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
       .pipe(
         debounceTime(500),
         map( (projects:any) => {
@@ -270,6 +307,10 @@ export class CreateProjectDialogComponent implements OnInit {
         })
       );
     }
+  }
+
+  onDocDrop(event) { //this is from the docs form
+    this.docFiles.value.push(...event.addedFiles);
   }
 
 }

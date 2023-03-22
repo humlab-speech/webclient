@@ -23,12 +23,14 @@ export class ContainerSessionRenderComponent implements OnInit {
       }, 500);
     }
 
+    console.log(window.location.protocol+"//app."+window.location.hostname+"?token="+this.token);
+
     switch(window.location.pathname) {
       case "/app":
-        iframe.setAttribute("src", "https://app."+window.location.hostname+"?token="+this.token);
+        iframe.setAttribute("src", window.location.protocol+"//app."+window.location.hostname+"?token="+this.token);
         break;
       case "/emu-webapp":
-        let url = "https://emu-webapp."+window.location.hostname+window.location.search+"&autoConnect=true&comMode=GITLAB";
+        let url = window.location.protocol+"//emu-webapp."+window.location.hostname+window.location.search+"&autoConnect=true&comMode=GITLAB";
         iframe.setAttribute("src", url);
         break;
     }

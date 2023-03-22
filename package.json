@@ -30,6 +30,7 @@
     "@popperjs/core": "^2.11.6",
     "angular-notifier": "^11.0.0",
     "font-awesome": "^4.7.0",
+    "js-cookie": "^3.0.1",
     "jszip": "^3.7.1",
     "material-design-icons": "^3.0.1",
     "nanoid": "^3.1.20",
@@ -37,7 +38,7 @@
     "ngx-popperjs": "^13.0.0",
     "normalize.css": "^8.0.1",
     "rxjs": "^7.5.7",
-    "speechrecorderng": "^3.0.0",
+    "speechrecorderng": "^3.0.1",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"
   },

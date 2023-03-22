@@ -22,7 +22,7 @@ const MY_APP_ROUTES: Routes = [
 ];
 
 const SPR_CFG:SpeechRecorderConfig={
-  apiEndPoint: '/myapppath/api/v1'
+  apiEndPoint: '/spr/api/v1'
 }
 
 @NgModule({

@@ -1,10 +1,11 @@
 <div class="modal-bg">
     <div class="form modal-dialog-container">
-        <div class="dialog-header"><h2>Create new project</h2>
+        <div class="dialog-header"><h2>{{ dialogTitle }}</h2>
             <div class="dialog-close-btn" (click)="closeCreateProjectDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
             </div>
         </div>
+
         <form [formGroup]="form" #f="ngForm">
 
             <fieldset class="fieldset">
@@ -14,7 +15,6 @@
                 -->
                 <label>Project name</label>
                 <input id="projectName" placeholder="Project name" formControlName="projectName">
-
                 <!--<div>{{ projectName.errors | json }}</div>-->
 
                 <div *ngIf="projectName.pristine == false && projectName.status == 'INVALID'" >
@@ -41,13 +41,46 @@
                 
             </fieldset>
 
+            <!--START OF DOCS-->
+            <div id="documents-form" *ngIf="this.project == null">
+                <h3>
+                    Documentation
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="docsPopper" [popperTrigger]="'hover'"></i>
+                </h3>
+            
+                <popper-content #docsPopper>
+                    <h4>Documentation</h4>
+                    <p class="help-text">
+                        Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server.
+                    </p>
+                </popper-content>
+            
+                <ngx-dropzone [expandable]="true" (change)="onDocDrop($event)">
+                    <ngx-dropzone-label>Drop your documents here</ngx-dropzone-label>
+
+                    <ngx-dropzone-preview *ngFor="let f of docFiles.value" [removable]="true" (removed)="onRemove(f)">
+                        <ngx-dropzone-label>
+                            <i class="fa fa-file-o" aria-hidden="true"></i>
+                            &nbsp;{{ f.name }}
+                            <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
+                        </ngx-dropzone-label>
+                    </ngx-dropzone-preview>
+
+                </ngx-dropzone>
+            </div>
+            <!--END OF DOCS-->
+
+            <!--
             <app-documentation-form *ngIf="standardDirectoryStructure.value" [context]="this"></app-documentation-form>
+            -->
+
+            <app-sessions-form [project]="this.project" [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-sessions-form>
             
-            <app-emudb-form [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
-            
+
             <br />
-            <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">
-                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
+            <!--<button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">-->
+            <button id="submitBtn" type="button" (click)="saveProject(f)">
+                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-dark.svg">
                 <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
                 &nbsp;
                 {{ submitBtnLabel }}

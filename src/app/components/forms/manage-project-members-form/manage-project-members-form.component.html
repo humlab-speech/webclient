@@ -1,10 +1,8 @@
 <div [formGroup]="form">
-    <!--
-    <div *ngIf="loadingStatus" class="session-loading-indicator-container">
-        <img src="../../../assets/loading-indicator-4-dark.svg">
+    <div *ngIf="loadingStatus || displayDespiteNotLoading" class="session-loading-indicator-container">
+        <img *ngIf="loadingStatus" src="../../../assets/loading-indicator-4-dark.svg">
         Loading project data: {{ loadingMessage }}
     </div>
-    -->
 
     <div *ngIf="userIsProjectMaintainer()" class="form-control-pair-container">
         <div (click)="toggleMemberSearch()" class="form-control-pair-label">
@@ -28,131 +26,39 @@
         </div>
         <br />
     </div>
-
-
+    
+    
     <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
         
-        <!-- This is the bundle-nodes -->
-        <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
-          <mat-checkbox class="checklist-leaf-node very-special-checkbox" style="margin-left:2em;"
-                        [checked]="checklistSelection.isSelected(node)"
-                        (change)="todoLeafItemSelectionToggle(node)">
-                        {{node.item}}
-                        <i *ngIf="finishedEditing(node)" class="fa fa-check-circle-o" aria-hidden="true"></i>
-                        &nbsp;
-                        <i *ngIf="getNumberOfBundleAssignees(node) > 1" matTooltip="This bundle has multiple people assigned." class="fa fa-users" aria-hidden="true"></i>
-            </mat-checkbox>
-        </mat-tree-node>
-      
-        <!-- This is everything but the bundle-nodes (user and session nodes) -->
-        <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-          <button mat-icon-button matTreeNodeToggle
+        <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+
+          <button *ngIf="node.type != 'bundle'" mat-icon-button matTreeNodeToggle
                   [attr.aria-label]="'Toggle ' + node.item">
             <mat-icon class="mat-icon-rtl-mirror">
               {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
             </mat-icon>
           </button>
 
-          <!-- Don't render checkboxes for the user-level -->
-          <div *ngIf="node.level>0">
-            <mat-checkbox class="very-special-checkbox" [checked]="descendantsAllSelected(node)"
-                        [indeterminate]="descendantsPartiallySelected(node)"
-                        (change)="todoItemSelectionToggle(node)">
-                        {{node.item}}
-                        <!--<i *ngIf="getNumberOfBundleAssigneesInSession(node) > 1" matTooltip="This session has bundles with multiple people assigned." class="fa fa-users" aria-hidden="true"></i>-->
-                    </mat-checkbox>  
-          </div>
+          <div *ngIf="node.type == 'bundle'" style="margin-left:2em;"></div>
 
-          <div *ngIf="node.level==0">
+          <div *ngIf="node.type != 'user'">
+            <input [id]="node.id" type="checkbox" 
+                [indeterminate]="descendantsPartiallySelected(node)"
+                [checked]="(node.type == 'bundle' && checklistSelection.isSelected(node)) || (node.type == 'session' && descendantsAllSelected(node))"
+                (change)="todoLeafItemSelectionToggle(node)"
+            />
+            &nbsp;
+            <label for="{{node.id}}">{{node.item}}</label>
+
+          </div>
+          <div *ngIf="node.type == 'user'">
+            <img class="avatar_image" src="{{node.avatar}}" />
             {{node.item}} <button *ngIf="userIsProjectOwner(node) == false" class="delete-button-small" (click)="removeMember(node)"><i class="fa fa-minus-square" aria-hidden="true"></i></button>
           </div>
           
         </mat-tree-node>
     </mat-tree>
-
-
-    <!--
-    <ul *ngFor="let member of projectMemberForms.controls">
-
-
-        <summary>
-            <img src="{{member.controls.member.value.avatar_url}}" class="avatar_image" /> {{member.controls.member.value.name}}
-            <span *ngIf="member.controls.member.value.id == project.owner.id"> | project owner</span>
-
-            <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-                <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
-                  <mat-checkbox class="checklist-leaf-node very-special-checkbox" style="margin-left:2em;"
-                                [checked]="checklistSelection.isSelected(node)"
-                                (change)="todoLeafItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
-                </mat-tree-node>
-              
-                <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-                  <button mat-icon-button matTreeNodeToggle
-                          [attr.aria-label]="'Toggle ' + node.item">
-                    <mat-icon class="mat-icon-rtl-mirror">
-                      {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-                    </mat-icon>
-                  </button>
-                  <mat-checkbox class="very-special-checkbox" [checked]="descendantsAllSelected(node)"
-                                [indeterminate]="descendantsPartiallySelected(node)"
-                                (change)="todoItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
-                </mat-tree-node>
-            </mat-tree>
-        </summary>
-       
-    </ul>
-    -->
     
-
-    <!--
-    <ul *ngFor="let member of projectMemberForms.controls">
-        <li>
-            <details>
-                <summary>
-                    <img src="{{member.controls.member.value.avatar_url}}" class="avatar_image" /> {{member.controls.member.value.name}}
-                    <span *ngIf="member.controls.member.value.id == project.owner.id"> | project owner</span>
-                </summary>
-                
-                <div>
-                    
-                    <div class="bundle-container">
-                        <h5>Assigned bundles</h5>
-                        <ul *ngFor="let session of member.controls.sessions.controls">
-
-                            <li>
-                                <mat-checkbox class="checklist-leaf-node very-special-checkbox"
-                                [checked]="false"
-                                [indeterminate]="true"
-                                (change)="sessionClicked(session, $event)"
-                                >{{session.value.sessionName}}</mat-checkbox>
-
-                                <ul *ngFor="let bundle of session.value.bundles">
-                                    <li class="bundle-li">
-                                        <input id="{{member.controls.member.value.username}}-{{session.value.sessionName}}-{{bundle.bundleName}}" [checked]="memberHasBundle(member.value.member.username, session.value.sessionName, bundle.bundleName)" (click)="bundleClicked(member.value.member.username, session.value.sessionName, bundle.bundleName, $event)" type="checkbox" />
-                                        <label for="{{member.controls.member.value.username}}-{{session.value.sessionName}}-{{bundle.bundleName}}">{{bundle.bundleName}}</label>
-                                    </li>
-                                </ul>
-
-                            </li>
-                            
-                            
-                        </ul>
-                    </div>
-
-                    <div *ngIf="member.controls.member.value.id != project.owner.id && userIsProjectMaintainer()" class="remove-button-container">
-                        <div (click)="removeMember(member.controls.member.value)" class="list-button remove-member-button">
-                            <div>
-                                <i class="fa fa-times" aria-hidden="true"></i> Remove member
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-            </details>
-            
-        </li>
-    </ul>
-    -->
 
     
     <br />

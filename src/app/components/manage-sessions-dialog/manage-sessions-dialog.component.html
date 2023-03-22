@@ -1,0 +1,56 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+        
+        <div class="dialog-header">
+            <h2>Add recording session to project {{ this.project.name }}</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+        
+        <div [formGroup]="form">
+            <div class="attribute-container">
+                <label for="session-name">Session name</label>
+                <input id="session-name" formControlName="sessionName" type="text" name="session-name"/>
+
+                <!-- NAME INPUT ERROR HANDLING -->
+                <div *ngIf="form.controls.sessionName.pristine == false && form.controls.sessionName.status == 'INVALID'" >
+                    <!--
+                    <div class="form-error-msg" *ngIf="form.controls.name.errors?.sessionNameTaken">
+                        That name is already taken
+                    </div>
+                    -->
+                    <div class="form-error-msg" *ngIf="form.controls.sessionName.errors?.required">
+                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        Name is required
+                    </div>
+                    <div class="form-error-msg" *ngIf="form.controls.sessionName.errors?.minlength">
+                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        Mininum {{ form.controls.sessionName.errors.minlength.requiredLength }} characters long
+                    </div>
+                    <div class="form-error-msg" *ngIf="form.controls.sessionName.errors?.pattern">
+                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        That's not a good name
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="attribute-container">
+                <label for="session-script">Select script for new recording session</label>
+                <select id="session-script" formControlName="sessionScript">
+                    <option>1</option>
+                    <option>1245</option>
+                    <option>3456</option>
+                </select>
+                <!--
+                <button>Create new script</button>
+                -->
+            </div>
+            
+            <br/>
+            <button (click)="startRecordingSession(this.project)">Start recording session</button>
+        </div>
+
+    </div>
+</div>

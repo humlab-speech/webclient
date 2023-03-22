@@ -33,29 +33,28 @@ export interface EmudbFormValues {
 }
 
 @Component({
-  selector: 'app-emudb-form',
-  templateUrl: './emudb-form.component.html',
-  styleUrls: ['./emudb-form.component.scss'],
+  selector: 'app-sessions-form',
+  templateUrl: './sessions-form.component.html', //used to be emudb-form.component.html
+  styleUrls: ['./sessions-form.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => EmudbFormComponent),
+      useExisting: forwardRef(() => SessionsFormComponent),
       multi: true
     },
     {
       provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => EmudbFormComponent),
+      useExisting: forwardRef(() => SessionsFormComponent),
       multi: true
     }
   ]
 })
 
-export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
+export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   @Input() formContextId: string;
   @Input() projectManager: ProjectManagerComponent;
   @Input() project: Project|null;
   @Input() parentForm:any;
-  
 
   form:FormGroup;
   subscriptions: Subscription[] = [];
@@ -79,8 +78,8 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   showAnnotLevelLinks:boolean = true;
   storedEmuDb:any = null; //The EmuDB as it exists in Gitlab (if any)
   sessionAccessCode:string = null;
-
   formIsValid:boolean = true;
+  emuDbLoadingStatus:boolean = false;
 
   get value(): EmudbFormValues {
     return this.form.value;
@@ -92,15 +91,19 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     this.onTouched();
   }
 
-  constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService, private fileUploadService: FileUploadService) {}
+  constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService, private fileUploadService: FileUploadService) {
+  }
   
   ngOnInit(): void {
+
     this.form = this.fb.group({});
 
     this.sessions = this.fb.array([], this.validateSessionNameUnique);
     this.annotLevels = this.fb.array([], this.validateAnnotLevelNameUnique);
     this.annotLevelLinks = this.fb.array([], this.validateAnnotLevelLinkNotToSame);
 
+    this.form.addControl("formContextId", new FormControl(this.formContextId));
+    this.form.addControl("project", new FormControl(this.project));
     this.form.addControl("sessions", this.sessions);
     this.form.addControl("annotLevels", this.annotLevels);
     this.form.addControl("annotLevelLinks", this.annotLevelLinks);
@@ -113,9 +116,10 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
       })
     );
     
-    if(this.sessionForms.length == 0) {
+    if(this.sessionForms.length == 0 && !this.project) {
       this.addSession();
     }
+    
     if(this.annotLevelForms.length == 0) {
       this.addAnnotLevel("Word", "ITEM");
       this.addAnnotLevel("Phonetic", "SEGMENT");
@@ -124,23 +128,33 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
     if(this.annotLevelLinks.length == 0) {
       this.addAnnotLevelLink("Word", "Phonetic");
     }
+    
+    if(this.project) {
+      this.emuDbLoadingStatus = true;
+      //If we load an existing project - disable editing annotation levels, for now
+      //we might be able to support this in the future, but not sure
+      this.showAnnotLevels = false;
+      this.showAnnotLevelLinks = false;
+      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
+        this.emuDbLoadingStatus = false;
+        emuDb.sessions.forEach(session => {
+          this.addSession(session);
+        });
+      });
+    }
+    
 
   }
 
-  loadEmuDbStruct(emuDbStruct) {
+  loadEmuDbStructOLD(emuDbStruct) {
     this.resetForm();
-
     emuDbStruct.sessions.forEach(session => {
       this.addSession(session);
-    });
-
-    emuDbStruct.bundles.forEach(bundle => {
-
     });
   }
 
   //Perhaps this func should be in the project.service instead?
-  loadProject(project, sparse = false) {
+  loadProjectOLD(project, sparse = false) {
     return new Observable<any>(subscriber => {
 
       this.showAnnotLevels = false;
@@ -152,20 +166,21 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
 
       const context = nanoid();
 
-      this.projectService.fetchSession(project, context).subscribe(msg => {
-        let msgData = JSON.parse(msg.data);
-        if(msgData.type == "cmd-result" && msgData.cmd == "fetchSession") {
-          if(msgData.progress == "end") {
-            this.sessionAccessCode = msgData.result;
+      
+
+      this.projectService.fetchSession(project, context).subscribe(data => {
+        if(data.type == "cmd-result" && data.cmd == "fetchSession") {
+          if(data.progress == "end") {
+            this.sessionAccessCode = data.result;
 
             subscriber.next({
               status: "loading",
               message: "Scanning EmuDB"
             });
 
-            this.projectService.scanEmuDb(this.sessionAccessCode).subscribe(msg => {
-              let cmdResponse = JSON.parse(msg.data);
-              let apiResponse = JSON.parse(cmdResponse.result);
+            this.projectService.scanEmuDb(this.sessionAccessCode).subscribe(data => {
+              console.log(data);
+              let apiResponse = JSON.parse(data.result);
               this.storedEmuDb = apiResponse.body;
 
               subscriber.next({
@@ -179,7 +194,7 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
           else {
             subscriber.next({
               status: "loading",
-              message: msgData.result
+              message: data.result
             });
           }
         }
@@ -317,44 +332,129 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
 
 
   addSession(session = null) {
-    let sessionName = session != null ? session.name : 'Speaker_'+(this.sessionForms.length+1);
+    //let sessionName = session != null ? session.name : 'Speaker_'+(this.sessionForms.length+1);
+    let sessionMetaDefaults = {
+      Gender: null,
+      Age: 35,
+      SessionId: nanoid()
+    };
 
-    if(this.project != null) {
-      sessionName = "";
+    let files = [];
+    if(session == null) {
+      session = {}
+      session.name = '';
+      session.meta = sessionMetaDefaults;
+      session.new = true;
+      session.collapsed = false;
+      //session.name = 'Speaker_'+(this.sessionForms.length+1);
+    }
+    else {
+      session.name = session.sessionName;
+      session.new = false;
+      session.collapsed = true;
+      if(session.meta == null) { //if a session meta file was not found, this will be null, if so, just set it to the defaults
+        session.meta = sessionMetaDefaults;
+      }
+      session.bundles.forEach(b => {
+        files.push({
+          name: b.bundleName,
+          uploadComplete: true
+        });
+      });
+    }
+
+    //Make sure we're not adding a session with the same name as another existing session - this is not allowed
+    //session names MUST be unique, even in the form
+    let abort = false;
+    this.sessions.controls.forEach(formGroup => {
+      let fg = formGroup as FormGroup;
+      if(fg.controls.name.value == session.name) {
+        if(session.name == "") {
+          this.notifierService.notify("warning", "Cannot add more than one unnamed session at the same time.");
+        }
+        if(session.name != "") {
+          this.notifierService.notify("warning", "Cannot add session. Session name conflict.");
+        }
+        abort = true;
+      }
+    });
+    if(abort) {
+      return null;
     }
 
     const sessionGroup = this.fb.group({
-      id: new FormControl('session-' + nanoid()),
-      name: new FormControl(sessionName, {
-        validators: [Validators.required, Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*"), this.emuSessionNameIsAvailable()],
+      new: new FormControl(session.new),
+      deleted: new FormControl(false),
+      sessionId: new FormControl(session.meta.SessionId),
+      name: new FormControl({ value: session.name, disabled: !session.new}, {
+        validators: [Validators.required, Validators.maxLength(30), Validators.minLength(2), Validators.pattern("[a-zA-Z0-9 \\\-_]*"), this.emuSessionNameIsAvailable()],
         updateOn: 'blur'
       }),
-      speakerGender: new FormControl(null, {
+      speakerGender: new FormControl(session.meta.Gender, {
         updateOn: 'blur'
       }),
-      speakerAge: new FormControl(35, {
+      speakerAge: new FormControl(session.meta.Age, {
         validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
-      files: this.fb.array([])
+      dataSource: new FormControl("upload"), //upload or record
+      recordingToken: new FormControl(session.meta.SessionId), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
+      sessionScript: new FormControl("1245"),
+      files: this.fb.array(files),
+      collapsed: new FormControl(session.collapsed),
     });
 
-    this.sessions.push(sessionGroup);
+    if(session.new) {
+      this.sessions.insert(0, sessionGroup);
+    }
+    else {
+      this.sessions.push(sessionGroup);
+    }
+  }
+
+  toggleSessionCollapsed(sessionName) {
+    this.sessions.controls.forEach(group => {
+      let g = group as FormGroup;
+      if(sessionName == g.controls.name.value) {
+        g.controls.collapsed.setValue(!g.controls.collapsed.value);
+      }
+
+    });
   }
 
   validateSessionNameUnique(control: AbstractControl): {[key: string]: any} | null  {
-    for(let key in control.value) {
-      for(let key2 in control.value) {
-        if(control.value[key].name == control.value[key2].name && key != key2) {
-          return { 'sessionNameNotUnique': true };
+    let fa = control as FormArray;
+
+    let returnVal = null;
+    fa.controls.forEach((c) => {
+      let fg = c as FormGroup;
+      
+      fa.controls.forEach((c2) => {
+        let fg2 = c2 as FormGroup;
+        //If same name and not same object...
+        if(fg.controls.name.value == fg2.controls.name.value && fg.controls.name != fg2.controls.name) {
+          returnVal = { 'sessionNameNotUnique': true };
         }
-      }
-    }
-    return null;
+      });
+    });
+    return returnVal;
   }
 
-  deleteSession(index) {
-    this.sessionForms.removeAt(index);
+  deleteSession(index, evt = null) {
+    if(evt) {
+      evt.stopPropagation();
+    }
+    let sessionFormGroup = this.sessionForms.at(index) as FormGroup;
+    if(!sessionFormGroup.controls.new.value) {
+      if(window.confirm("Are you sure you wish to delete this session and all its associated data? The session will not be erased from the version controlled history, but it will no longer show up in the user interface.")) {
+        let session = this.sessionForms.at(index) as FormGroup;
+        session.controls.deleted.setValue(true); //mark this session as deleted so that when the form is saved, we know what to delete from gitlab without having to fetch all the sessions and compare
+        //this.sessionForms.removeAt(index);
+      }
+    }
+    else {
+      this.sessionForms.removeAt(index);
+    }
   }
 
   onAudioUpload(event, session) {
@@ -373,15 +473,22 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
 
     session.value.files.push(...event.addedFiles);
 
+    //console.log(event.addedFiles)
+
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file, session).then(() => {
+        console.log("upload done");
       })
     }
+    
+    
   }
 
   async uploadFile(file:File, session) {
-    return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.id.value);
+    console.log(file);
+    console.log(session)
+    return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.sessionId.value);
   }
   
   onRemove(file, session) {
@@ -446,5 +553,23 @@ export class EmudbFormComponent implements ControlValueAccessor, OnDestroy {
   submit() {
     console.log("submit");
   }
+
+  
+
+
+  /*
+  async uploadFile(file:File) { //this is from the docs form
+    return await this.fileUploadService.upload(file, this.context.formContextId, "docs");
+  }
+
+  onRemove(file) { //this is from the docs form
+    for(let key in this.docFiles) {
+      if(this.docFiles[key] == file) {
+        let keyNum:number = +key;
+        this.docFiles.splice(keyNum, 1);
+      }
+    }
+  }
+  */
 
 }

@@ -66,11 +66,11 @@ h4 {
     position:absolute;
     right:0px;
     white-space:nowrap;
+    text-align: left;
 }
 
 .project-menu-dropdown li {
     margin:0;
-    padding:0.5rem;
     background-color: $white;
 }
 
@@ -176,8 +176,6 @@ h4 {
     color: $white;
     cursor:pointer;
 }
-
-
 
 
 

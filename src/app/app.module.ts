@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatChipsModule } from '@angular/material/chips';
 import { UserComponent } from './components/user/user.component';
 import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
@@ -30,7 +31,7 @@ import { NgxPopperjsModule } from 'ngx-popperjs';
 import { NotifierModule } from 'angular-notifier';
 import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
 import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
-import { EmudbFormComponent } from './components/forms/emudb-form/emudb-form.component';
+import { SessionsFormComponent } from './components/forms/sessions-form/sessions-form.component';
 import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
 import { MenuBarComponent } from './components/menu-bar/menu-bar.component';
 import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
@@ -39,6 +40,8 @@ import { ManageProjectMembersDialogComponent } from './components/manage-project
 import { ManageProjectMembersFormComponent } from './components/forms/manage-project-members-form/manage-project-members-form.component';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ManageSessionsDialogComponent } from './components/manage-sessions-dialog/manage-sessions-dialog.component';
+import { ClipboardModule } from '@angular/cdk/clipboard';
 
 @NgModule({
   declarations: [
@@ -56,13 +59,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     UserComponent,
     ScriptAppDialogComponent,
     DocumentationFormComponent,
-    EmudbFormComponent,
+    SessionsFormComponent,
     EditEmudbDialogComponent,
     MenuBarComponent,
     ContainerSessionRenderComponent,
     AboutComponent,
     ManageProjectMembersDialogComponent,
     ManageProjectMembersFormComponent,
+    ManageSessionsDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -76,12 +80,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatSelectModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatRadioModule,
     MatChipsModule,
     NgxPopperjsModule,
     MatFormFieldModule,
     MatTreeModule,
     MatIconModule,
     MatTooltipModule,
+    ClipboardModule,
     NotifierModule.withConfig({
       position: {
         horizontal: {

@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EmudbFormComponent } from './emudb-form.component';
+import { SessionsFormComponent } from './sessions-form.component';
 
 describe('EmudbFormComponent', () => {
-  let component: EmudbFormComponent;
-  let fixture: ComponentFixture<EmudbFormComponent>;
+  let component: SessionsFormComponent;
+  let fixture: ComponentFixture<SessionsFormComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EmudbFormComponent ]
+      declarations: [ SessionsFormComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EmudbFormComponent);
+    fixture = TestBed.createComponent(SessionsFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

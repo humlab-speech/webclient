@@ -34,6 +34,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
   submitBtnEnabledLockout = false;
   showLoadingIndicator:boolean = false;
   loadingStatus:boolean = true;
+  displayDespiteNotLoading:boolean = false;
   loadingMessage:string = "Loading Status";
   sessionAccessCode:string = null;
   projectMembers:any = [];
@@ -102,6 +103,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
     this.treeDatabase.dataChange.subscribe(data => {
       this.dataSource.data = data;
     });
+    
   }
 
   getLevel = (node: ItemFlatNode) => node.level;
@@ -111,6 +113,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
   getChildren = (node: ItemNode): ItemNode[] => node.children;
 
   hasChild = (_: number, _nodeData: ItemFlatNode) => _nodeData.expandable;
+
+  isUser = (_: number, _nodeData: ItemFlatNode) => _nodeData.type == 'user';
 
   hasNoContent = (_: number, _nodeData: ItemFlatNode) => _nodeData.item === '';
 
@@ -124,6 +128,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
     flatNode.item = node.item;
     flatNode.id = node.id;
     flatNode.level = level;
+    flatNode.type = node.type;
+    flatNode.avatar = node.avatar;
     flatNode.expandable = !!node.children?.length;
     this.flatNodeMap.set(flatNode, node);
     this.nestedNodeMap.set(node, flatNode);
@@ -138,6 +144,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
       descendants.every(child => {
         return this.checklistSelection.isSelected(child);
       });
+    
     return descAllSelected;
   }
 
@@ -146,19 +153,6 @@ export class ManageProjectMembersFormComponent implements OnInit {
     const descendants = this.treeControl.getDescendants(node);
     const result = descendants.some(child => this.checklistSelection.isSelected(child));
     return result && !this.descendantsAllSelected(node);
-  }
-
-  /** Toggle the to-do item selection. Select/deselect all the descendants node */
-  todoItemSelectionToggle(node: ItemFlatNode): void {
-    this.checklistSelection.toggle(node);
-    const descendants = this.treeControl.getDescendants(node);
-    this.checklistSelection.isSelected(node)
-      ? this.checklistSelection.select(...descendants)
-      : this.checklistSelection.deselect(...descendants);
-
-    // Force update for the parent
-    descendants.forEach(child => this.checklistSelection.isSelected(child));
-    this.checkAllParentsSelection(node);
   }
 
   getNumberOfBundleAssigneesInSession(sessionFlatNode:ItemFlatNode) {
@@ -188,7 +182,21 @@ export class ManageProjectMembersFormComponent implements OnInit {
   /** Toggle a leaf to-do item selection. Check all the parents to see if they changed */
   todoLeafItemSelectionToggle(node: ItemFlatNode): void {
     this.checklistSelection.toggle(node);
-    this.checkAllParentsSelection(node);
+    if(node.type == "session") {
+      //Also check all children
+      const descendants = this.treeControl.getDescendants(node);
+      let sessionSelected = this.checklistSelection.isSelected(node);
+      console.log("I am selected?", sessionSelected);
+      descendants.forEach(child => {
+        if(sessionSelected) {
+          this.checklistSelection.select(child);
+        }
+        else {
+          this.checklistSelection.deselect(child);
+        }
+      });
+    }
+
   }
 
   /* Checks all the parents when a leaf node is selected/unselected */
@@ -218,8 +226,11 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
   /* Get the parent node of a node */
   getParentNode(node: ItemFlatNode): ItemFlatNode | null {
+    if(!node) {
+      console.error("Tried to get parent node of an invalid node", node);
+      return null;
+    }
     const currentLevel = this.getLevel(node);
-
     if (currentLevel < 1) {
       return null;
     }
@@ -252,11 +263,6 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
 
 
-
-
-
-
-
   ngOnInit(): void {
     this.form = this.fb.group({
       projectMembers: this.fb.array([])
@@ -274,7 +280,13 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
     this.setLoadingStatus(true, "Loading users & bundle lists");
     this.loadData().then((projectMembers:any) => {
-      this.setLoadingStatus(false);
+      if(projectMembers == null) {
+        this.setLoadingStatus(false, "Could not load data. This appears to be an empty project.", true);
+        this.setSaveButtonEnabled(false);
+      }
+      else {
+        this.setLoadingStatus(false);
+      }
     });
   }
 
@@ -382,8 +394,10 @@ export class ManageProjectMembersFormComponent implements OnInit {
   onTouched() {
   }
 
-  setLoadingStatus(isLoading = true, msg = "Saving") {
+  setLoadingStatus(isLoading = true, msg = "Saving", displayDespiteNotLoading = false) {
+    this.displayDespiteNotLoading = displayDespiteNotLoading;
     this.loadingStatus = isLoading;
+    this.loadingMessage = msg;
     if(isLoading) {
       //Set loading indicator
       this.submitBtnEnabled = false;
@@ -430,11 +444,24 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   async loadData() {
+    /*
+    this.projectService.fetchEmuDbInProject(this.project.id).subscribe({
+      next: project => {
+        console.log(project);
+      }
+    });
+    */
+
     let projectSessions = await new Promise<any>((resolve, reject) => {
       this.projectService.fetchProjectSessions(this.project.id).subscribe(sessions => {
         resolve(sessions);
       });
     });
+
+    if(projectSessions == null) {
+      //No sessions found in this project
+      return null;
+    }
 
     let projectSessionsFormArray = new FormArray([]);
     projectSessions.forEach(session => {
@@ -464,31 +491,40 @@ export class ManageProjectMembersFormComponent implements OnInit {
           this.projectMemberForms.push(memberFormGroup);
           
         });        
+        if(members != null) {
+          this.projectMembers = members;
+        }
+        else {
+          console.error("Tried to fetch project members but got null");
+          this.notifierService.notify("error", "Couldn't fetch project members. Please try reloading the site.");
+        }
         
-        this.projectMembers = members;
         //Try to get the bundleList of each project member
 
         let bundleListsFetched = 0;
         await new Promise<void>((resolve, reject) => {
           this.projectMembers.forEach(member => {
             member.bundles = [];
-            this.projectService.fetchBundleList(this.project, member.username).subscribe(bundleListResponse => {
-              let bundleList = JSON.parse(atob(bundleListResponse.content));
-              member.bundleList = bundleList;
-              member.createBundleList = false;
-              bundleListsFetched++;
-              if(bundleListsFetched == this.projectMembers.length) {
-                resolve();
-              }
-            }, err => {
-              if(err.status == 404) {
-                //Bund list not found for this member, which is fine
-                console.log("No bundlelist found for "+member.username);
-                member.bundleList = [];
-                member.createBundleList = true;
+            this.projectService.fetchBundleList(this.project, member.username).subscribe({
+              next: bundleListResponse => {
+                let bundleList = JSON.parse(atob(bundleListResponse.content));
+                member.bundleList = bundleList;
+                member.createBundleList = false;
                 bundleListsFetched++;
                 if(bundleListsFetched == this.projectMembers.length) {
                   resolve();
+                }
+              }, 
+              error: err => {
+                if(err.status == 404) {
+                  //Bund list not found for this member, which is fine
+                  console.log("No bundlelist found for "+member.username);
+                  member.bundleList = [];
+                  member.createBundleList = true;
+                  bundleListsFetched++;
+                  if(bundleListsFetched == this.projectMembers.length) {
+                    resolve();
+                  }
                 }
               }
             });
@@ -533,16 +569,18 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   toggleMemberSearch() {
+    let searchBox = document.getElementById("search-user-input");
     if(!this.addMemberDialogShown) {
-      document.getElementById("search-user-input").style.display = "flex";
-      document.getElementById("search-user-input").style.opacity = "1.0";
-      document.getElementById("search-user-input").style.maxWidth = "100%";
+      searchBox.style.display = "flex";
+      searchBox.style.opacity = "1.0";
+      searchBox.style.maxWidth = "100%";
       this.addMemberDialogShown = true;
+      searchBox.focus();
     }
     else {
-      document.getElementById("search-user-input").style.display = "none";
-      document.getElementById("search-user-input").style.opacity = "0.0";
-      document.getElementById("search-user-input").style.maxWidth = "0%";
+      searchBox.style.display = "none";
+      searchBox.style.opacity = "0.0";
+      searchBox.style.maxWidth = "0%";
       this.addMemberDialogShown = false;
     }
   }
@@ -551,8 +589,15 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
   addMember(user) {
     //Add this user as a member to the project
-    this.projectService.addProjectMember(this.project.id, user.id).subscribe(() => {
-      this.loadData();
+    this.projectService.addProjectMember(this.project.id, user.id).subscribe({
+      next: (response) => {
+        this.loadData();
+      },
+      error: (err) => {
+        if(err.status == 409) { //conflict
+          this.notifierService.notify("info", err.error.message);
+        }
+      }
     });
     this.toggleMemberSearch();
     (<HTMLInputElement>document.getElementById("search-user-control")).value = "";
@@ -680,8 +725,47 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   async saveForm() {
-    let bundleLists = this.getBundleListsFromFlatTreeControl(this.treeControl);
 
+    let bundleLists = this.getBundleListsFromFlatTreeControl(this.treeControl);
+    console.log(bundleLists);
+
+    let commitActions = [];
+    let commitData = {
+      "branch": "master",
+      "commit_message": "updated bundle lists from visp interface",
+      "actions": commitActions
+    }
+
+    bundleLists.forEach(bundleList => {
+      //check if this user already has a bundlelist or if we need to create one
+      let action = "update";
+      this.projectMembers.forEach(user => {
+        if(user.username == bundleList.username && user.createBundleList) {
+          action = "create";
+          user.createBundleList = false; //since this will now be created, we set this to false for next time, in case more actions are going to be taken without reloading the page
+        }
+      });
+
+      commitActions.push({
+        "action": action,
+        "file_path": "Data/VISP_emuDB/bundleLists/"+bundleList.username+"_bundleList.json",
+        "content": JSON.stringify(bundleList.bundles, null, 2)
+      });
+    });
+    
+    this.projectService.gitlabCommit(this.project.id, commitData).subscribe({
+      next: (data) => {
+        console.log(data);
+        this.notifierService.notify("info", "Saved!");
+      },
+      error: (err) => {
+        console.error(err);
+        this.notifierService.notify("error", err);
+      }
+    });
+    
+
+    /*
     this.setLoadingStatus(true);
     this.setTaskProgress(1, 1, "member-form-save-button", "Saving");
 
@@ -713,21 +797,12 @@ export class ManageProjectMembersFormComponent implements OnInit {
     this.projectService.updateBundleLists(this.sessionAccessCode, bundleLists).subscribe(msg => {
       let msgData = JSON.parse(msg.data);
       if(msgData.type == "cmd-result" && msgData.cmd == "updateBundleLists") {
-        /* this should probably be implemented at some point - but should be done properly as a generic system
-        if(msgData.progress.indexOf("/")) {
-          //this is the first of a series of status updates
-          let parts = msgData.progress.split("/");
-          let step = parts[0];
-          let totalSteps = parts[1];
-          console.log(step, totalSteps);
-        }
-        */
         this.setTaskProgress(1, 1, "member-form-save-button", "Done!");
         this.setLoadingStatus(false);
       }
       
     });
-    
+    */
   }
 
   setTaskProgress(progressStep, totalNumSteps, targetElementId = null, msg = null) {

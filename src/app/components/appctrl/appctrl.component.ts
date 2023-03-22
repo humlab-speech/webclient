@@ -6,6 +6,8 @@ import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { environment } from 'src/environments/environment';
+import Cookies from 'js-cookie';
 
 @Component({
   selector: 'app-appctrl',
@@ -49,7 +51,7 @@ export class AppctrlComponent implements OnInit {
 
   launchProjectInApp() {
     if(this.hsApp.disabled) {
-      this.notifier.notify("info", "Prevented launch of "+this.hsApp.title+". Please close other applications first.");
+      this.notifier.notify("info", "Can't launch "+this.hsApp.title+". Please close other applications first.");
       return;
     }
 
@@ -104,17 +106,30 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
 
-    this.http.post<any>('/api/v1/'+appName+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
-      this.statusMsg = "Taking you there...";
-      this.showLoadingIndicator = true;
-      
-      document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+"; SameSite=None; Secure";
-
-      this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
-    },
-    (error) => {
-      console.error(error);
+    this.http.post<any>('/api/v1/'+appName+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe({
+      next: (data) => {
+        let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
+        if(!sessionAccessCode) {
+          this.notifier.notify("error", "No sessionAccessCode received.");
+          return;
+        }
+        this.statusMsg = "Taking you there...";
+        this.showLoadingIndicator = true;
+        
+        let cookieParams = " SameSite=None; Secure";
+        if(environment.PROTOCOL == "http") {
+          cookieParams = "";
+        }
+        console.log("Setting SessionAccessCode cookie");
+        Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
+        //document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+";"+cookieParams;
+        console.log(document.cookie);
+  
+        this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
+      },
+      error: (error) => {
+        console.error(error);
+      }
     });
   }
 
@@ -141,8 +156,8 @@ export class AppctrlComponent implements OnInit {
           resolve(bundleListName);
         });
       });
-
-      let gitlabURL:string = "https://gitlab."+window.location.hostname;
+      
+      let gitlabURL:string = window.location.protocol+"//gitlab."+window.location.hostname;
         let projectId:number = this.project.id;
         let emuDBname:string  = "VISP";
         let privateToken:string = data.body.personalAccessToken;
@@ -169,7 +184,7 @@ export class AppctrlComponent implements OnInit {
       projectId: this.project.id
     };
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      let url = "https://"+this.hsApp.name+"."+this.domain+"/";
+      let url = window.location.protocol+"//"+this.hsApp.name+"."+this.domain+"/";
       this.goToUrl(url);
     });
   }

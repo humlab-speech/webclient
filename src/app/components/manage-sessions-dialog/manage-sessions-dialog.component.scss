@@ -1,0 +1,26 @@
+@import '../../../colors.scss';
+
+.attribute-container {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.attribute-container label {
+    display:flex;
+    align-items: baseline;
+    
+    margin-bottom: 0.25em;
+}
+.attribute-container input {
+    margin-top: 0.25em;
+    width: 100%;
+}
+
+.attribute-container .fa {
+    color: #000;
+    margin-left: 1em;
+}
+
+.fieldset-items-container {
+    border-left: 2px solid $primary-light;
+}

@@ -1,21 +1,24 @@
 <div class="modal-bg">
     <div class="form modal-dialog-container">
 
+        <!--
         <div *ngIf="this.loadingStatus" class="session-loading-indicator-container">
             <h4>Settings things up: </h4>
             <img src="../../../assets/loading-indicator-4-dark.svg">
             {{ loadingMessage }}
         </div>
+        -->
 
-        <div class="dialog-header" [ngClass]="{'hidden': this.loadingStatus}"><h2>Add sessions to {{ this.project.name }}</h2>
+        <div class="dialog-header"><h2>Sessions of {{ this.project.name }}</h2>
             <div class="dialog-close-btn" (click)="closeDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
             </div>
         </div>
-
-        <form [formGroup]="emuDbForm" [ngClass]="{'hidden': this.loadingStatus}">
-            <app-emudb-form [project]="this.project" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-emudb-form>
-            <button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="submitForm()">
+        
+        <form [formGroup]="emuDbForm">
+            <app-sessions-form [project]="this.project" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-sessions-form>
+            <!--<button id="submitBtn" type="button" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="submitForm()">-->
+            <button id="submitBtn" type="button" (click)="submitForm()">
                 <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-light.svg">
                 <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
                 &nbsp;

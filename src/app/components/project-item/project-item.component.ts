@@ -6,6 +6,7 @@ import { HsApp } from "../../models/HsApp";
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
 import { SystemService } from 'src/app/services/system.service';
 import { environment } from 'src/environments/environment';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
   selector: 'app-project-item',
@@ -27,11 +28,12 @@ export class ProjectItemComponent implements OnInit {
   deleteProjectInProgress:boolean = false;
   menuTimeout:any;
   members:[];
+  projectMembersUrl:string = "https://gitlab.visp.local/testuser_at_example_dot_com/big-project/-/project_members";
   
   hsApplications:HsApp[] = [];
   projectOperations:object[] = [];
 
-  constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService) {}
+  constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService, private notifierService:NotifierService) {}
 
   ngOnInit(): void {
 
@@ -101,6 +103,11 @@ export class ProjectItemComponent implements OnInit {
 
   }
 
+  sessionsDialog(project) {
+    this.projectManager.projectInEdit = project; //not sure this is needed
+    this.projectManager.showSessionsDialog();
+  }
+
   manageMembers(project) {
     this.projectManager.projectInEdit = project;
     this.projectManager.showManageProjectMembersDialog();
@@ -162,18 +169,17 @@ export class ProjectItemComponent implements OnInit {
   }
   
   editEmuDb(project:Project) {
-    this.projectManager.projectInEdit = project;
-    this.projectManager.showEditEmuDbDialog();
+    this.projectManager.showProjectDialog(project);
   }
 
   deleteProject() {
     if(window.confirm('Are sure you want to delete this project? All data associated with this project will be lost.')){
       this.deleteProjectInProgress = true;
       this.projectService.deleteProject(this.project).subscribe(() => {
+        this.notifierService.notify("info", "Project '"+this.project.name+"' deleted");
         this.projectService.fetchProjects(true).subscribe();
       });
     }
-    
   }
 
 }

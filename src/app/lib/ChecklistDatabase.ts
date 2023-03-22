@@ -1,17 +1,22 @@
 import { Injectable } from '@angular/core';
 import { FormGroup, FormArray, Form } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
+import { nanoid } from "nanoid";
 
 export class ItemNode {
     children: ItemNode[];
     item: string;
     id: string;
+    type: string;
+    avatar: string;
 }
 export class ItemFlatNode {
     item: string;
     id: string;
     level: number;
     expandable: boolean;
+    type: string;
+    avatar: string;
 }
 
 /**
@@ -31,9 +36,6 @@ export class ItemFlatNode {
    }
  
    initialize(treeData) {
-     // Build the tree nodes from Json object. The result is a list of `TodoItemNode` with nested
-     //     file node as children.
-     //const data = this.buildFileTree(treeData, 0);
      const data = this.buildTreeFromFormGroup(treeData);
  
      // Notify the change.
@@ -45,29 +47,39 @@ export class ItemFlatNode {
     let projectMembers:FormArray = <FormArray>formGroup.controls.projectMembers;
 
     projectMembers.value.forEach(user => {
-      
       let userNode = new ItemNode();
+      console.log(user.member);
       userNode.item = user.member.name;
       userNode.id = user.member.username;
+      userNode.type = "user";
+      userNode.avatar = user.member.avatar_url;
       userNode.children = [];
       
       user.sessions.forEach(session => {
         let sessionNode = new ItemNode();
+        sessionNode.id = nanoid();
         sessionNode.item = session.sessionName;
+        sessionNode.type = "session";
         sessionNode.children = [];
         
         session.bundles.forEach(bundle => {
           let bundleNode = new ItemNode();
+          bundleNode.id = nanoid();
           bundleNode.item = bundle.bundleName;
+          bundleNode.type = "bundle";
           bundleNode.children = [];
           sessionNode.children.push(bundleNode);
         });
 
-        userNode.children.push(sessionNode);
+        if(session.bundles.length > 0) { //only include this session if it actually has bundles, otherwise it will cause problems
+          userNode.children.push(sessionNode);
+        }
         
       });
       nodes.push(userNode);
     });
+
+    console.log(nodes);
 
     return nodes;
   }
@@ -80,6 +92,7 @@ export class ItemFlatNode {
      return Object.keys(obj).reduce<ItemNode[]>((accumulator, key) => {
        const value = obj[key];
        const node = new ItemNode();
+       node.id = nanoid();
        node.item = key;
  
        if (value != null) {

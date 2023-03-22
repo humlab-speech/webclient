@@ -52,17 +52,18 @@ export class ProjectManagerComponent implements OnInit {
     
   }
 
+  showSessionsDialog() {
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'manage-sessions-dialog';
+  }
+
   showManageProjectMembersDialog() {
     this.dashboard.modalActive = true;
     this.dashboard.modalName = 'manage-project-members-dialog';
   }
 
-  showEditEmuDbDialog() {
-    this.dashboard.modalActive = true;
-    this.dashboard.modalName = 'emudb-dialog';
-  }
-
-  showCreateProjectDialog() {
+  showProjectDialog(project = null) {
+    this.projectInEdit = project;
     this.dashboard.modalActive = true;
     this.dashboard.modalName = 'create-project-dialog';
   }

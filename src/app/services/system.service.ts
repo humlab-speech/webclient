@@ -4,6 +4,7 @@ import { from, Observable, Observer, Subject } from 'rxjs';
 import { NotifierService } from 'angular-notifier';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
+import Cookies from 'js-cookie';
 
 @Injectable({
   providedIn: 'root'
@@ -37,11 +38,86 @@ export class SystemService {
     this.isGitlabReady();
   }
 
-  fetchOperationsSession(userSession:Object, project:Object): Observable<MessageEvent>{
+  fetchOperationsSessionOLD(userSession:Object, project:Object): Observable<MessageEvent>{
     this.initWebSocket().then((ws:WebSocket) => {
       ws.send(JSON.stringify({ cmd: "fetchOperationsSession", user: userSession, project: project }));
     });
     return this.wsObservable;
+  }
+
+  async fetchOperationsSession(projectId) {
+    let headers = {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    };
+    let body = {
+      projectId: projectId,
+    };
+
+    return new Promise((resolve, reject) => {
+      this.http.post<any>('/api/v1/operations/session/please', "data="+JSON.stringify(body), { headers }).subscribe({
+        next: (data) => {
+          let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
+          if(!sessionAccessCode) {
+            this.notifierService.notify("error", "No sessionAccessCode received.");
+            return;
+          }
+          
+          let cookieParams = " SameSite=None; Secure";
+          if(environment.PROTOCOL == "http") {
+            cookieParams = "";
+          }
+          console.log("Setting SessionAccessCode cookie");
+          Cookies.set('SessionAccessCode', sessionAccessCode, { domain: window.location.hostname, secure: true, sameSite: 'None' });
+          console.log(document.cookie);
+          resolve(sessionAccessCode);
+        },
+        error: (error) => {
+          console.error(error);
+          reject();
+        }
+      });
+    });
+    
+  }
+
+  async runCommandInOperationsSession(sessionAccessCode:string, cmd:string, env:Array<any> = []) {
+
+    let msg = {
+      appSession: sessionAccessCode,
+      cmd: "route-to-ca",
+      caCmd: cmd,
+      env: env
+    }
+
+    return this.sendCommandToBackend(msg);
+    /*
+    return new Promise((resolve, reject) => {
+      this.sendMessageToBackend(JSON.stringify(msg), {
+        next: (data) => {
+          if(data.cmd == cmd) {
+            resolve(data);
+          }
+          else {
+            console.warn("runCommandInOperationsSession received return-data from another operation, the command was: "+data.cmd+", expected: "+cmd);
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          reject(err);
+        }
+      });
+    });
+    */
+  }
+
+  async commitOperationsSessionProjectToGitlab(sessionAccessCode:string) {
+    let msg = {
+      appSession: sessionAccessCode,
+      cmd: "save",
+      env: []
+    }
+
+    return this.sendCommandToBackend(msg);
   }
 
   shutdownOperationsSession(sessionAccessCode:string) {
@@ -53,6 +129,58 @@ export class SystemService {
       this.ws.send(JSON.stringify({ cmd: "shutdownOperationsSession",  sessionAccessCode: sessionAccessCode }));
       //this.ws.close();
     }
+  }
+
+  async sendMessageToBackend(jsonMsg, listenerObservable = null) { //try not to use this and see sendCommandToBackend instead
+    if(this.ws != null) {
+      this.ws.send(jsonMsg);
+    }
+    else {
+      console.error("sendMessageToBackend failed because there's no active websocket");
+    }
+
+    if(listenerObservable) {
+      this.wsSubject.subscribe(listenerObservable);
+    }
+    
+    /*
+    let ws = <WebSocket>await this.initWebSocket();
+    console.log(ws);
+    ws.send(jsonMsg);
+    */
+    return this.ws;
+  }
+
+  async sendCommandToBackend(command) {
+    return new Promise((resolve, reject) => {
+      let obs = this.wsSubject.subscribe({
+        next: (data:any) => {
+          let expectedCmd = command.cmd;
+          if(command.cmd == "route-to-ca") {
+            expectedCmd = command.caCmd;
+          }
+          if(data.cmd == expectedCmd) {
+            obs.unsubscribe();
+            resolve(data);
+          }
+          else {
+            //this is not necessarily a problem, but log a warning about it anyway
+            console.warn("sendCommandToBackend received return-data from another operation, the command was: "+data.cmd+", expected: "+expectedCmd);
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          reject(err);
+        }
+      });
+  
+      if(this.ws != null) {
+        this.ws.send(JSON.stringify(command));
+      }
+      else {
+        console.error("sendCommandToBackend failed because there's no active websocket");
+      }
+    });
   }
 
   async initWebSocket() {
@@ -76,7 +204,12 @@ export class SystemService {
         this.ws = null;
       }
 
-      const wsUrl = 'wss://'+environment.BASE_DOMAIN;
+      let webSocketProto = "wss:";
+      if(window.location.protocol == "http:") {
+        webSocketProto = "ws:";
+      }
+
+      const wsUrl = webSocketProto+'//'+environment.BASE_DOMAIN;
       console.log("Connecting websocket to "+wsUrl);
       this.ws = new WebSocket(wsUrl);
       this.ws.onopen = () => {
@@ -144,7 +277,7 @@ export class SystemService {
           this.ws.close();
         }
         */
-        this.wsSubject.next(messageEvent);
+        this.wsSubject.next(msg);
       }
     });
   }

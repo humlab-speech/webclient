@@ -94,19 +94,27 @@ li {
 }
 
 .itemDeleteBtn {
-    margin-right: 1em;
+    margin-right: .5em;
+    font-size: 1.5em;
+    height: auto;
+    padding-left:.2em;
+    padding-right:.2em;
+}
+
+.itemDeleteBtn:hover {
+    color: red;
 }
 
 .section-header-container {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     background: #ccc;
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
     padding-left: 1em;
     border: 0px solid #000;
-    
+    cursor: pointer;
 }
 
 .section-header-container h4 {
@@ -120,7 +128,8 @@ li {
 
 .form-error-msg {
     color: $crimson;
-    font-size: 0.8em;
+    font-size: 1em;
+    margin-top: 1em;
 }
 
 input[type="checkbox"] {
@@ -160,6 +169,7 @@ input[type="checkbox"] {
     height: 1em;
     width: auto;
     vertical-align: text-bottom;
+    margin-top: 1em;
 }
 
 button.small-button {
@@ -213,4 +223,64 @@ button.form-add-button:hover {
 
 .fieldset-items-container {
     border-left: 2px solid $primary-light;
+}
+
+.inline-controls-flexbox {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    column-gap: 0;
+}
+
+.recordingLinkContainer {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 8fr 2fr;
+    grid-template-rows: 1fr;
+}
+
+.recordingLinkControl {
+    width: 100%;
+}
+
+.recordingScriptContainer {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 8fr 2fr;
+    grid-template-rows: 1fr;
+}
+
+.sessionScriptControl {
+    width: 100%;
+    height: 100%;
+}
+
+.small-inline-button {
+    width: 100%;
+    font-size: 1em;
+}
+
+.formControlGroupMargin {
+    margin-bottom: 1em;
+}
+
+button:disabled {
+    background: #ccc !important;
+    text-decoration: line-through;
+}
+button:disabled:hover {
+    background: #ccc !important;
+    box-shadow: none !important;
+}
+
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 2em;
+}
+
+.collapsed {
+    display: none;
 }
