@@ -1,0 +1,123 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+        
+        <div class="dialog-header">
+            <h2>
+                Speech recorder scripts
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sprScriptsPopper" [popperTrigger]="'hover'"></i>
+            </h2> 
+
+            <popper-content #sprScriptsPopper>
+                <h4>Speech recorder scripts</h4>
+                <p class="help-text">
+                    Here you can create scripts for the integrated speech recorder application. Each script consists of a number of prompts to be spoken by the subject. You can then link this script to a recording session in the sessions dialog.
+                </p>
+            </popper-content>
+
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <button class="small-button form-add-button" (click)="addScript()">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;Add script
+        </button>
+
+        <div [formGroup]="form">
+            <div formArrayName="scripts">
+
+                <div class="section-container" *ngFor="let script of scriptForms.controls; let i=index" [formGroupName]="i">
+                    <div [ngClass]="{ 'section-header-new': script.controls.new.value }" class="section-header-container" (click)="toggleSectionCollapsed(script.controls.name.value)">
+    
+                        <h5 *ngIf="script.controls.new.value">New script</h5>
+                        <h5 *ngIf="!script.controls.new.value">Script {{ script.controls.name.value }}</h5>
+                        
+                        <div class="itemDeleteBtn">
+                            <i (click)="deleteSprScript(i, $event)" class="fa fa-times" aria-hidden="true"></i>
+                        </div>
+                    </div>
+    
+                    <div class="section-content" [ngClass]="{'collapsed': script.controls.collapsed.value}">
+                        <div class="script-metadata-container">
+    
+                            <div class="attribute-container">
+                                <label>Script name</label>
+                                <input placeholder="Script name" formControlName="name" />
+                                
+                            </div>
+
+                            <div class="attribute-container">
+                                <label>Shared<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sharedScriptsPopper" [popperTrigger]="'hover'"></i></label>
+                                <select formControlName="sharing">
+                                    <option value="none">No</option>
+                                    <option value="all">Yes</option>
+                                </select>
+                            </div>
+                            
+                            <popper-content #sharedScriptsPopper>
+                                <h4>Shared scripts</h4>
+                                <p class="help-text">
+                                    Shared scripts are available to anyone to be used in their projects, but can still only be edited by you.
+                                </p>
+                            </popper-content>
+
+                            <br />
+
+                            <!-- NAME INPUT ERROR HANDLING -->
+                            <div *ngIf="script.controls.name.touched == true && script.controls.name.status == 'INVALID'" >
+                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.scriptNameTaken">
+                                    That name is already taken
+                                </div>
+                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.required">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Name is required
+                                </div>
+                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.minlength">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Mininum {{ script.controls.name.errors.minlength.requiredLength }} characters long
+                                </div>
+                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.pattern">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Please avoid special characters in the name
+                                </div>
+                            </div>
+
+                            <!-- PROMPTS -->
+                            <h2>Prompts</h2>
+
+                            <div formArrayName="prompts">
+                                <div class="section-container" *ngFor="let prompt of script.get('prompts').controls; let j=index" [formGroupName]="j">
+                                    <div class="attribute-container">
+                                        <label>Prompt #{{ j+1 }}</label>
+                                        <input class="prompt-value-input" placeholder="Prompt value" formControlName="value" />
+                                        <div *ngIf="prompt.controls.value.touched == true && prompt.controls.value.status == 'INVALID'" >
+                                            <div class="form-error-msg" *ngIf="prompt.controls.value.errors?.required">
+                                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                                Value is required
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="small-button form-add-button" (click)="addPrompt(script)">
+                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                &nbsp;Add prompt
+                            </button>
+    
+                        </div>
+    
+                    </div>
+                </div> <!-- end of script loop -->
+    
+            </div>
+            
+            <br />
+
+            <button (click)="submitForm()">Save</button>
+            
+        </div>
+
+    </div>
+</div>

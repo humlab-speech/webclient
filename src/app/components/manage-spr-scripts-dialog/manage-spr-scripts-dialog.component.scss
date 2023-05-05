@@ -1,0 +1,246 @@
+@import '../../../colors.scss';
+
+input {
+    border-width: 1px;
+}
+
+ngx-dropzone {
+    border-width: 1px;
+}
+
+h4 {
+    font-size: 1.4rem;
+    font-weight: lighter;
+    text-decoration: underline;
+    text-decoration-color: $secondary-light;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+h5 {
+    font-size: 1.1rem;
+    font-weight: lighter;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    margin-top:0.5em;
+    margin-bottom:0.5em;
+}
+
+#create-project-btn {
+    padding:0.8em;
+    background-color: $comp3;
+    cursor:pointer;
+    font-weight: bold;
+    font-family: "Open Sans Condensed", sans-serif;
+    font-size:1.2em;
+    color: $black;
+}
+
+.modal-dialog-container button:hover {
+    //background-color:lighten($comp3, 10%);
+    color: $black;
+}
+
+.modal-dialog-container button {
+    width: 100%;
+}
+
+li {
+    background-color: #eee;
+    padding: 1rem;
+    border-radius: 4px;
+    list-style-type: none;
+}
+
+.projects-loading-indicator img {
+    height: 1.0em;
+    position:relative;
+    top: 0.2em;
+}
+
+.section-container {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    background: $lightgrey;
+    border-radius: 0.25em;
+    padding: 0em;
+    max-width: 40em;
+}
+
+.section-container .section-content {
+    padding: 1em;
+    padding-bottom: 1em;
+}
+
+.horizontal-flex-content {
+    display:flex;
+    align-items: baseline;
+    justify-content: space-around;
+}
+
+#submitBtn {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+}
+
+#submitBtn:hover {
+    box-shadow: 0px 0px 10px #999; 
+}
+
+#submitBtn.disabled:hover {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0); 
+}
+
+#submitBtn.disabled {
+    background-color: #eee;
+    color: #333;
+    cursor: default;
+}
+
+#submitBtn img {
+    align-self: center;
+}
+
+.link-arrow {
+    margin-left:1em;
+    margin-right:1em;
+    margin-bottom: 0.75em;
+    align-self:flex-end;
+}
+
+.link-tags {
+    margin-left:1em;
+    margin-right:0.1em;
+    align-self:flex-end;
+}
+
+.itemBtn:hover {
+    cursor:pointer;
+}
+
+.itemDeleteBtn {
+    margin-right: 1em;
+}
+
+.section-header-container {
+    display: flex;
+    align-items: baseline;
+    background: #ccc;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 1em;
+    border: 0px solid #000;
+}
+
+.section-header-container h4 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.section-header-new {
+    background: #ccf;
+}
+
+.input-context-container label {
+    margin-bottom: 0.2em;
+}
+
+.form-error-msg {
+    color: $crimson;
+    font-size: 0.8em;
+}
+
+input[type="checkbox"] {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.flex-container {
+    display:flex;
+    flex-wrap:nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.flex-container input {
+    margin-right: 0.5em;
+}
+
+.flex-container label {
+    font-size: 1em;
+}
+
+.annotation-level-container {
+    align-items: baseline;
+    padding: 0.1em;
+    border-radius: 0.25em;
+}
+
+.annotation-level-container h4 {
+    margin:0;
+    padding:0;
+}
+
+.loading-indicator {
+    height: 1em;
+    width: auto;
+    vertical-align: text-bottom;
+}
+
+button.small-button {
+    display: block;
+    max-width: 50%;
+    min-width: 1em;
+}
+
+button.form-add-button {
+    background: transparent;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 0.5em;
+    max-width: 100%;
+}
+
+button.form-add-button:hover {
+    //background: #eee !important;
+}
+
+.annotation-level-type-input {
+    margin-left: 2em;
+}
+
+.session-metadata-container {
+    display:flex;
+    flex-direction: column;
+    margin-bottom: 1em;
+}
+
+.attribute-container {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.attribute-container label {
+    display:flex;
+    align-items: baseline;
+    
+    margin-bottom: 0.25em;
+}
+.attribute-container input {
+    margin-top: 0.25em;
+    width: 100%;
+}
+
+.attribute-container .fa {
+    color: #000;
+    margin-left: 1em;
+}
+
+.fieldset-items-container {
+    border-left: 2px solid $primary-light;
+}

@@ -28,14 +28,16 @@ export class ProjectItemComponent implements OnInit {
   deleteProjectInProgress:boolean = false;
   menuTimeout:any;
   members:[];
-  projectMembersUrl:string = "https://gitlab.visp.local/testuser_at_example_dot_com/big-project/-/project_members";
-  
+  projectMembersUrl:string = "";
+
   hsApplications:HsApp[] = [];
   projectOperations:object[] = [];
 
   constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService, private notifierService:NotifierService) {}
 
   ngOnInit(): void {
+    
+    this.projectMembersUrl = window.location.protocol+"//gitlab."+window.location.host+"/"+this.project.path_with_namespace+"/-/project_members";
 
     this.projectOperations.push({
       title: "Edit emuDB",
@@ -101,6 +103,7 @@ export class ProjectItemComponent implements OnInit {
 
     });
 
+    this.hsApplications.reverse();
   }
 
   sessionsDialog(project) {
@@ -170,6 +173,10 @@ export class ProjectItemComponent implements OnInit {
   
   editEmuDb(project:Project) {
     this.projectManager.showProjectDialog(project);
+  }
+
+  openSprScriptsDialog(project:Project) {
+    this.projectManager.showSprScriptsDialog(project);
   }
 
   deleteProject() {

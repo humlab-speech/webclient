@@ -6,18 +6,18 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
 import { FileUploadService } from "../../../services/file-upload.service";
 import { NotifierService } from 'angular-notifier';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 import { SessionsFormComponent as SessionsFormComponent } from '../../forms/sessions-form/sessions-form.component';
 import { environment } from 'src/environments/environment';
 
 @Component({
-  selector: 'app-create-project-dialog',
-  templateUrl: './create-project-dialog.component.html',
-  styleUrls: ['./create-project-dialog.component.scss']
+  selector: 'app-project-dialog',
+  templateUrl: './project-dialog.component.html',
+  styleUrls: ['./project-dialog.component.scss']
 })
-export class CreateProjectDialogComponent implements OnInit {
+export class ProjectDialogComponent implements OnInit {
   @ViewChild(SessionsFormComponent, { static: true }) public emudbFormComponent: SessionsFormComponent;
 
   EMUDB_INTEGRATION = environment.EMUDB_INTEGRATION;
@@ -25,6 +25,7 @@ export class CreateProjectDialogComponent implements OnInit {
   @Input() projectManager: ProjectManagerComponent;
 
   submitBtnLabel:string = "Create project";
+  isLoading:boolean = false;
   submitBtnEnabled:boolean = false;
   pendingUpload:boolean = false;
   showLoadingIndicator:boolean = false;
@@ -38,6 +39,8 @@ export class CreateProjectDialogComponent implements OnInit {
   project:any = null;
   emuDb:any = null;
   dialogTitle:string = "Create new project";
+  emuDbLoadedSubject:Subject<boolean> = new Subject<boolean>();
+  emuDbLoaded$:Observable<boolean> = this.emuDbLoadedSubject.asObservable();
 
   form:FormGroup;
 
@@ -60,41 +63,31 @@ export class CreateProjectDialogComponent implements OnInit {
       docFiles: this.docFiles,
       standardDirectoryStructure: new FormControl(true),
       createEmuDb: new FormControl(environment.EMUDB_INTEGRATION),
-      //emuDb: this.emudbFormComponent.getFormGroup()
+    });
+
+    this.form.statusChanges.subscribe((status) => {
+      this.validateForm();
     });
 
     if(this.emuDbIntegrationEnabled) {
       //This is stupid, but we need to wait for the sessions-form-module to initialize
       this.setupEmuDbFormChangeListener = setInterval(() => {
         if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
-          console.log("emudbFormComponent init");
           this.form.addControl("emuDb", this.emudbFormComponent.getFormGroup());
           clearInterval(this.setupEmuDbFormChangeListener);
-          this.emudbFormComponent.getFormGroup().valueChanges.subscribe(() => {
-            this.validateForm();
-          });
-          this.validateForm();
         }
       }, 100);
     }
     
 
     this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
-    this.form.controls['projectName'].statusChanges.subscribe(() => {
-      this.validateForm();
-    })
-
-
-    
 
     this.fileUploadService.statusStream.subscribe((status) => {
       if(status == "uploads-in-progress") {
         this.fileUploadsComlete = false;
-        this.validateForm();
       }
       if(status == "all-uploads-complete") {
         this.fileUploadsComlete = true;
-        this.validateForm();
       }
     });
 
@@ -102,36 +95,6 @@ export class CreateProjectDialogComponent implements OnInit {
     
 
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
-
-    /*
-    this.emuDbForm = this.formBuilder.group({
-      emuDb: this.emudbFormComponent.getFormGroup()
-    });
-    */
-
-    //This is stupid, but we need to wait for the emuDb-form-module to initialize - not sure this is needed anymore
-    /*
-    this.setupEmuDbFormChangeListener = setInterval(() => {
-      if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
-        clearInterval(this.setupEmuDbFormChangeListener);
-        this.emudbFormComponent.getFormGroup().valueChanges.subscribe(() => {
-          this.validateForm();
-        });
-        this.validateForm();
-      }
-    }, 100);
-
-    this.fileUploadService.statusStream.subscribe((status) => {
-      if(status == "uploads-in-progress") {
-        this.fileUploadsComlete = false;
-        this.validateForm();
-      }
-      if(status == "all-uploads-complete") {
-        this.fileUploadsComlete = true;
-        this.validateForm();
-      }
-    });
-    */
 
     //If there's a project associated with this dialog, load it in a container so we have access to it
     if(this.project != null) {
@@ -145,8 +108,7 @@ export class CreateProjectDialogComponent implements OnInit {
       
       this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
         this.emuDb = emuDb;
-        console.log(this.emuDb)
-        this.validateForm();
+        this.emuDbLoadedSubject.next(true);
         this.setLoadingStatus(false);
       });
     }
@@ -157,6 +119,7 @@ export class CreateProjectDialogComponent implements OnInit {
   }
 
   setLoadingStatus(isLoading = true, label = "Loading") {
+    this.isLoading = isLoading;
     if(isLoading) {
       //Set loading indicator
       this.submitBtnEnabled = false;
@@ -165,40 +128,18 @@ export class CreateProjectDialogComponent implements OnInit {
       this.submitBtnEnabledLockout = true;
     }
     else {
-      this.submitBtnEnabled = true;
       this.showLoadingIndicator = false;
-      this.submitBtnLabel = "Save project";
+      this.submitBtnLabel = "Save";
       this.submitBtnEnabledLockout = false;
     }
   }
   
   validateForm() {
-    if(this.form.valid && this.fileUploadsComlete) {
-      if(this.emuDbIntegrationEnabled) {
-        if(this.emudbFormComponent.getFormGroup().status == "VALID") {
-          this.submitBtnEnabled = true;
-        }
-        else {
-          this.submitBtnEnabled = false;
-        }
-      }
-      else {
-        this.submitBtnEnabled = true;
-      }
+    if(this.fileUploadsComlete && this.form.status == "VALID") {
+      this.submitBtnEnabled = true;
     }
     else {
       this.submitBtnEnabled = false;
-    }
-    
-    //Need to be patient with async validators
-    if(this.form.status == "PENDING" && this.validateWaitInterval == null) {
-      this.validateWaitInterval = setInterval(() => {
-        this.validateForm();
-      }, 500)
-    }
-    if(this.form.status != "PENDING") {
-      clearInterval(this.validateWaitInterval);
-      this.validateWaitInterval = null;
     }
 
     return this.submitBtnEnabled;
@@ -225,10 +166,12 @@ export class CreateProjectDialogComponent implements OnInit {
       return false;
     }
 
+    this.projectService.loadingStatus$.subscribe(status => {
+      this.submitBtnLabel = status;
+    });
+
     this.projectService.saveProject(form.form).then(result => {
-      console.log(result);
       this.projectService.fetchProjects(true).subscribe(msg => {
-        console.log(msg);
         this.setLoadingStatus(false);
         this.closeCreateProjectDialog();
       });

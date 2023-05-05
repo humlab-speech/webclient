@@ -45,7 +45,7 @@
             <input [id]="node.id" type="checkbox" 
                 [indeterminate]="descendantsPartiallySelected(node)"
                 [checked]="(node.type == 'bundle' && checklistSelection.isSelected(node)) || (node.type == 'session' && descendantsAllSelected(node))"
-                (change)="todoLeafItemSelectionToggle(node)"
+                (change)="leafItemSelectionToggle(node)"
             />
             &nbsp;
             <label for="{{node.id}}">{{node.item}}</label>
@@ -53,7 +53,7 @@
           </div>
           <div *ngIf="node.type == 'user'">
             <img class="avatar_image" src="{{node.avatar}}" />
-            {{node.item}} <button *ngIf="userIsProjectOwner(node) == false" class="delete-button-small" (click)="removeMember(node)"><i class="fa fa-minus-square" aria-hidden="true"></i></button>
+            {{node.item}} <button *ngIf="userIsProjectOwner(node) == false" class="delete-button-small" (click)="removeMember(node)"><i class="fa fa-trash" aria-hidden="true"></i></button>
           </div>
           
         </mat-tree-node>

@@ -29,7 +29,7 @@ import { UserComponent } from './components/user/user.component';
 import { ScriptAppDialogComponent } from './components/script-app-dialog/script-app-dialog.component';
 import { NgxPopperjsModule } from 'ngx-popperjs';
 import { NotifierModule } from 'angular-notifier';
-import { CreateProjectDialogComponent } from './components/project-manager/create-project-dialog/create-project-dialog.component';
+import { ProjectDialogComponent } from './components/project-manager/project-dialog/project-dialog.component';
 import { DocumentationFormComponent } from './components/forms/documentation-form/documentation-form.component';
 import { SessionsFormComponent } from './components/forms/sessions-form/sessions-form.component';
 import { EditEmudbDialogComponent } from './components/edit-emudb-dialog/edit-emudb-dialog.component';
@@ -42,6 +42,8 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ManageSessionsDialogComponent } from './components/manage-sessions-dialog/manage-sessions-dialog.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { SprScriptsFormComponent } from './components/forms/spr-scripts-form/spr-scripts-form.component';
+import { ManageSprScriptsDialogComponent } from './components/manage-spr-scripts-dialog/manage-spr-scripts-dialog.component';
 
 @NgModule({
   declarations: [
@@ -55,7 +57,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
     DashboardComponent,
     ProjectItemComponent,
     AppctrlComponent,
-    CreateProjectDialogComponent,
+    ProjectDialogComponent,
     UserComponent,
     ScriptAppDialogComponent,
     DocumentationFormComponent,
@@ -67,6 +69,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
     ManageProjectMembersDialogComponent,
     ManageProjectMembersFormComponent,
     ManageSessionsDialogComponent,
+    SprScriptsFormComponent,
+    ManageSprScriptsDialogComponent,
   ],
   imports: [
     CommonModule,

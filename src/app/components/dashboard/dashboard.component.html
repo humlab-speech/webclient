@@ -1,11 +1,11 @@
 <div id="dashboard">
     <div id="main-content">
-        <div id="final-authentication" *ngIf="userIsSignedIn && !userAccessListCheckPerformed">
+        <div id="final-authentication" *ngIf="userIsSignedIn && !userAccessListCheckPerformed && userSignedInCheckPerformed">
             <img src="assets/loading-indicator-4-dark.svg">
             <p>Performing final authentication</p>
         </div>
 
-        <div id="signed-out-content-container" *ngIf="systemIsReady && !userIsSignedIn">
+        <div id="signed-out-content-container" *ngIf="systemIsReady && !userIsSignedIn && userSignedInCheckPerformed && signInTimeoutExpired">
             <div *ngIf="applicationName == 'Visible Speech'" id="about-container">
                 <h2>About</h2>
                 Visual Speech is a collection of research tools for speech analysis.
@@ -29,10 +29,11 @@
             </div>
         </div>
 
-        <div id="userFailedAccessListCheckContainer" *ngIf="systemIsReady && userIsSignedIn && !userPassedAccessListCheck && userAccessListCheckPerformed">
+        <div id="userFailedAccessListCheckContainer" *ngIf="systemIsReady && userIsSignedIn && userSignedInCheckPerformed && !userPassedAccessListCheck && userAccessListCheckPerformed">
             <h2>Missing access grant</h2>
             <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
         </div>
+
     </div>
     
     <div id="sidebar">

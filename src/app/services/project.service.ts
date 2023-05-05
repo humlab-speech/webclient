@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs';
+import { forkJoin, Observable, Subject } from 'rxjs';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
@@ -26,9 +26,11 @@ export class ProjectService {
   public projectObs:Observable<Project[]>;
   public projects$:Subject<Project[]>;
   public projectsLoaded:boolean = false;
+  public loadingStatus$:Subject<string>;
 
   constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService, private notifierService:NotifierService) {
     this.projects$ = new Subject<Project[]>();
+    this.loadingStatus$ = new Subject<string>();
     this.updateProjects();
   }
 
@@ -62,8 +64,50 @@ export class ProjectService {
     return this.http.get<any>(requestUrl, { "headers": headers } );
   }
 
-  fetchEmuDbInProject(projectId:number, includeBundles:boolean = true) {
-    console.log("fetchEmuDbInProject");
+  fetchSprData(projectId:number) {
+    //fetch speech recorder db data via the session-manager
+    return this.systemService.sendCommandToBackend({ cmd: "fetchSprData", projectId: projectId }).then((data) => {
+      console.log(data);
+    });
+  }
+
+  fetchSprSession(sprSessionId) {
+    return new Observable<any>(subscriber => {
+
+      let data = { 
+        cmd: "fetchSprSession",
+        data: {
+          sprSessionId: sprSessionId
+        }
+      };
+
+      this.systemService.sendCommandToBackend(data).then((data) => {
+        subscriber.next(data);
+        subscriber.complete();
+      });
+    });
+  }
+
+  fetchSprScriptBySessionId(sprSessionId) {
+
+    //Warning: if this is called for several sprSessionIds in a row, it will return the latest since the responses gets mixed up
+
+    return new Observable<any>(subscriber => {
+      let data = { 
+        cmd: "fetchSprScriptBySessionId",
+        data: {
+          sprSessionId: sprSessionId
+        }
+      };
+
+      this.systemService.sendCommandToBackend(data).then((data) => {
+        subscriber.next(data);
+        subscriber.complete();
+      });
+    });
+  }
+
+  fetchEmuDbInProject(projectId:number, includeBundles:boolean = true, includeSprData:boolean = true) {
     let project = {
       dbConfig: null,
       sessions: null
@@ -73,6 +117,35 @@ export class ProjectService {
     let requestsComplete = 0;
 
     return new Observable<any>(subscriber => {
+
+      forkJoin({
+        dbConfig: this.fetchDbConfig(projectId),
+        sessions: this.fetchSessions(projectId, includeBundles),
+        spr: this.fetchSprData(projectId)
+      }).subscribe({ 
+        next: (data:any) => {
+          if(data.dbConfig.encoding == "base64") {
+            project.dbConfig = JSON.parse(atob(data.dbConfig.content));
+          }
+          else {
+            project.dbConfig = JSON.parse(data.dbConfig.content);
+          }
+  
+          project.sessions = data.sessions;
+          subscriber.next(project);
+          subscriber.complete();
+        },
+        error: err => {
+          this.notifierService.notify("warning", "This project doesn't seem to have been intialized as an EMU-DB project.")
+        }
+      });
+    });
+
+    
+
+    
+    /*
+    return new Observable<any>(subscriber => {
       this.fetchDbConfig(projectId).subscribe({
         next: data => {
           if(data.encoding == "base64") {
@@ -81,11 +154,10 @@ export class ProjectService {
           else {
             project.dbConfig = JSON.parse(data.content);
           }
-          //project.dbConfig = data;
+
           requestsComplete++;
           if(requestsComplete == totalRequests) {
             subscriber.next(project);
-            subscriber.complete();
           }
         },
         error: err => {
@@ -104,6 +176,7 @@ export class ProjectService {
         }
       });
     });
+    */
   }
 
   fetchSessions(projectId:number, includeBundles:boolean = true) {
@@ -321,51 +394,6 @@ export class ProjectService {
     return this.http.get<any>(requestUrl, { "headers": headers });
   }
 
-  loadProjectOLD(project) {
-    return new Observable<any>(subscriber => {
-
-      subscriber.next({
-        status: "loading",
-        msg: "Fetching project session"
-      });
-
-      let sessionAccessCode = null;
-
-      this.fetchSession(project).subscribe(msg => {
-        let msgData = JSON.parse(msg.data);
-        if(msgData.type == "cmd-result" && msgData.cmd == "fetchSession") {
-          if(msgData.progress == "end") {
-            sessionAccessCode = msgData.result;
-
-            subscriber.next({
-              status: "loading",
-              message: "Scanning EmuDB"
-            });
-
-            this.scanEmuDb(sessionAccessCode).subscribe(msg => {
-              let cmdResponse = JSON.parse(msg.data);
-              let apiResponse = JSON.parse(cmdResponse.result);
-              //this.storedEmuDb = apiResponse.body;
-
-              subscriber.next({
-                status: "end",
-                message: "Done"
-              });
-
-              subscriber.complete();
-            });
-          }
-          else {
-            subscriber.next({
-              status: "loading",
-              message: msgData.result
-            });
-          }
-        }
-      });
-    });
-  }
-
   async fetchProject(projectId:number) {
     return new Promise((resolve, reject) => {
       let requestUrl = window.location.protocol+"//gitlab."+window.location.hostname+"/api/v4/projects/"+projectId;
@@ -537,7 +565,7 @@ export class ProjectService {
     for(let key in sessions.controls) {
       let sessionName = sessions.controls[key].controls.name.value;
       if(sessions.controls[key].controls.new.value && sessions.controls[key].controls.dataSource.value == "record") {
-        console.log(sessions.controls[key].controls.recordingToken.value);
+        console.log(sessions.controls[key].controls.recordingLink.value);
 
         
       }
@@ -747,7 +775,7 @@ export class ProjectService {
       "Content-Type": "application/json"
     };
     let filePath = "Data/VISP_emuDB/bundleLists/"+username+"_bundleList.json";
-    let fileContent = JSON.stringify(bundleList);
+    let fileContent = JSON.stringify(bundleList, null, 2);
 
     //Check if the bundlelist json file exists, if it doesn't this needs to be a create operation instead of an update operation
     let action = {
@@ -1016,8 +1044,12 @@ This directory is for publishing your results, the final output, of your project
 
   }
 
+  setLoadingStatus(status) {
+    this.loadingStatus$.next(status);
+  }
+
   async saveProject(form) {
-    let status = "";
+    this.setLoadingStatus("Saving project");
 
     //These are the main steps:
 
@@ -1029,18 +1061,19 @@ This directory is for publishing your results, the final output, of your project
       projectId = form.controls.project.value.id;
     }
     else {
-      status = "Creating gitlab project";
+      this.setLoadingStatus("Creating gitlab project");
       projectId = await this.gitlabCreateProject(form.controls.projectName.value);
       newProject = true;
     }
 
+
     //2. Commit/push any documents
     //Save the docs - if there is no docs component in the form, this will just return silently, so it's fine
-    status = "Saving project documents";
+    this.setLoadingStatus("Saving project documents");
     await this.saveProjectDocuments(projectId, form);
 
     //3. Create Emu-db
-    status = "Creating a container for EmuDB generation";
+    this.setLoadingStatus("Creating a container for EmuDB generation");
     let sessionAccessCode:string = <string>await this.systemService.fetchOperationsSession(projectId);
     console.log("Got a container with code", sessionAccessCode);
     let env = [{
@@ -1053,28 +1086,36 @@ This directory is for publishing your results, the final output, of your project
 
     if(newProject) {
       console.log("Executing emudb-create");
-      status = "Executing emudb-create";
+      this.setLoadingStatus("Executing emudb-create")
       cmdResult = await this.systemService.runCommandInOperationsSession(sessionAccessCode, "emudb-create", env);
       let containerAgentOutput = JSON.parse(cmdResult.result);
       if(containerAgentOutput.code != 200 || containerAgentOutput.body.stdout.indexOf("createEmuDb.R done") == -1) {
         this.notifierService.notify("error", "Error creating EmuDb");
       }
       else {
-        this.notifierService.notify("info", "Created EmuDb");
+        //this.notifierService.notify("info", "Created EmuDb");
       }
     }
     
     //4. Import audio files (which also creates the sessions)
+    let sprSessions = [];
     let sessionEnvVarMetadata = [];
     let formSessions = form.controls.emuDb.controls.sessions as FormArray;
     formSessions.controls.forEach(formGroup => {
       let f = formGroup as FormGroup;
       sessionEnvVarMetadata.push({
         sessionId: f.controls.sessionId.value,
-        name: f.controls.name.value,
+        name: this.getFormattedSessionName(f.controls.name.value),
         speakerGender: f.controls.speakerGender.value,
-        speakerAge: f.controls.speakerAge.value,
+        speakerAge: parseInt(f.controls.speakerAge.value),
         files: []
+      });
+
+      sprSessions.push({
+        sessionId: f.controls.sessionId.value,
+        sessionName: this.getFormattedSessionName(f.controls.name.value),
+        projectId: projectId,
+        sessionScript: f.controls.sessionScript.value
       });
     });
 
@@ -1088,12 +1129,30 @@ This directory is for publishing your results, the final output, of your project
       'value': '/unimported_audio/'+form.controls.emuDb.controls.formContextId.value
     });
 
+    this.setLoadingStatus("Importing audio files");
     cmdResult = await this.systemService.runCommandInOperationsSession(sessionAccessCode, "emudb-create-sessions", env);
     console.log(cmdResult);
+
+    //Create spr-project
+    this.setLoadingStatus("Creating project in Spr");
+    await this.systemService.sendCommandToBackend({
+      cmd: "createSprProject",
+      project: {
+        name: projectId,
+      }
+    });
+
+    //Create spr-sessions in the mongodb
+    this.setLoadingStatus("Setting up recording sessions");
+    await this.systemService.sendCommandToBackend({
+      cmd: "createSprSessions",
+      sessions: sprSessions
+    });
 
     //5. Set up annotation levels, annotation links,
     //cmd: emudb-create-annotlevels
     //env-vars: PROJECT_PATH, ANNOT_LEVEL_DEF_NAME, ANNOT_LEVEL_DEF_TYPE
+    this.setLoadingStatus("Creating annotation levels");
     for(let key in form.controls.emuDb.controls.annotLevels.controls) {
       let annotLevelControl = form.controls.emuDb.controls.annotLevels.controls[key];
       env = [{
@@ -1114,6 +1173,7 @@ This directory is for publishing your results, the final output, of your project
     
     
     //Annot level links
+    this.setLoadingStatus("Creating annotation level links");
     for(let key in form.controls.emuDb.controls.annotLevelLinks.value) {
       let level = form.controls.emuDb.controls.annotLevelLinks.value[key];
 
@@ -1138,6 +1198,7 @@ This directory is for publishing your results, the final output, of your project
     }
 
     //6. Add default emu-db perspectives
+    this.setLoadingStatus("Adding default perspectives");
     env = [{
       'key': 'PROJECT_PATH',
       'value': '/home/rstudio/project'
@@ -1154,6 +1215,7 @@ This directory is for publishing your results, the final output, of your project
       'key': 'ANNOT_LEVELS',
       'value': btoa(JSON.stringify(form.controls.emuDb.controls.annotLevels.value))
     }];
+    this.setLoadingStatus("Setting level canvases order");
     cmdResult = await this.systemService.runCommandInOperationsSession(sessionAccessCode, "emudb-setlevelcanvasesorder", env);
     console.log(cmdResult);
 
@@ -1162,6 +1224,7 @@ This directory is for publishing your results, the final output, of your project
       'key': 'PROJECT_PATH',
       'value': '/home/rstudio/project'
     }];
+    this.setLoadingStatus("Adding track definitions");
     cmdResult = await this.systemService.runCommandInOperationsSession(sessionAccessCode, "emudb-track-definitions", env);
     console.log(cmdResult);
 
@@ -1170,14 +1233,17 @@ This directory is for publishing your results, the final output, of your project
       'key': 'PROJECT_PATH',
       'value': '/home/rstudio/project'
     }];
+    this.setLoadingStatus("Setting signal canvases order")
     cmdResult = await this.systemService.runCommandInOperationsSession(sessionAccessCode, "emudb-setsignalcanvasesorder", env);
     console.log(cmdResult);
 
     //Commit all of the above
+    this.setLoadingStatus("Committing changes to gitlab");
     cmdResult = <any>await this.systemService.commitOperationsSessionProjectToGitlab(sessionAccessCode);
     console.log(cmdResult);
 
     //10. Create bundleLists - important to do this AFTER all container-operations are done since we will otherwise create git conflicts
+    this.setLoadingStatus("Creating bundle lists");
     let user = this.userService.getSession();
     let bundleList = [];
 
@@ -1185,13 +1251,10 @@ This directory is for publishing your results, the final output, of your project
     formSessions.controls.forEach(formGroup => {
       let f = formGroup as FormGroup;
       f.controls.files.value.forEach(file => {
-        let basename = file.name.split('.');
-        basename.pop();
-        basename = basename.join('.');
-
         bundleList.push({
+          "bundleId": nanoid(),
           "session": f.controls.name.value,
-          "name": basename,
+          "name": file.name,
           "comment": "",
           finishedEditing: false
         });
@@ -1208,6 +1271,7 @@ This directory is for publishing your results, the final output, of your project
 
     //Check if any sessions needs to be deleted
     if(!newProject) {
+      this.setLoadingStatus("Deleting sessions");
       for(let key in formSessions.controls) {
         let formGroup = formSessions.controls[key] as FormGroup;
         if(formGroup.controls.deleted.value) {
@@ -1219,7 +1283,9 @@ This directory is for publishing your results, the final output, of your project
       }
     }
 
-    //this.systemService.shutdownOperationsSession(sessionAccessCode);
+    this.systemService.shutdownOperationsSession(sessionAccessCode);
+
+    this.setLoadingStatus("Done");
   }
 
   async deleteEmuSessionFromGitlab(projectId, sessionFormGroup:any) {
@@ -1273,11 +1339,16 @@ This directory is for publishing your results, the final output, of your project
     });
   }
 
+  getFormattedSessionName(sessionName) {
+    return sessionName.replace(/ /g, "_");
+  }
+
   getSessionMetaFileCommitAction(sessionFormGroup) {
     let sessionName = sessionFormGroup.controls.name.value;
+    let sessionNameFormatted = this.getFormattedSessionName(sessionName);
 
     const commitActions = [];
-    //prepare to commit the session metadata file (<sessionName>.meta_json)
+    //prepare to commit the session metadata file (<sessionNameFormatted>.meta_json)
     //which should (at least) contain "Gender" and "Age"
     let action = "create";
     if(!sessionFormGroup.controls.new.value) {
@@ -1286,23 +1357,17 @@ This directory is for publishing your results, the final output, of your project
     }
     //note that this action will also create the session dir, since dirs are automatically created based on the existence of files in git
     
+
     let sessionMetadata = {
       Gender: sessionFormGroup.controls.speakerGender.value,
-      Age: sessionFormGroup.controls.speakerAge.value,
-      RecordingSession: null
+      Age: parseInt(sessionFormGroup.controls.speakerAge.value)
     };
-
-    if(sessionFormGroup.controls.dataSource.value == "record") {
-      this.notifierService.notify("warning", "No support for registering recording sessions implemented!");
-      sessionMetadata.RecordingSession = {
-        token: sessionFormGroup.controls.recordingToken.value,
-        script: sessionFormGroup.controls.sessionScript.value
-      }
-    }
+    
+    console.log(sessionMetadata);
 
     commitActions.push({
       "action": action,
-      "file_path": "Data/VISP_emuDB/"+sessionName+"_ses/"+sessionName+".meta_json",
+      "file_path": "Data/VISP_emuDB/"+sessionNameFormatted+"_ses/"+sessionNameFormatted+".meta_json",
       "content": JSON.stringify(sessionMetadata, null, 2),
       "encoding": "text"
     });
@@ -1404,7 +1469,7 @@ This directory is for publishing your results, the final output, of your project
           next: res => {
             console.log(res);
             console.log("Saved project documents");
-            this.notifierService.notify("info", "Saved project documents");
+            //this.notifierService.notify("info", "Saved project documents");
             resolve(res);
           },
           error: err => {
@@ -1415,6 +1480,58 @@ This directory is for publishing your results, the final output, of your project
         });
       });
       
+  }
+
+  fetchSprScripts(userId:number = null) {
+    return new Observable((observer) => {
+      let messageToBackend = {
+        cmd: "fetchSprScripts",
+        data: {
+          userId: userId
+        }
+      };
+      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
+        observer.next(res);
+        observer.complete();
+      });
+      
+    });
+  }
+
+  saveSprScripts(ownerId:number, scripts:any) {
+    return new Observable((observer) => {
+
+      //make call to backend
+      let messageToBackend = {
+        cmd: "saveSprScripts",
+        data: {
+          ownerId: ownerId,
+          scripts: scripts
+        }
+      };
+      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
+        observer.next("Saved spr scripts");
+        observer.complete();
+      });
+      
+    });
+    
+  }
+
+  deleteSprScript(scriptId) {
+    return new Observable((observer) => {
+      //make call to backend
+      let messageToBackend = {
+        cmd: "deleteSprScript",
+        data: {
+          scriptId: scriptId
+        }
+      };
+      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
+        observer.next(res);
+        observer.complete();
+      });
+    });
   }
 
 }

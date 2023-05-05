@@ -22,6 +22,13 @@ export class ProjectManagerComponent implements OnInit {
 
   ngOnInit():void {
 
+    /*
+    window.addEventListener('show-spr-scripts-dialog', () => {
+      this.dashboard.modalActive = true;
+      this.dashboard.modalName = "spr-scripts-dialog";
+    });
+    */
+
     window.addEventListener('show-script-dialog', () => {
       this.dashboard.modalActive = true;
       this.dashboard.modalName = "script-dialog";
@@ -65,6 +72,12 @@ export class ProjectManagerComponent implements OnInit {
   showProjectDialog(project = null) {
     this.projectInEdit = project;
     this.dashboard.modalActive = true;
-    this.dashboard.modalName = 'create-project-dialog';
+    this.dashboard.modalName = 'project-dialog';
+  }
+
+  showSprScriptsDialog(project = null) {
+    this.projectInEdit = project;
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'spr-scripts-dialog';
   }
 }

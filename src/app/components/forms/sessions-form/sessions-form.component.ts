@@ -59,6 +59,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   form:FormGroup;
   subscriptions: Subscription[] = [];
   sessions:FormArray;
+  sessionScriptOptions:any = [];
   annotLevels:FormArray;
   annotLevelLinks:FormArray;
   annotLevelTypes = [
@@ -91,10 +92,27 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.onTouched();
   }
 
-  constructor(private fb:FormBuilder, private notifierService: NotifierService, private projectService: ProjectService, private fileUploadService: FileUploadService) {
+  constructor(
+    private fb:FormBuilder, 
+    private notifierService: NotifierService, 
+    private projectService: ProjectService, 
+    private fileUploadService: FileUploadService,
+    private userService: UserService,
+    ) {
   }
   
   ngOnInit(): void {
+    let user = this.userService.getSession();
+
+    //fetch the speech recorder scripts from the server
+    this.projectService.fetchSprScripts(user.id).subscribe((sessionScriptOptions:any) => {
+      sessionScriptOptions.result.forEach(sessionScriptOption => {
+        this.sessionScriptOptions.push({
+          label: sessionScriptOption.name,
+          value: sessionScriptOption.scriptId
+        });
+      });
+    });
 
     this.form = this.fb.group({});
 
@@ -135,83 +153,35 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       //we might be able to support this in the future, but not sure
       this.showAnnotLevels = false;
       this.showAnnotLevelLinks = false;
-      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
-        this.emuDbLoadingStatus = false;
-        emuDb.sessions.forEach(session => {
-          this.addSession(session);
-        });
-      });
-    }
-    
 
+      if(!this.parentForm.emuDb) { //if the parent form has not loaded the emuDb yet, wait for it
+        this.parentForm.emuDbLoaded$.subscribe(emuDbLoaded => {
+          if(!emuDbLoaded) {
+            this.notifierService.notify("error", "Could not load EmuDB");
+          }
+          this.addSessions(this.parentForm.emuDb);
+        });
+      }
+      else {
+        this.addSessions(this.parentForm.emuDb);
+      }
+      
+    }
   }
 
-  loadEmuDbStructOLD(emuDbStruct) {
-    this.resetForm();
-    emuDbStruct.sessions.forEach(session => {
+  addSessions(emuDb) {
+    this.emuDbLoadingStatus = false;
+    emuDb.sessions.forEach(async session => {
       this.addSession(session);
     });
   }
 
-  //Perhaps this func should be in the project.service instead?
-  loadProjectOLD(project, sparse = false) {
-    return new Observable<any>(subscriber => {
-
-      this.showAnnotLevels = false;
-      this.showAnnotLevelLinks = false;
-      subscriber.next({
-        status: "loading",
-        msg: "Fetching project session"
-      });
-
-      const context = nanoid();
-
-      
-
-      this.projectService.fetchSession(project, context).subscribe(data => {
-        if(data.type == "cmd-result" && data.cmd == "fetchSession") {
-          if(data.progress == "end") {
-            this.sessionAccessCode = data.result;
-
-            subscriber.next({
-              status: "loading",
-              message: "Scanning EmuDB"
-            });
-
-            this.projectService.scanEmuDb(this.sessionAccessCode).subscribe(data => {
-              console.log(data);
-              let apiResponse = JSON.parse(data.result);
-              this.storedEmuDb = apiResponse.body;
-
-              subscriber.next({
-                status: "end",
-                message: "Done"
-              });
-
-              subscriber.complete();
-            });
-          }
-          else {
-            subscriber.next({
-              status: "loading",
-              message: data.result
-            });
-          }
-        }
-      });
-    });
-  }
-
   adjustSessionNamesToAvoidConflict(externalSessions) {
-    console.log(this.sessions.value)
-
-    
     for(let key in this.sessions.value) {
       externalSessions.forEach(exSess => {
         console.log(exSess.name, this.sessions.value[key].name);
         if(exSess.name == this.sessions.value[key].name) {
-          console.log('conflicut');
-
+          console.log('conflict');
         }
       });
     }
@@ -336,7 +306,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     let sessionMetaDefaults = {
       Gender: null,
       Age: 35,
-      SessionId: nanoid()
+      SessionId: nanoid(),
+      AudioSource: "uploaded",
     };
 
     let files = [];
@@ -382,6 +353,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       return null;
     }
 
+    let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0].value : "";
+    let sprScriptName = null;
+    this.sessionScriptOptions.forEach(script => {
+      if(script.value == session.meta.Script) {
+        sprScriptName = script.label;
+      }
+    });
+
     const sessionGroup = this.fb.group({
       new: new FormControl(session.new),
       deleted: new FormControl(false),
@@ -398,10 +377,24 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         updateOn: 'blur'
       }),
       dataSource: new FormControl("upload"), //upload or record
-      recordingToken: new FormControl(session.meta.SessionId), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sessionScript: new FormControl("1245"),
+      recordingLink: new FormControl({value: this.getRecordingSessionLink(session.meta.SessionId), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
+      sprScriptName: new FormControl(defaultScript),
+      sessionScript: new FormControl(defaultScript),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
+    });
+
+    //fetch the spr session from the mongodb based on session.meta.SessionId
+    this.projectService.fetchSprScriptBySessionId(session.meta.SessionId).subscribe((data:any) => {
+      let sprScript = data.result;
+      if(sprScript != null) {
+        sessionGroup.controls.sessionScript.setValue(sprScript.name);
+      }
+      else {
+        //this.notifierService.notify("warning", "No SPR script found for session "+session.meta.SessionId);
+        sessionGroup.controls.sessionScript.setValue("Missing script");
+      }
+      
     });
 
     if(session.new) {
@@ -410,6 +403,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     else {
       this.sessions.push(sessionGroup);
     }
+  }
+
+  getRecordingSessionLink(sessionId) {
+    return "https://"+window.location.hostname+"/spr/session/"+sessionId;
+  }
+
+  recordingLinkCopied() {
+    this.notifierService.notify("info", "Copied!");
   }
 
   toggleSessionCollapsed(sessionName) {
@@ -473,8 +474,6 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
     session.value.files.push(...event.addedFiles);
 
-    //console.log(event.addedFiles)
-
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file, session).then(() => {
@@ -486,8 +485,6 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   async uploadFile(file:File, session) {
-    console.log(file);
-    console.log(session)
     return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.sessionId.value);
   }
   
@@ -554,6 +551,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     console.log("submit");
   }
 
+  openSprScriptsDialog(project) {
+    //confirm
+    if(!window.confirm("Are you sure you wish to open the speech recorder scripts dialog? This will close the current dialog and you will lose any unsaved changes.")) {
+      return;
+    }
+    
+    this.projectManager.showSprScriptsDialog(project);
+  }
   
 
 

@@ -13,6 +13,8 @@ import { environment } from 'src/environments/environment';
 export class DashboardComponent implements OnInit {
 
   userIsSignedIn:boolean = false;
+  userSignedInCheckPerformed:boolean = false;
+  signInTimeoutExpired:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
   systemIsReady:boolean = false;
@@ -52,10 +54,15 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
+
+    setTimeout(() => {
+      this.signInTimeoutExpired = true;
+    }, 1000);
   }
 
   ngOnInit(): void {
     let session = this.userService.getSession();
+    this.userSignedInCheckPerformed = true;
     if(session != null) {
       this.userIsSignedIn = true;
     }
@@ -74,4 +81,5 @@ export class DashboardComponent implements OnInit {
       this.userIsSignedIn = this.userService.userIsSignedIn;
     });
   }
+
 }

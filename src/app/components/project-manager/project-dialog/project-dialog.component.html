@@ -35,7 +35,7 @@
                     </div>
                     <div class="form-error-msg" *ngIf="projectName.errors?.pattern">
                         <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                        That's not a good name
+                        Please avoid special characters in the name
                     </div>
                 </div>
                 
@@ -79,7 +79,7 @@
 
             <br />
             <!--<button id="submitBtn" [ngClass]="{'disabled': !submitBtnEnabled}" type="button" [disabled]="!submitBtnEnabled" (click)="createProject(f)">-->
-            <button id="submitBtn" type="button" (click)="saveProject(f)">
+            <button id="submitBtn" type="button" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveProject(f)">
                 <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-dark.svg">
                 <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
                 &nbsp;

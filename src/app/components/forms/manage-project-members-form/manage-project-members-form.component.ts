@@ -30,7 +30,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
   form:FormGroup;
   subscriptions:Subscription[] = [];
   submitBtnLabel:string = "Save";
-  submitBtnEnabled:boolean = true;
+  submitBtnEnabled:boolean = false;
   submitBtnEnabledLockout = false;
   showLoadingIndicator:boolean = false;
   loadingStatus:boolean = true;
@@ -180,13 +180,17 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   /** Toggle a leaf to-do item selection. Check all the parents to see if they changed */
-  todoLeafItemSelectionToggle(node: ItemFlatNode): void {
+  leafItemSelectionToggle(node: ItemFlatNode): void {
+    if(this.loadingStatus == false) {
+      this.submitBtnEnabled = true;
+    }
+    
     this.checklistSelection.toggle(node);
     if(node.type == "session") {
       //Also check all children
       const descendants = this.treeControl.getDescendants(node);
       let sessionSelected = this.checklistSelection.isSelected(node);
-      console.log("I am selected?", sessionSelected);
+      
       descendants.forEach(child => {
         if(sessionSelected) {
           this.checklistSelection.select(child);
@@ -195,6 +199,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
           this.checklistSelection.deselect(child);
         }
       });
+      
     }
 
   }
@@ -217,11 +222,15 @@ export class ManageProjectMembersFormComponent implements OnInit {
       descendants.every(child => {
         return this.checklistSelection.isSelected(child);
       });
+      
     if (nodeSelected && !descAllSelected) {
+      console.log("deselecting root node due to all children unselected");
       this.checklistSelection.deselect(node);
     } else if (!nodeSelected && descAllSelected) {
+      console.log("selecting root node due to selected child");
       this.checklistSelection.select(node);
     }
+    
   }
 
   /* Get the parent node of a node */
@@ -279,10 +288,11 @@ export class ManageProjectMembersFormComponent implements OnInit {
     );
 
     this.setLoadingStatus(true, "Loading users & bundle lists");
+
     this.loadData().then((projectMembers:any) => {
       if(projectMembers == null) {
         this.setLoadingStatus(false, "Could not load data. This appears to be an empty project.", true);
-        this.setSaveButtonEnabled(false);
+        this.submitBtnEnabled = false;
       }
       else {
         this.setLoadingStatus(false);
@@ -340,6 +350,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
     this.checklistSelection.clear();
     this.treeDatabase.data.forEach((userNode:ItemNode) => {
       userNode.children.forEach((sessionNode:ItemNode) => {
+        let selectedbundlesInSession = 0;
         sessionNode.children.forEach((bundleNode:ItemNode) => {
           
           for(let key in projectMembers) {
@@ -347,7 +358,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
             if(typeof user.bundleList != "undefined") {
               user.bundleList.forEach(bundle => {
 
-                if(user.username == userNode.id && bundle.name == bundleNode.item) {
+                if(user.username == userNode.id && bundle.name == bundleNode.item && bundle.session == sessionNode.item) {
+                  selectedbundlesInSession++;
 
                   let bundleFlatNode = null;
                   this.flatNodeMap.forEach((node, flatNode) => {
@@ -356,7 +368,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
                     }
                   });
 
-                  this.todoLeafItemSelectionToggle(bundleFlatNode);
+                  this.leafItemSelectionToggle(bundleFlatNode);
                 }
               });
             }
@@ -364,10 +376,24 @@ export class ManageProjectMembersFormComponent implements OnInit {
               console.log("user has no bundlelist - skippping assignment")
             }
           }
+
+          //if all bundles in this session are selected, select the session, which we need to do, for some reason
+          if(selectedbundlesInSession == sessionNode.children.length) {
+            let sessionFlatNode = null;
+            this.flatNodeMap.forEach((node, flatNode) => {
+              if(node == sessionNode) {
+                sessionFlatNode = flatNode;
+              }
+            });
+
+            this.leafItemSelectionToggle(sessionFlatNode);
+          }
+
         })
 
       });
     });
+
   }
 
   userIsProjectMaintainer() {
@@ -406,7 +432,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
       this.submitBtnEnabledLockout = true;
     }
     else {
-      this.submitBtnEnabled = true;
+      //this.submitBtnEnabled = false;
       this.showLoadingIndicator = false;
       this.submitBtnLabel = "Save";
       this.submitBtnEnabledLockout = false;
@@ -444,16 +470,10 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   async loadData() {
-    /*
-    this.projectService.fetchEmuDbInProject(this.project.id).subscribe({
-      next: project => {
-        console.log(project);
-      }
-    });
-    */
 
     let projectSessions = await new Promise<any>((resolve, reject) => {
       this.projectService.fetchProjectSessions(this.project.id).subscribe(sessions => {
+        console.log(sessions);
         resolve(sessions);
       });
     });
@@ -478,6 +498,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
 
       projectSessionsFormArray.push(sessionFormControl);
     });
+
+    console.log(projectSessionsFormArray)
 
     return await new Promise<void>((resolve, reject) => {
       this.projectMemberForms.clear();
@@ -539,6 +561,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
         
       });
     });
+
+    
 
   }
 
@@ -653,12 +677,14 @@ export class ManageProjectMembersFormComponent implements OnInit {
     this.submitBtnLabel = statusText;
   }
 
+  /*
   setSaveButtonEnabled(enabled = true) {
     let value = enabled ? "true" : "false";
     let buttonEl = document.getElementById("member-form-save-button");
     buttonEl.setAttribute("disabled", value);
     this.submitBtnEnabled = enabled;
   }
+  */
 
   getBundleListsFromFlatTreeControl(treeControl) {
     let bundleLists = [];
@@ -725,9 +751,9 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   async saveForm() {
+    this.submitBtnEnabled = false;
 
     let bundleLists = this.getBundleListsFromFlatTreeControl(this.treeControl);
-    console.log(bundleLists);
 
     let commitActions = [];
     let commitData = {
@@ -756,7 +782,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
     this.projectService.gitlabCommit(this.project.id, commitData).subscribe({
       next: (data) => {
         console.log(data);
-        this.notifierService.notify("info", "Saved!");
+        //this.notifierService.notify("info", "Saved!");
       },
       error: (err) => {
         console.error(err);

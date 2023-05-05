@@ -44,6 +44,7 @@ export class EditEmudbDialogComponent {
     ) {}
 
   ngOnInit() {
+    console.warn("EDIT-DIALOG");
     this.setLoadingStatus(false);
 
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null;
@@ -131,8 +132,10 @@ export class EditEmudbDialogComponent {
     //validate form
     //this.emudbFormComponent.validate();
 
-
-
+    this.projectService.loadingStatus$.subscribe((status) => {
+      console.log(status)
+      this.submitBtnLabel = status;
+    });
     this.projectService.saveProject(this.emudbFormComponent);
     return;
 

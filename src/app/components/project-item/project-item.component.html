@@ -47,37 +47,46 @@
             <h4>Operations</h4>
             <div class="gitlab-menu-container">
                 <ul>
-                    <!--
+                    <li>
+                        <div (click)="editEmuDb(this.project)">
+                            <div class="list-button">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                &nbsp;
+                                Add/remove sessions
+                            </div>
+                        </div>
+                    </li>
                     <li>
                         <div (click)="manageMembers(this.project)">
                             <div class="list-button">
                                 <i class="fa fa-users" aria-hidden="true"></i>
                                 &nbsp;
-                                Members
+                                Assign annotation tasks
                             </div>
                         </div>
                     </li>
-                    -->
                     <!--
                     <li>
                         <div (click)="sessionsDialog(this.project)">
                             <div class="list-button">
                                 <i class="fa fa-microphone" aria-hidden="true"></i>
                                 &nbsp;
-                                Sessions
+                                Sessions !
                             </div>
                         </div>
                     </li>
                     -->
+                    
                     <li>
-                        <div (click)="editEmuDb(this.project)">
+                        <div (click)="openSprScriptsDialog(this.project)">
                             <div class="list-button">
-                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                <i class="fa fa-microphone" aria-hidden="true"></i>
                                 &nbsp;
-                                Edit sessions
+                                Manage recording scripts
                             </div>
                         </div>
                     </li>
+                    <!--
                     <li>
                         <a href="{{ projectMembersUrl }}" target="_blank">
                             <div class="list-button">
@@ -87,12 +96,13 @@
                             </div>
                         </a>
                     </li>
+                    -->
                     <li>
                         <a href="{{ project.web_url }}" target="_blank">
                             <div class="list-button">
                                 <img class="button-icon" src="assets/gitlab-icon.png" />
                                 &nbsp;
-                                Repository
+                                View data repository
                             </div>
                         </a>
                     </li>

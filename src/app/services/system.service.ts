@@ -5,6 +5,7 @@ import { NotifierService } from 'angular-notifier';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
+import { nanoid } from 'nanoid';
 
 @Injectable({
   providedIn: 'root'
@@ -152,16 +153,30 @@ export class SystemService {
   }
 
   async sendCommandToBackend(command) {
+    command.requestId = nanoid();
     return new Promise((resolve, reject) => {
+
+      //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
+
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
             expectedCmd = command.caCmd;
           }
           if(data.cmd == expectedCmd) {
-            obs.unsubscribe();
-            resolve(data);
+            console.log(data)
+            //if this endpoint does not support the requestId feature, we ignore it
+            if(typeof data.requestId == "undefined") {
+              obs.unsubscribe();
+              resolve(data);
+            }
+            //if this endpoint supports the requestId feature, then it needs to match
+            else if(data.requestId == command.requestId) {
+              obs.unsubscribe();
+              resolve(data);
+            }
+            
           }
           else {
             //this is not necessarily a problem, but log a warning about it anyway
@@ -244,39 +259,21 @@ export class SystemService {
       this.wsSubject = new Subject();
 
       this.ws.onmessage = (messageEvent) => {
-        //console.log(JSON.parse(messageEvent.data));
         let msg = JSON.parse(messageEvent.data);
+        console.log(msg);
 
         if(msg.type == "authentication-status") {
-          if(msg.message) {
-            //User is authenticated'
-            /*
-            this.notifierService.notify("info", "You are in the access list");
-            console.log("You are in the access list");
-            */
+          if(msg.message.result) {
             this.userIsAuthenticated = true;
-            
           }
           else {
-            //User failed authentication
-            /*
-            this.notifierService.notify("warning", "You are not in the access list");
-            console.log("You are not in the access list");
-            */
+            //this.notifierService.notify("error", "Failed authentication because: "+msg.message.reason);
             this.userIsAuthenticated = false;
           }
           this.userAuthenticationPerformed = true;
           this.eventEmitter.emit("userAuthentication");
         }
 
-        /*
-        console.log(JSON.parse(messageEvent.data));
-        const pkt = JSON.parse(messageEvent.data);
-        if(pkt.type == "status-update" && pkt.message == 'Authentication failed') {
-          console.log('close ws');
-          this.ws.close();
-        }
-        */
         this.wsSubject.next(msg);
       }
     });

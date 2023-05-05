@@ -42,7 +42,7 @@
             
             <!--SESSION ITEM-->
             <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
-                <div *ngIf="!session.controls.deleted.value" class="section-header-container" (click)="toggleSessionCollapsed(session.controls.name.value)">
+                <div *ngIf="!session.controls.deleted.value" [ngClass]="{ 'section-header-new': session.controls.new.value }" class="section-header-container" (click)="toggleSessionCollapsed(session.controls.name.value)">
 
                     <h5 *ngIf="session.controls.new.value">New session</h5>
                     <h5 *ngIf="!session.controls.new.value">Session {{ session.controls.name.value }}</h5>
@@ -75,7 +75,7 @@
                             </div>
                             <div class="form-error-msg" *ngIf="session.controls.name.errors?.pattern">
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                That's not a good name
+                                Please avoid special characters in the name
                             </div>
                         </div>
 
@@ -113,73 +113,107 @@
 
                     </div>
 
-                    <h5>
-                        Audio source
-                        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="audioSourcePopper" [popperTrigger]="'hover'"></i>
-                    </h5>
-                    
-                    <div *ngIf="session.controls.files.status == 'INVALID'" >
-                        <div class="form-error-msg" *ngIf="session.controls.files.errors?.pattern">
-                            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                            You need to provide at least one file
-                        </div>
-                    </div>
-
-                    <div class="formControlGroupMargin">
-                        <mat-radio-group formControlName="dataSource" aria-label="Select an option">
-                            <mat-radio-button value="upload">Upload files</mat-radio-button>
-                            <br />
-                            <mat-radio-button value="record">Create recording session</mat-radio-button>
-                        </mat-radio-group>
-
-                        <popper-content #audioSourcePopper>
-                            <h4>Upload files</h4>
-                            <p class="help-text">
-                                If you already have wav files for this session.
-                            </p>
-                            <br />
-                            <h4>Create recording session</h4>
-                            <p class="help-text">
-                                If you intend to create a new recording. This will give you a link which is used to initiate the recording session.<br/><br/>The session will exist as an empty session in your project until it is recorded.
-                            </p>
-                        </popper-content>
-                    </div>
-                    <ngx-dropzone *ngIf="session.value.dataSource == 'upload'" [expandable]="true" (change)="onAudioUpload($event, session)">
-                        <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
-                        <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
-                            <ngx-dropzone-label>
-                                <i class="fa fa-file-audio-o" aria-hidden="true"></i>
-                                &nbsp;{{ f.name }}
-                                <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
-                            </ngx-dropzone-label>
-                            
-                        </ngx-dropzone-preview>
-                    </ngx-dropzone>
-
-                    <div *ngIf="session.value.dataSource == 'record'">
+                    <div *ngIf="!session.value.new">
                         <label>
                             Recording script
-                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recordingScriptPopper" [popperTrigger]="'hover'"></i>
+                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper1" [popperTrigger]="'hover'"></i>
                         </label>
-                        <div class="recordingScriptContainer formControlGroupMargin">
-                            <select class="sessionScriptControl" formControlName="sessionScript">
-                                <option>1</option>
-                                <option>1245</option>
-                                <option>3456</option>
-                            </select>
-                            <button [disabled]="true" class="small-inline-button">New script</button>
-                        </div>
-                        <popper-content #recordingScriptPopper>
-                            This is the recording script, containing the instructions & prompts for the speaker.
+                        
+                        <popper-content #recScriptPopper1>
+                            <h4>Recording script</h4>
+                            <p class="help-text">
+                                This is the name of the recording script, containing the instructions & prompts for the speaker.
+                            </p>
                         </popper-content>
 
-                        <label for="recordingToken">Link for initiating recording session</label>
+                        <div class="recordingScriptContainer formControlGroupMargin">
+                            {{ session.value.sessionScript }}
+                        </div>
+
+                        <label for="recordingLink">Link for initiating recording session</label>
                         <div class="recordingLinkContainer">
-                            <input class="recordingLinkControl" formControlName="recordingToken" type="text" />
-                            <button class="small-inline-button" [cdkCopyToClipboard]="session.value.recordingLink">
+                            <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
+                            <button class="small-inline-button" (click)="recordingLinkCopied()" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.sessionId)">
                                 <i class="fa fa-files-o" aria-hidden="true"></i>
                                 Copy
                             </button>
+                        </div>
+                    </div>
+
+                    <div *ngIf="session.value.new">
+                        <h5>
+                            Audio source
+                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="audioSourcePopper" [popperTrigger]="'hover'"></i>
+                        </h5>
+                        
+                        <div *ngIf="session.controls.files.status == 'INVALID'" >
+                            <div class="form-error-msg" *ngIf="session.controls.files.errors?.pattern">
+                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                You need to provide at least one file
+                            </div>
+                        </div>
+                    
+                        <div class="formControlGroupMargin">
+                            <mat-radio-group formControlName="dataSource" aria-label="Select an option">
+                                <mat-radio-button value="upload">Uploaded files</mat-radio-button>
+                                <br />
+                                <mat-radio-button value="record">Recording session</mat-radio-button>
+                            </mat-radio-group>
+
+                            <popper-content #audioSourcePopper>
+                                <h4>Uploaded files</h4>
+                                <p class="help-text">
+                                    If you already have wav files for this session.
+                                </p>
+                                <br />
+                                <h4>Recording session</h4>
+                                <p class="help-text">
+                                    If you intend to create a new recording. This will give you a link which is used to initiate the recording session.<br/><br/>The session will exist as an empty session in your project until it is recorded.
+                                </p>
+                            </popper-content>
+                        </div>
+                        <ngx-dropzone *ngIf="session.value.dataSource == 'upload'" [expandable]="true" (change)="onAudioUpload($event, session)">
+                            <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
+                            <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
+                                <ngx-dropzone-label>
+                                    <i class="fa fa-file-audio-o" aria-hidden="true"></i>
+                                    &nbsp;{{ f.name }}
+                                    <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
+                                </ngx-dropzone-label>
+                                
+                            </ngx-dropzone-preview>
+                        </ngx-dropzone>
+
+                        <div *ngIf="session.value.dataSource == 'record'">
+                            <label>
+                                Recording script
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper2" [popperTrigger]="'hover'"></i>
+                            </label>
+
+                            <popper-content #recScriptPopper2>
+                                <h4>Recording script</h4>
+                                <p class="help-text">
+                                    This is the the recording script, containing the instructions & prompts for the speaker.
+                                </p>
+                            </popper-content>
+
+                            <div class="recordingScriptContainer formControlGroupMargin">
+
+                                <select class="sessionScriptControl" formControlName="sessionScript">
+                                    <option *ngFor="let option of sessionScriptOptions" [value]="option.value">{{ option.label }}</option>
+                                </select>
+
+                                <button [disabled]="false" (click)="openSprScriptsDialog(project)" class="small-inline-button">New script</button>
+                            </div>
+
+                            <label for="recordingLink">Link for initiating recording session</label>
+                            <div class="recordingLinkContainer">
+                                <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
+                                <button class="small-inline-button" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.sessionId)">
+                                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                                    Copy
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -245,7 +279,7 @@
                             </div>
                             <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.pattern">
                                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                That's not a good name
+                                Please avoid special characters in the name
                             </div>
                         </div>
                     </div>

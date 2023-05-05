@@ -79,6 +79,26 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
     $_SESSION['authorized'] = true;
   }
+  else if($_GET['user'] == "test3") {
+    addLog("Starting session for testuser3@example.com", "info");
+    $_SESSION['firstName'] = "Test3";
+    $_SESSION['lastName'] = "User3";
+    $_SESSION['fullName'] = "Test3 User3";
+    $_SESSION['email'] = "testuser3@example.com";
+    $_SESSION['eppn'] = "testuser3@example.com";
+    $_SESSION['username'] = formatEppn($_SESSION['eppn']);
+    $_SESSION['authorized'] = true;
+  }
+  else if($_GET['user'] == "test4") {
+    addLog("Starting session for testuser4@example.com", "info");
+    $_SESSION['firstName'] = "Test4";
+    $_SESSION['lastName'] = "User4";
+    $_SESSION['fullName'] = "Test4 User4";
+    $_SESSION['email'] = "testuser4@example.com";
+    $_SESSION['eppn'] = "testuser4@example.com";
+    $_SESSION['username'] = formatEppn($_SESSION['eppn']);
+    $_SESSION['authorized'] = true;
+  }
   else {
     addLog("Starting session for testuser@example.com", "info");
     $_SESSION['firstName'] = "Test";
