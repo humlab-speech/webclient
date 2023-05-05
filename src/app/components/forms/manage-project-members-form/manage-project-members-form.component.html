@@ -1,8 +1,10 @@
 <div [formGroup]="form">
+    <!--
     <div *ngIf="loadingStatus || displayDespiteNotLoading" class="session-loading-indicator-container">
         <img *ngIf="loadingStatus" src="../../../assets/loading-indicator-4-dark.svg">
         Loading project data: {{ loadingMessage }}
     </div>
+    -->
 
     <div *ngIf="userIsProjectMaintainer()" class="form-control-pair-container">
         <div (click)="toggleMemberSearch()" class="form-control-pair-label">

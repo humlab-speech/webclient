@@ -26,8 +26,12 @@ export class ManageSprScriptsDialogComponent implements OnInit {
   @Input() projectManager: ProjectManagerComponent;
   @Input() project: Project;
 
+  submitBtnLabel:string = "Save";
+  submitBtnEnabled:boolean = false;
+  showLoadingIndicator:boolean = false;
   form:FormGroup;
   sessions:any = [];
+  scripts:FormArray;
 
   constructor(private fb:FormBuilder, 
     private projectService:ProjectService, 
@@ -40,8 +44,9 @@ export class ManageSprScriptsDialogComponent implements OnInit {
   ngOnInit(): void {
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null;
 
+    this.scripts = this.fb.array([]);
     this.form = this.fb.group({
-      scripts: this.fb.array([])
+      scripts: this.scripts
     });
 
     let user = this.userService.getSession();
@@ -49,8 +54,11 @@ export class ManageSprScriptsDialogComponent implements OnInit {
       response.result.forEach((script) => {
         this.addScript(script);
       });
-    });
 
+      this.form.valueChanges.subscribe((newValues) => {
+        this.submitBtnEnabled = this.form.valid;
+      });
+    });
 
     //this.addScript();
   }
@@ -72,7 +80,7 @@ export class ManageSprScriptsDialogComponent implements OnInit {
     const scripts = this.form.get('scripts') as FormArray;
     let scriptFg = this.fb.group({
       scriptId: new FormControl(script != null ? script.scriptId : nanoid()),
-      collapsed: new FormControl(false),
+      collapsed: new FormControl(!newScript),
       new: new FormControl(newScript),
       name: new FormControl({ value: script != null ? script.name : "", disabled: false }, [
         Validators.required,
@@ -135,9 +143,6 @@ export class ManageSprScriptsDialogComponent implements OnInit {
     return this.form.get('scripts') as FormArray;
   }
 
-  toggleSectionCollapsed(sectionName:string) {
-  }
-
   deleteSprScript(i, event) {
     const scripts = this.form.get('scripts') as FormArray;
     let script = scripts.controls[i] as FormGroup;
@@ -161,7 +166,7 @@ export class ManageSprScriptsDialogComponent implements OnInit {
     scripts.removeAt(i);
   }
 
-  submitForm() {
+  saveForm() {
     //set all controls to touched
     this.form.markAllAsTouched();
 
@@ -175,6 +180,15 @@ export class ManageSprScriptsDialogComponent implements OnInit {
 
     this.projectService.saveSprScripts(user.id, this.form.value.scripts).subscribe((response) => {
       this.projectManager.dashboard.modalActive = false;
+    });
+  }
+
+  toggleSectionCollapsed(sectionName) {
+    this.scripts.controls.forEach(group => {
+      let g = group as FormGroup;
+      if(sectionName == g.controls.name.value) {
+        g.controls.collapsed.setValue(!g.controls.collapsed.value);
+      }
     });
   }
   

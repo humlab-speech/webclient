@@ -126,13 +126,14 @@ li {
 
 .section-header-container {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     background: #ccc;
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
     padding-left: 1em;
     border: 0px solid #000;
+    cursor: pointer;
 }
 
 .section-header-container h4 {
@@ -243,4 +244,8 @@ button.form-add-button:hover {
 
 .fieldset-items-container {
     border-left: 2px solid $primary-light;
+}
+
+.collapsed {
+    display: none;
 }

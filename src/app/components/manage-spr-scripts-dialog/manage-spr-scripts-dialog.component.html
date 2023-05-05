@@ -115,7 +115,12 @@
             
             <br />
 
-            <button (click)="submitForm()">Save</button>
+            <button [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveForm()">
+                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
+                <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
+                &nbsp;
+                {{ submitBtnLabel }}
+            </button>
             
         </div>
 
