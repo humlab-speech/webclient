@@ -1,7 +1,7 @@
 export const environment = {
     APPLICATION_NAME: "Visible Speech",
     LOGO_IMAGE_PATH: "/assets/VISP-logo-white.png",
-    API_ENDPOINT: "https://visp.humlab.umu.se",
+    API_ENDPOINT: "visp.humlab.umu.se",
     EMUDB_INTEGRATION: true,
     ENABLED_APPLICATIONS: ["rstudio", "jupyter", "emu-webapp", "octra", "script"],
     BASE_DOMAIN: "visp.humlab.umu.se",

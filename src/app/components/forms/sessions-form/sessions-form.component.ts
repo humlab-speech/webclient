@@ -419,7 +419,6 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       if(sessionName == g.controls.name.value) {
         g.controls.collapsed.setValue(!g.controls.collapsed.value);
       }
-
     });
   }
 
