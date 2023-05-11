@@ -27,7 +27,7 @@ export class MenuBarComponent implements OnInit {
           firstPathPart = firstPathPart.substring(0, firstPathPart.indexOf("?"));
         }
 
-        this.containerSessionViewActive = firstPathPart == "app" || firstPathPart == "emu-webapp" || pathParts[1] == "spr";
+        this.containerSessionViewActive = firstPathPart == "app" || firstPathPart == "emu-webapp";
       }
     });
   }
