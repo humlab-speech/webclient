@@ -1,19 +1,24 @@
 <div class="form">
+    
+
     <h3>
         Documentation
-        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="docsPopper" [popperTrigger]="'hover'"></i>
+        <i class="fa fa-question-circle tooltip-zone-dark"
+        aria-hidden="true"
+        matTooltip="Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server."
+        ></i>
     </h3>
-
+    <!--
     <popper-content #docsPopper>
         <h4>Documentation</h4>
         <p class="help-text">
             Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server.
         </p>
     </popper-content>
-
+    -->
     <ngx-dropzone [expandable]="true" (change)="onUpload($event)">
         <ngx-dropzone-label>Drop your documents here</ngx-dropzone-label>
-        <ngx-dropzone-preview *ngFor="let f of docFiles" [removable]="true" (removed)="onRemove(f)">
+        <ngx-dropzone-preview *ngFor="let f of docFiles.value" [removable]="true" (removed)="onRemove(f)">
             <ngx-dropzone-label>
                 <i class="fa fa-file-o" aria-hidden="true"></i>
                 &nbsp;{{ f.name }}
@@ -21,4 +26,7 @@
             </ngx-dropzone-label>
         </ngx-dropzone-preview>
     </ngx-dropzone>
+
+    
+
 </div>

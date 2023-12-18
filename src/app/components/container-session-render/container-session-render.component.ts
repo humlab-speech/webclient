@@ -30,7 +30,7 @@ export class ContainerSessionRenderComponent implements OnInit {
         iframe.setAttribute("src", window.location.protocol+"//app."+window.location.hostname+"?token="+this.token);
         break;
       case "/emu-webapp":
-        let url = window.location.protocol+"//emu-webapp."+window.location.hostname+window.location.search+"&autoConnect=true&comMode=GITLAB";
+        let url = window.location.protocol+"//emu-webapp."+window.location.hostname+window.location.search;
         iframe.setAttribute("src", url);
         break;
     }

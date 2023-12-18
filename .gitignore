@@ -2,3 +2,8 @@ node_modules
 dist
 .vscode
 .angular
+vendor
+composer.phar
+installer.php
+composer.json
+composer.lock

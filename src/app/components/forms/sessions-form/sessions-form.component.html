@@ -3,10 +3,12 @@
     <!--START OF SESSIONS-->
     <h3 *ngIf="showSessions">
         Sessions
-        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sessPopper" [popperTrigger]="'hover'"></i>
+        <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sessPopper" [popperTrigger]="'hover'"></i>-->
+        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="'Sessions’ are used to group all recordings from a speaker. If you are collecting longitudinal data, we recommend that you add a new session for each recording session. Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis."></i>
     </h3>
 
     <!--SESSIONS POPUP HELP-->
+    <!--
     <popper-content #sessPopper>
         <h4>Sessions</h4>
         <p class="help-text">
@@ -18,7 +20,8 @@
             Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis.
         </p>
     </popper-content>
-    
+    -->
+
     <fieldset id="sessions-container" *ngIf="showSessions">
 
         <!--ADD SESSION BUTTON-->
@@ -34,7 +37,6 @@
         -->
 
         <div formArrayName="sessions">
-
             <div *ngIf="sessions.pristine == false && sessions.status == 'INVALID'" >
                 <div class="form-error-msg" *ngIf="sessions.errors?.sessionNameNotUnique">
                     <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
@@ -46,11 +48,16 @@
             <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
                 <div *ngIf="!session.controls.deleted.value" [ngClass]="{ 'section-header-new': session.controls.new.value }" class="section-header-container" (click)="toggleSessionCollapsed(session.controls.name.value)">
 
-                    <h5 *ngIf="session.controls.new.value">New session</h5>
-                    <h5 *ngIf="!session.controls.new.value">Session {{ session.controls.name.value }}</h5>
+                    <div class="header-flex-container">
+                        <i *ngIf="session.controls.collapsed.value" class='fa fa-chevron-down'></i>
+                        <i *ngIf="!session.controls.collapsed.value" class='fa fa-chevron-up'></i>
+                        
+                        <h4 *ngIf="session.controls.new.value">New session</h4>
+                        <h4 *ngIf="!session.controls.new.value">Session {{ session.controls.name.value }}</h4>
+                    </div>
                     
                     <div class="itemDeleteBtn">
-                        <i (click)="deleteSession(i, $event)" class="fa fa-times" aria-hidden="true"></i>
+                        <i (click)="deleteSession(i, $event)" class="fa fa-trash-o" aria-hidden="true"></i>
                     </div>
                 </div>
 
@@ -58,7 +65,7 @@
                     <div class="session-metadata-container">
 
                         <div class="attribute-container">
-                            <label>Session name</label>
+                            <h6>Session name</h6>
                             <input class="session-name-input" placeholder="Session name" formControlName="name" />
                         </div>
                         
@@ -81,9 +88,18 @@
                             </div>
                         </div>
 
+                        <div class="attribute-container">
+                            <h6>
+                                Session type
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="The session either consists of uploaded audio files, or files recorded directly from the online tool. The session type is selected when the session is created and cannot be changed later."></i>
+                            </h6>
+                            <div *ngIf="session.value.dataSource == 'record'">Recording</div>
+                            <div *ngIf="session.value.dataSource == 'upload'">Upload</div>
+                        </div>
+
                         <!--SESSION METADATA-->
                         <div class="attribute-container">
-                            <label>Speaker gender</label>
+                            <h6>Speaker gender</h6>
                             <select formControlName="speakerGender">
                                 <option value="null">Unspecified</option>
                                 <option value="Female">Female</option>
@@ -92,11 +108,12 @@
                         </div>
 
                         <div class="attribute-container">
-                            <label>
-                                Speaker age 
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="speakerAgePopper" [popperTrigger]="'hover'"></i>
-                            </label>
-                            <input class="session-age-input" placeholder="Speaker age" formControlName="speakerAge">
+                            <h6>
+                                Speaker age
+                                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="speakerAgePopper" [popperTrigger]="'hover'"></i>-->
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="35 is used as a default to signify a middle-aged person since the voice does not change much between youth and old age."></i>
+                            </h6>
+                            <input class="session-age-input" style="width:2em;" placeholder="Speaker age" formControlName="speakerAge">
 
                             <div *ngIf="session.controls.speakerAge.pristine == false && session.controls.speakerAge.status == 'INVALID'" >
                                 <div class="form-error-msg" *ngIf="session.controls.speakerAge.errors?.pattern">
@@ -106,46 +123,60 @@
                             </div>
                         </div>
 
+                        <!--
                         <popper-content #speakerAgePopper>
                             <h4>Speaker age</h4>
                             <p class="help-text">
                                 35 is used as a default to signify a middle-aged person since the voice does not change much between youth and old age.
                             </p>
                         </popper-content>
+                        -->
 
                     </div>
 
-                    <div *ngIf="!session.value.new">
-                        <label>
-                            Recording script
-                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper1" [popperTrigger]="'hover'"></i>
-                        </label>
-                        
-                        <popper-content #recScriptPopper1>
-                            <h4>Recording script</h4>
-                            <p class="help-text">
-                                This is the name of the recording script, containing the instructions & prompts for the speaker.
-                            </p>
-                        </popper-content>
+                    <div *ngIf="false && !session.value.new">
+                        <div *ngIf="session.value.dataSource == 'record'">
+                            <h6>
+                                Recording script
+                                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper1" [popperTrigger]="'hover'"></i>-->
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="This is the name of the recording script, containing the instructions & prompts for the speaker."></i>
+                            </h6>
+                            
+                            <!--
+                            <popper-content #recScriptPopper1>
+                                <h4>Recording script</h4>
+                                <p class="help-text">
+                                    This is the name of the recording script, containing the instructions & prompts for the speaker.
+                                </p>
+                            </popper-content>
+                            -->
+    
+                            <div class="recordingScriptContainer formControlGroupMargin">
+                                {{ session.value.sessionScript }}
+                            </div>
 
-                        <div class="recordingScriptContainer formControlGroupMargin">
-                            {{ session.value.sessionScript }}
-                        </div>
-
-                        <label for="recordingLink">Link for initiating recording session</label>
-                        <div class="recordingLinkContainer">
-                            <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
-                            <button class="small-inline-button" (click)="recordingLinkCopied()" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.sessionId)">
-                                <i class="fa fa-files-o" aria-hidden="true"></i>
-                                Copy
-                            </button>
+                            <h6 for="recordingLink">Link for initiating recording session</h6>
+                            <div class="recordingLinkContainer">
+                                <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
+                                <button class="small-inline-button" (click)="recordingLinkCopied()" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.id)">
+                                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                                    Copy
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div *ngIf="session.value.new">
-                        <h5>
+                    <!--
+                    <div *ngIf="session.value.dataSource == 'upload'">
+                    </div>
+                    -->
+
+                    <!--<div *ngIf="session.value.new">-->
+                    <div>
+                        <h5 *ngIf="session.value.new">
                             Audio source
-                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="audioSourcePopper" [popperTrigger]="'hover'"></i>
+                            <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="audioSourcePopper" [popperTrigger]="'hover'"></i>-->
+                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="If you already have audio files for this session, you can upload them here. Otherwise, you can create new recordings using our online tool."></i>
                         </h5>
                         
                         <div *ngIf="session.controls.files.status == 'INVALID'" >
@@ -155,13 +186,13 @@
                             </div>
                         </div>
                     
-                        <div class="formControlGroupMargin">
+                        <div *ngIf="session.value.new" class="formControlGroupMargin">
                             <mat-radio-group formControlName="dataSource" aria-label="Select an option">
                                 <mat-radio-button value="upload">Uploaded files</mat-radio-button>
                                 <br />
                                 <mat-radio-button value="record">Recording session</mat-radio-button>
                             </mat-radio-group>
-
+                            <!--
                             <popper-content #audioSourcePopper>
                                 <h4>Uploaded files</h4>
                                 <p class="help-text">
@@ -173,6 +204,7 @@
                                     If you intend to create a new recording. This will give you a link which is used to initiate the recording session.<br/><br/>The session will exist as an empty session in your project until it is recorded.
                                 </p>
                             </popper-content>
+                            -->
                         </div>
                         <ngx-dropzone *ngIf="session.value.dataSource == 'upload'" [expandable]="true" (change)="onAudioUpload($event, session)">
                             <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
@@ -186,37 +218,79 @@
                             </ngx-dropzone-preview>
                         </ngx-dropzone>
 
+                        
                         <div *ngIf="session.value.dataSource == 'record'">
-                            <label>
+                            
+                            <h6>
                                 Recording script
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper2" [popperTrigger]="'hover'"></i>
-                            </label>
+                                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper2" [popperTrigger]="'hover'"></i>-->
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="This is the the recording script, containing the instructions & prompts for the speaker."></i>
+                            </h6>
 
+                            <!--
                             <popper-content #recScriptPopper2>
                                 <h4>Recording script</h4>
                                 <p class="help-text">
                                     This is the the recording script, containing the instructions & prompts for the speaker.
                                 </p>
                             </popper-content>
-
+                            -->
                             <div class="recordingScriptContainer formControlGroupMargin">
-
                                 <select class="sessionScriptControl" formControlName="sessionScript">
-                                    <option *ngFor="let option of sessionScriptOptions" [value]="option.value">{{ option.label }}</option>
+                                    <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.value.sessionScript === option.value ? true : null">{{ option.label }}</option>
                                 </select>
-
                                 <button [disabled]="false" (click)="openSprScriptsDialog(project)" class="small-inline-button">New script</button>
+                                    
+                                <div *ngIf="session.get('sessionScript').status === 'INVALID'">
+                                    <div class="form-error-msg" *ngIf="session.get('sessionScript').hasError('sprScriptNotSelected')">
+                                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                        Please select a recording script.
+                                    </div>
+                                </div>
                             </div>
 
-                            <label for="recordingLink">Link for initiating recording session</label>
+                            <h6 for="recordingLink">Link for initiating recording session</h6>
                             <div class="recordingLinkContainer">
                                 <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
-                                <button class="small-inline-button" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.sessionId)">
+                                <button class="small-inline-button" [cdkCopyToClipboard]="getRecordingSessionLink(session.value.id)">
                                     <i class="fa fa-files-o" aria-hidden="true"></i>
                                     Copy
                                 </button>
                             </div>
                         </div>
+
+
+                        <div *ngIf="!session.value.new">
+                            <br />
+                            <h6>
+                                Files
+                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="These are the audio files we currently have stored for this session."></i>
+                            </h6>
+                            <table>
+                                <tr *ngFor="let file of session.value.files">
+                                    <td>{{ file.name }}</td>
+                                    <td>
+                                        <i class="fa fa-trash-o tooltip-zone-dark button" (click)="deleteBundle(project.id, session.value.id, file.name)" aria-hidden="true"></i>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--
+                            <button class="small-button">
+                                <i class="fa fa-trash-o tooltip-zone-dark button" (click)="deleteAllBundles(project.id, session.value.id)" aria-hidden="true"></i>
+                                Delete all
+                            </button>
+                            -->
+                            <br />
+                            <div *ngIf="session.value.files.length == 0">
+                                <div *ngIf="session.value.dataSource == 'record'">
+                                    <i>No files recorded</i>
+                                </div>
+                                <div *ngIf="session.value.dataSource == 'upload'">
+                                    <i>No files uploaded</i>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -229,15 +303,18 @@
     <!--START OF ANNOTATION STRUCTURE-->
     <h3 *ngIf="showAnnotLevels">
         Annotation structure
-        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="annotStructPopper" [popperTrigger]="'hover'"></i>
+        <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="annotStructPopper" [popperTrigger]="'hover'"></i>-->
+        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Here, you define the annotation levels and their relationship to one another. The default structure is Word and Phonetic, and their relationship is one-to-many, meaning that one word may consist of several phonemes. An annotation level can be of type ITEM, SEGMENT or EVENT. An ITEM level is timeless and contains labels only. A SEGMENT level has a start time and a duration. An EVENT level contains a single time point only. In the standard case, Phonetics have a label, a start time and a duration, while Words only contain labels. You may add or remove annotations levels. If you do, make sure you also add/remove the links between them."></i>
     </h3>
 
+    <!--
     <popper-content #annotStructPopper>
         <h4>Annotation structure</h4>
         <p class="help-text">
             Here, you define the annotation levels and their relationship to one another. The default structure is Word and Phonetic, and their relationship is one-to-many, meaning that one word may consist of several phonemes. An annotation level can be of type ITEM, SEGMENT or EVENT. An ITEM level is timeless and contains labels only. A SEGMENT level has a start time and a duration. An EVENT level contains a single time point only. In the standard case, Phonetics have a label, a start time and a duration, while Words only contain labels. You may add or remove annotations levels. If you do, make sure you also add/remove the links between them.
         </p>
     </popper-content>
+    -->
 
     <!--ANNOTATION LEVELS-->
     <h4 *ngIf="showAnnotLevels">Levels</h4>
@@ -257,14 +334,14 @@
                 <div class="section-header-container">
                     <h5>Annotation level</h5>
                     <div class="itemDeleteBtn">
-                        <i (click)="deleteAnnotLevel(i)" class="fa fa-times" aria-hidden="true"></i>
+                        <i (click)="deleteAnnotLevel(i)" class="fa fa-trash-o" aria-hidden="true"></i>
                     </div>
                 </div>
 
                 <div class="section-content">
 
                     <div class="attribute-container">
-                        <label>Annotation level name</label>
+                        <h6>Annotation level name</h6>
                         <input placeholder="Annotation level name" formControlName="name">
                         <div *ngIf="annotLevel.controls.name.pristine == false && annotLevel.controls.name.status == 'INVALID'" >
                             <div class="form-error-msg" *ngIf="annotLevel.controls.name.errors?.annotLevelNameNotUnique">
@@ -287,7 +364,7 @@
                     </div>
 
                     <div class="attribute-container">
-                        <label>Type</label>
+                        <h6>Type</h6>
                         <select formControlName="type">
                             <option>ITEM</option>
                             <option>SEGMENT</option>
@@ -324,7 +401,7 @@
                 <div class="section-header-container">
                     <h5>Annotation level link</h5>
                     <div class="itemDeleteBtn">
-                        <i (click)="deleteAnnotLevelLink(i)" class="fa fa-times" aria-hidden="true"></i>
+                        <i (click)="deleteAnnotLevelLink(i)" class="fa fa-trash-o" aria-hidden="true"></i>
                     </div>
                 </div>
 

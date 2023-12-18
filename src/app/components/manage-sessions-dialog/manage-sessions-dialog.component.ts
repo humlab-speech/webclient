@@ -32,15 +32,10 @@ export class ManageSessionsDialogComponent implements OnInit {
   ngOnInit(): void {
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null;
 
-    //Load sessions in this project
-    this.projectService.fetchProjectSessions(this.project.id).subscribe((sessions) => {
-      this.sessions = sessions;
-    });
-
     this.form = this.fb.group({
       projectMembers: this.fb.array([])
     });
-
+    
     this.form.addControl("sessionName", new FormControl(nanoid(), [
       Validators.required,
       Validators.minLength(3),

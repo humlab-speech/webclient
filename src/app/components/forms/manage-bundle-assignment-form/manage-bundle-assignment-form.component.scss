@@ -84,14 +84,12 @@
 }
 
 #user-select-options {
-    /*display:none;*/
+    display:none;
     position: absolute;
     background: #fff;
-    color: #000;
     border: 1px solid $border-light;
     top: 2em;
     margin-top:2px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
 #user-select-options ul {
@@ -119,16 +117,37 @@
 
 #search-user-input {
     display:none;
-    background: $primary;
-    color: #fff;
 }
 
 details {
     cursor:pointer;
 }
 
+.remove-member-button {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5em;
+    border-radius: 0.5em;
+}
+.remove-member-button i {
+    color: red;
+}
+
+.remove-member-button:hover {
+    cursor:pointer;
+    background-color: $border-light;
+}
+
 li {
     list-style-type: none;
+}
+
+.remove-button-container {
+    display:inline-block;
+    margin-left: 1em;
 }
 
 #member-form-save-button {
@@ -137,11 +156,8 @@ li {
     justify-content: center;
     width: 100%;
     font-size: 1.5rem;
-    padding: 0.5rem;   
-}
-
-.button:hover {
-    color: $comp3;
+    padding: 0.5rem;
+    
 }
 
 #member-form-save-button:hover {
@@ -214,6 +230,15 @@ li {
 .bundle-finished-editing {
 }
 
+.done-indicator {
+    background: $comp1;
+    color: #fff;
+    padding: .25em;
+    border-radius: 0.25em;
+    font-size: 0.8em;
+    margin-left: 0.5em;
+}
+
 ul {
     padding-left: 1em;
 }
@@ -230,18 +255,4 @@ ul {
     height: .8em;
     background: #999;
     border-radius: .1em;
-}
-
-.role-indicator {
-    background: $comp1;
-    color: #fff;
-    padding: .25em;
-    border-radius: 0.25em;
-    font-size: 0.8em;
-    margin-left: 0.5em;
-    cursor: pointer;
-}
-
-.role-indicator-admin {
-    background: $comp2;
 }

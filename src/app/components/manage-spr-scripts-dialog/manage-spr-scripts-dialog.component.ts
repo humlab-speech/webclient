@@ -50,17 +50,15 @@ export class ManageSprScriptsDialogComponent implements OnInit {
     });
 
     let user = this.userService.getSession();
-    this.projectService.fetchSprScripts(user.id).subscribe((response:any) => {
+    this.projectService.fetchSprScripts(user.username).subscribe((response:any) => {
       response.result.forEach((script) => {
         this.addScript(script);
       });
-
+      
       this.form.valueChanges.subscribe((newValues) => {
         this.submitBtnEnabled = this.form.valid;
       });
     });
-
-    //this.addScript();
   }
 
   canEditScript(script) {
@@ -106,6 +104,18 @@ export class ManageSprScriptsDialogComponent implements OnInit {
 
     //if this is an existing script, add the prompts
     if(script != null) {
+
+      if(script.sections.length == 0) {
+        script.sections.push({
+          groups: []
+        });
+      }
+      if(script.sections[0].groups.length == 0) {
+        script.sections[0].groups.push({
+          promptItems: []
+        });
+      }
+
       script.sections[0].groups[0].promptItems.forEach((prompt) => {
         this.addPrompt(scriptFg, prompt);
       });
@@ -178,9 +188,12 @@ export class ManageSprScriptsDialogComponent implements OnInit {
 
     let user = this.userService.getSession();
 
-    this.projectService.saveSprScripts(user.id, this.form.value.scripts).subscribe((response) => {
+    this.projectService.saveSprScripts(user.username, this.form.value.scripts).subscribe((response) => {
+      console.log(response);
       this.projectManager.dashboard.modalActive = false;
+      this.notifierService.notify("success", "Scripts saved successfully.");
     });
+
   }
 
   toggleSectionCollapsed(sectionName) {

@@ -12,4 +12,7 @@ export class Project {
     owner?:object;
     wiki_enabled?: boolean;
     sessions?:any;
+    liveAppSessions?:any;
+    members?:any;
+    membersInfo?:any;
 }

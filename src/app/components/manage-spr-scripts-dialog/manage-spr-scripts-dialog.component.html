@@ -4,15 +4,18 @@
         <div class="dialog-header">
             <h2>
                 Speech recorder scripts
-                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sprScriptsPopper" [popperTrigger]="'hover'"></i>
+                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sprScriptsPopper" [popperTrigger]="'hover'"></i>-->
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Here you can create scripts for the integrated speech recorder application. Each script consists of a number of prompts to be spoken by the subject. You can then link this script to a recording session in the sessions dialog."></i>
             </h2> 
 
+            <!--
             <popper-content #sprScriptsPopper>
                 <h4>Speech recorder scripts</h4>
                 <p class="help-text">
                     Here you can create scripts for the integrated speech recorder application. Each script consists of a number of prompts to be spoken by the subject. You can then link this script to a recording session in the sessions dialog.
                 </p>
             </popper-content>
+            -->
 
             <div class="dialog-close-btn" (click)="closeDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
@@ -48,19 +51,22 @@
                             </div>
 
                             <div class="attribute-container">
-                                <label>Shared<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sharedScriptsPopper" [popperTrigger]="'hover'"></i></label>
+                                <!--<label>Shared<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sharedScriptsPopper" [popperTrigger]="'hover'"></i></label>-->
+                                <label>Shared<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Shared scripts are available to anyone to be used in their projects, but can still only be edited by you."></i></label>
                                 <select formControlName="sharing">
                                     <option value="none">No</option>
                                     <option value="all">Yes</option>
                                 </select>
                             </div>
                             
+                            <!--
                             <popper-content #sharedScriptsPopper>
                                 <h4>Shared scripts</h4>
                                 <p class="help-text">
                                     Shared scripts are available to anyone to be used in their projects, but can still only be edited by you.
                                 </p>
                             </popper-content>
+                            -->
 
                             <br />
 

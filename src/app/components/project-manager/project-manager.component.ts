@@ -51,12 +51,11 @@ export class ProjectManagerComponent implements OnInit {
       this.projects = <Project[]>projects;
       this.projectsLoaded = true;
     });
-
+    
     this.projectService.fetchProjects(true).subscribe(projects => {
       this.projects = <Project[]>projects;
       this.projectsLoaded = true;
     });
-    
   }
 
   showSessionsDialog() {
@@ -64,9 +63,14 @@ export class ProjectManagerComponent implements OnInit {
     this.dashboard.modalName = 'manage-sessions-dialog';
   }
 
-  showManageProjectMembersDialog() {
+  showManageMembersDialog() {
     this.dashboard.modalActive = true;
     this.dashboard.modalName = 'manage-project-members-dialog';
+  }
+
+  showManageBundleListsDialog() {
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'manage-bundle-assignment-dialog';
   }
 
   showProjectDialog(project = null) {

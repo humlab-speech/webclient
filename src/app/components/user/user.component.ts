@@ -16,11 +16,6 @@ export class UserComponent implements OnInit {
   constructor(private userService:UserService) { }
 
   ngOnInit(): void {
-    window.addEventListener('userSessionUpdated', () => {
-      console.log("userSessionUpdated");
-      this.userIsSignedIn = this.userService.userIsSignedIn;
-    });
-
     this.getUserDisplayName();
   }
 

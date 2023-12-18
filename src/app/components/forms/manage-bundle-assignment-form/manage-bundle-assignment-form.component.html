@@ -1,0 +1,84 @@
+<div [formGroup]="form">
+
+    <div *ngIf="userIsProjectMaintainer()" class="form-control-pair-container">
+        <div (click)="toggleMemberSearch()" class="form-control-pair-label">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            &nbsp;
+            Add member
+        </div>
+        <div id="search-user-input" class="form-control-pair-input">
+            <label>Search user:&nbsp;</label>
+            <div>
+                <input type="text" id="search-user-control" (keyup)="searchUser($event)"/>
+                <div id="user-select-options">
+                    <ul class="select-search-results-list" *ngFor="let searchUser of searchUsers">
+                        <li (click)="addMember(searchUser)" class="search-option-user-container">
+                            <img src="{{searchUser.avatar_url}}" class="avatar_image" />
+                            {{searchUser.name}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <br />
+    </div>
+      
+    <ul formArrayName="members">
+      <li class="bundlelist-user-item" *ngFor="let member of members.controls; let i = index" [formGroupName]="i">
+        <details>
+          <summary>
+            <i class="fa fa-user" aria-hidden="true"></i>
+            {{ member.get('fullName').value }} ({{ member.get('eppn').value }})
+          </summary>
+  
+          <ul formArrayName="sessions">
+            <li class="bundlelist-session-item" *ngFor="let session of member.get('sessions').controls; let j = index" [formGroupName]="j">
+              <label>
+                <input type="checkbox" [formControl]="session.get('state')" [indeterminate]="isIndeterminate(member, session.get('bundles').controls)" (change)="onSessionItemCheckboxChange(member, j)" *ngIf="session.get('bundles').controls.length > 0">
+                <div class="checkbox-placeholder" *ngIf="session.get('bundles').controls.length == 0"></div>
+                {{ session.get('name').value }}
+              </label>
+  
+              
+          
+              <ng-container *ngIf="session.get('bundles').controls.length > 0; else noBundles">
+                <ul formArrayName="bundles">
+                  <li class="bundlelist-bundle-item" *ngFor="let bundle of session.get('bundles').controls; let k = index" [formGroupName]="k">
+                    <label>
+                      <input type="checkbox" name="checkbox-{{k}}" [formControl]="bundle.get('selected')" (change)="onBundleItemCheckboxChange(member, i, j, k)">
+                      <span class="done-indicator" *ngIf="bundle.get('finishedEditing').value"><i class="fa fa-flag-checkered" aria-hidden="true"></i> done</span>
+                      {{ bundle.get('name').value }}
+                      <i *ngIf="bundle.get('comment').value != ''" (click)="showComment(bundle)" class="fa fa-commenting-o" aria-hidden="true"
+                      matTooltip="Bundle comment: {{ bundle.get('comment').value }}"></i>
+  
+                      <!--
+                      <i *ngIf="bundle.get('comment').value != ''" (click)="showComment(bundle)" [popper]="commentPopper" [popperTrigger]="'hover'" class="fa fa-commenting-o" aria-hidden="true"></i>
+                      <popper-content #commentPopper>
+                        <h4>Bundle comment</h4>
+                        {{ bundle.get('comment').value }}
+                      </popper-content>
+                      -->
+                    </label>
+                  </li>
+                </ul>
+              </ng-container>
+  
+              <ng-template #noBundles>
+                <div class="empty-session-text">Empty session</div>
+              </ng-template>
+  
+            </li>
+          </ul>
+        </details>
+      </li>
+    </ul>
+      
+    <br />
+    <button id="member-form-save-button" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveForm()">
+        <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
+        <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
+        &nbsp;
+        {{ submitBtnLabel }}
+    </button>
+  
+  </div>

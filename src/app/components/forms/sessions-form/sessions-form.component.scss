@@ -12,6 +12,24 @@ ngx-dropzone {
     border-width: 1px;
 }
 
+h4 {
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+h5 {
+    text-decoration: underline;
+    text-decoration-color: $secondary;
+}
+
+h6 {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
 #create-project-btn {
     padding:0.8em;
     background-color: $crimson;
@@ -99,6 +117,7 @@ li {
     height: auto;
     padding-left:.2em;
     padding-right:.2em;
+    color: #666;
 }
 
 .itemDeleteBtn:hover {
@@ -212,7 +231,6 @@ button.form-add-button:hover {
 .attribute-container label {
     display:flex;
     align-items: baseline;
-    
     margin-bottom: 0.25em;
 }
 .attribute-container input {
@@ -287,4 +305,17 @@ button:disabled:hover {
 
 .collapsed {
     display: none;
+}
+
+.header-flex-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    column-gap: 0.5em;
+    height: 100%;
+}
+
+.header-flex-container i {
+    position: relative;
+    top: -0.15em;
 }

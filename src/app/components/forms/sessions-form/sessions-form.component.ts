@@ -1,6 +1,5 @@
 
 import { Component, OnInit, Input, forwardRef, OnDestroy } from '@angular/core';
-//import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl } from '@angular/forms';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -102,18 +101,6 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
   
   ngOnInit(): void {
-    let user = this.userService.getSession();
-
-    //fetch the speech recorder scripts from the server
-    this.projectService.fetchSprScripts(user.id).subscribe((sessionScriptOptions:any) => {
-      sessionScriptOptions.result.forEach(sessionScriptOption => {
-        this.sessionScriptOptions.push({
-          label: sessionScriptOption.name,
-          value: sessionScriptOption.scriptId
-        });
-      });
-    });
-
     this.form = this.fb.group({});
 
     this.sessions = this.fb.array([], this.validateSessionNameUnique);
@@ -125,6 +112,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.form.addControl("sessions", this.sessions);
     this.form.addControl("annotLevels", this.annotLevels);
     this.form.addControl("annotLevelLinks", this.annotLevelLinks);
+
+    this.form.statusChanges.subscribe((status) => {
+      this.validateForm();
+    });
 
     this.subscriptions.push(
       // any time the inner form changes update the parent of any change
@@ -148,6 +139,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
     
     if(this.project) {
+
+      this.addSessions(this.project);
+      /*
       this.emuDbLoadingStatus = true;
       //If we load an existing project - disable editing annotation levels, for now
       //we might be able to support this in the future, but not sure
@@ -165,6 +159,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       else {
         this.addSessions(this.parentForm.emuDb);
       }
+      */
       
     }
   }
@@ -227,6 +222,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     return this.form.valid ? null : { profile: { valid: false } };
   }
 
+  validateForm() {
+    this.formIsValid = this.form.valid;
+  }
+
   addAnnotLevel(name = "", type = "ITEM") {
     const annotLevel = this.fb.group({
       name: new FormControl(name, {
@@ -250,17 +249,19 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   deleteAnnotLevel(index) {
-    //Delete any links which reference this annotLevel
-    for(let key in this.annotLevelLinks.controls) {
-      let keyNum:number = +key;
-      let annotLevelLink:any = this.annotLevelLinks.controls[key];
-      let annotLevelForm:any = this.annotLevelForms.at(index);
-      if(annotLevelLink.controls.superLevel.value == annotLevelForm.controls.name.value || annotLevelLink.controls.subLevel.value == annotLevelForm.controls.name.value) {
-        this.annotLevelLinks.removeAt(keyNum);
+    if(window.confirm("Are you sure you wish to delete this annotation level? This will also delete all links to and from this annotation level.")) {
+      //Delete any links which reference this annotLevel
+      for(let key in this.annotLevelLinks.controls) {
+        let keyNum:number = +key;
+        let annotLevelLink:any = this.annotLevelLinks.controls[key];
+        let annotLevelForm:any = this.annotLevelForms.at(index);
+        if(annotLevelLink.controls.superLevel.value == annotLevelForm.controls.name.value || annotLevelLink.controls.subLevel.value == annotLevelForm.controls.name.value) {
+          this.annotLevelLinks.removeAt(keyNum);
+        }
       }
+      
+      this.annotLevelForms.removeAt(index);
     }
-    
-    this.annotLevelForms.removeAt(index);
   }
 
   addAnnotLevelLink(superLevel = null, subLevel = null, type = "ONE_TO_MANY") {
@@ -282,7 +283,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   deleteAnnotLevelLink(index) {
-    this.annotLevelLinkForms.removeAt(index);
+    if(window.confirm("Are you sure you wish to delete this annotation level link?")) {
+      this.annotLevelLinkForms.removeAt(index);
+    }
   }
 
   emuSessionNameIsAvailable(): ValidatorFn {
@@ -300,35 +303,46 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     };
   }
 
+  async fetchSprScripts() {
+    let user = this.userService.getSession();
+    return new Promise((resolve, reject) => {
+      //fetch the speech recorder scripts from the server
+      this.projectService.fetchSprScripts(user.username).subscribe((sessionScriptOptions:any) => {
+        this.sessionScriptOptions = [];
+        sessionScriptOptions.result.forEach(sessionScriptOption => {
+          this.sessionScriptOptions.push({
+            label: sessionScriptOption.name,
+            value: sessionScriptOption.scriptId
+          });
+        });
 
-  addSession(session = null) {
-    //let sessionName = session != null ? session.name : 'Speaker_'+(this.sessionForms.length+1);
-    let sessionMetaDefaults = {
-      Gender: null,
-      Age: 35,
-      SessionId: nanoid(),
-      AudioSource: "uploaded",
-    };
+        resolve(this.sessionScriptOptions);
+      });
+    });
+  }
+
+  async addSession(session = null) {
+    await this.fetchSprScripts();
 
     let files = [];
     if(session == null) {
-      session = {}
-      session.name = '';
-      session.meta = sessionMetaDefaults;
-      session.new = true;
-      session.collapsed = false;
-      //session.name = 'Speaker_'+(this.sessionForms.length+1);
+      session = {
+        id: nanoid(),
+        name: "",
+        speakerGender: null,
+        speakerAge: 35,
+        dataSource: "upload",
+        new: true,
+        collapsed: false,
+      }
     }
     else {
-      session.name = session.sessionName;
+      session.name = session.sessionName ? session.sessionName : session.name;
       session.new = false;
       session.collapsed = true;
-      if(session.meta == null) { //if a session meta file was not found, this will be null, if so, just set it to the defaults
-        session.meta = sessionMetaDefaults;
-      }
-      session.bundles.forEach(b => {
+      session.files.forEach(file => {
         files.push({
-          name: b.bundleName,
+          name: file.name,
           uploadComplete: true
         });
       });
@@ -353,46 +367,38 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       return null;
     }
 
-    let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0].value : "";
-    let sprScriptName = null;
-    this.sessionScriptOptions.forEach(script => {
-      if(script.value == session.meta.Script) {
-        sprScriptName = script.label;
-      }
-    });
+    let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0] : { value: null, label: "No script" };
 
     const sessionGroup = this.fb.group({
       new: new FormControl(session.new),
       deleted: new FormControl(false),
-      sessionId: new FormControl(session.meta.SessionId),
+      id: new FormControl(session.id),
       name: new FormControl({ value: session.name, disabled: !session.new}, {
         validators: [Validators.required, Validators.maxLength(30), Validators.minLength(2), Validators.pattern("[a-zA-Z0-9 \\\-_]*"), this.emuSessionNameIsAvailable()],
         updateOn: 'blur'
       }),
-      speakerGender: new FormControl(session.meta.Gender, {
+      speakerGender: new FormControl(session.speakerGender, {
         updateOn: 'blur'
       }),
-      speakerAge: new FormControl(session.meta.Age, {
+      speakerAge: new FormControl(session.speakerAge, {
         validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
-      dataSource: new FormControl("upload"), //upload or record
-      recordingLink: new FormControl({value: this.getRecordingSessionLink(session.meta.SessionId), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sprScriptName: new FormControl(defaultScript),
-      sessionScript: new FormControl(defaultScript),
+      dataSource: new FormControl(session.dataSource), //upload or record
+      recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
+      sessionScript: new FormControl( defaultScript.value, this.validateSprScript),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
     });
 
     //fetch the spr session from the mongodb based on session.meta.SessionId
-    this.projectService.fetchSprScriptBySessionId(session.meta.SessionId).subscribe((data:any) => {
+    this.projectService.fetchSprScriptBySessionId(session.id).subscribe((data:any) => {
       let sprScript = data.result;
       if(sprScript != null) {
-        sessionGroup.controls.sessionScript.setValue(sprScript.name);
+        sessionGroup.controls.sessionScript.setValue(sprScript.scriptId);
       }
       else {
-        //this.notifierService.notify("warning", "No SPR script found for session "+session.meta.SessionId);
-        sessionGroup.controls.sessionScript.setValue("Missing script");
+        sessionGroup.controls.sessionScript.setValue(defaultScript.value);
       }
       
     });
@@ -403,6 +409,66 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     else {
       this.sessions.push(sessionGroup);
     }
+  }
+
+  deleteAllBundles(projectId, sessionId) {
+    //confirm deletion
+    if(!window.confirm("Are you sure you wish to delete all the audio files in this session?")) {
+      return;
+    }
+    
+    //loop through all the files in the form and delete them 
+    this.sessions.controls.forEach(session => {
+      let sessionFormGroup = session as FormGroup;
+      if(sessionFormGroup.controls.id.value == sessionId) {
+        sessionFormGroup.controls.files.value.forEach(file => {
+          this.projectService.deleteBundle(projectId, sessionId, file.name).subscribe((data:any) => {
+            if(data.result != "Success") {
+              this.notifierService.notify("error", "Could not delete file "+file.name);
+            }
+          });
+        });
+      }
+    });
+    
+    //clear the form
+    this.sessions.controls.forEach(session => {
+      let sessionFormGroup = session as FormGroup;
+      if (sessionFormGroup.controls.id.value == sessionId) {
+        const filesFormArray = sessionFormGroup.get('files') as FormArray;
+        filesFormArray.clear();
+      }
+    });
+  }
+
+  deleteBundle(projectId, sessionId, fileName) {
+    //confirm deletion
+    if(!window.confirm("Are you sure you wish to delete the file "+fileName+"?")) {
+      return;
+    }
+    
+    this.projectService.deleteBundle(projectId, sessionId, fileName).subscribe((data:any) => {
+      if(data.result == "Success") {
+        this.notifierService.notify("info", "File "+fileName+" deleted");
+
+        //now delete the file from the form
+        this.sessions.controls.forEach(session => {
+          let sessionFormGroup = session as FormGroup;
+          if(sessionFormGroup.controls.id.value == sessionId) {
+            sessionFormGroup.controls.files.value.forEach(file => {
+              if(file.name == fileName) {
+                let fileIndex = sessionFormGroup.controls.files.value.indexOf(file);
+                sessionFormGroup.controls.files.value.splice(fileIndex, 1);
+              }
+            });
+          }
+        });
+        
+      }
+      else {
+        this.notifierService.notify("error", "Could not delete file "+fileName);
+      }
+    });
   }
 
   getRecordingSessionLink(sessionId) {
@@ -438,6 +504,13 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       });
     });
     return returnVal;
+  }
+
+  validateSprScript(control: AbstractControl): ValidationErrors | null {
+    if(control.value == null) {
+      return { 'sprScriptNotSelected': true };
+    }
+    return null;
   }
 
   deleteSession(index, evt = null) {
@@ -480,11 +553,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       })
     }
     
-    
   }
 
   async uploadFile(file:File, session) {
-    return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.sessionId.value);
+    return await this.fileUploadService.upload(file, this.formContextId, "emudb-sessions/"+session.controls.id.value);
   }
   
   onRemove(file, session) {

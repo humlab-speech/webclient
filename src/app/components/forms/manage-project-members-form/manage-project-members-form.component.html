@@ -1,74 +1,56 @@
 <div [formGroup]="form">
-    <!--
-    <div *ngIf="loadingStatus || displayDespiteNotLoading" class="session-loading-indicator-container">
-        <img *ngIf="loadingStatus" src="../../../assets/loading-indicator-4-dark.svg">
-        Loading project data: {{ loadingMessage }}
-    </div>
-    -->
 
-    <div *ngIf="userIsProjectMaintainer()" class="form-control-pair-container">
-        <div (click)="toggleMemberSearch()" class="form-control-pair-label">
-            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-            &nbsp;
-            Add member
-        </div>
-        <div id="search-user-input" class="form-control-pair-input">
-            <label>Search user:&nbsp;</label>
-            <div>
-                <input type="text" id="search-user-control" (keyup)="searchUser($event)"/>
-                <div id="user-select-options">
-                    <ul class="select-search-results-list" *ngFor="let searchUser of searchUsers">
-                        <li (click)="addMember(searchUser)" class="search-option-user-container">
-                            <img src="{{searchUser.avatar_url}}" class="avatar_image" />
-                            {{searchUser.name}}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <br />
-    </div>
-    
-    
-    <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-        
-        <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-
-          <button *ngIf="node.type != 'bundle'" mat-icon-button matTreeNodeToggle
-                  [attr.aria-label]="'Toggle ' + node.item">
-            <mat-icon class="mat-icon-rtl-mirror">
-              {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
-            </mat-icon>
-          </button>
-
-          <div *ngIf="node.type == 'bundle'" style="margin-left:2em;"></div>
-
-          <div *ngIf="node.type != 'user'">
-            <input [id]="node.id" type="checkbox" 
-                [indeterminate]="descendantsPartiallySelected(node)"
-                [checked]="(node.type == 'bundle' && checklistSelection.isSelected(node)) || (node.type == 'session' && descendantsAllSelected(node))"
-                (change)="leafItemSelectionToggle(node)"
-            />
-            &nbsp;
-            <label for="{{node.id}}">{{node.item}}</label>
-
+  <div *ngIf="userIsProjectAdmin()">
+    <div class="form-control-pair-container">
+      <div (click)="toggleMemberSearch()" class="form-control-pair-label">
+          <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          &nbsp;
+          Add member
+      </div>
+      
+      <div id="search-user-input" class="form-control-pair-input">
+          <label>Search user:&nbsp;</label>
+          <div>
+              <input type="text" id="search-user-control" (input)="onInput($event)" />
+              <div id="user-select-options">
+                  <ul class="select-search-results-list" *ngFor="let searchUser of searchUsers">
+                      <li (click)="addMember(searchUser)" class="search-option-user-container">
+                          {{searchUser.fullName}} ({{searchUser.eppn}})
+                      </li>
+                  </ul>
+              </div>
           </div>
-          <div *ngIf="node.type == 'user'">
-            <img class="avatar_image" src="{{node.avatar}}" />
-            {{node.item}} <button *ngIf="userIsProjectOwner(node) == false" class="delete-button-small" (click)="removeMember(node)"><i class="fa fa-trash" aria-hidden="true"></i></button>
-          </div>
-          
-        </mat-tree-node>
-    </mat-tree>
-    
+      </div>
+    </div>
+  </div>
 
+  <br />
+  <table>
+    <tbody formArrayName="members">
+        <tr *ngFor="let member of members.controls; let i = index" [formGroupName]="i">
+            <td *ngIf="userIsProjectAdmin()">
+                <i class="fa fa-minus-circle button" (click)="removeMember(member)" aria-hidden="true"></i>
+            </td>
+            <td *ngIf="userIsProjectAdmin()">
+                <select [formControl]="member.get('role')" (change)="updateRole(member)">
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                </select>
+            </td>
+            <td>
+                {{ member.get('fullName').value }} ({{ member.get('eppn').value }})
+            </td>
+        </tr>
+    </tbody>
+  </table>
     
-    <br />
-    <button id="member-form-save-button" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveForm()">
-        <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
-        <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
-        &nbsp;
-        {{ submitBtnLabel }}
-    </button>
-
+  <!--
+  <br />
+  <button id="member-form-save-button" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveForm()">
+      <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
+      <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
+      &nbsp;
+      {{ submitBtnLabel }}
+  </button>
+  -->
 </div>

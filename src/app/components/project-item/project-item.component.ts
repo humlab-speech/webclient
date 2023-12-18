@@ -7,6 +7,7 @@ import { ProjectManagerComponent } from '../project-manager/project-manager.comp
 import { SystemService } from 'src/app/services/system.service';
 import { environment } from 'src/environments/environment';
 import { NotifierService } from 'angular-notifier';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-item',
@@ -33,7 +34,7 @@ export class ProjectItemComponent implements OnInit {
   hsApplications:HsApp[] = [];
   projectOperations:object[] = [];
 
-  constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService, private notifierService:NotifierService) {}
+  constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService, private notifierService:NotifierService, private userService:UserService) {}
 
   ngOnInit(): void {
     
@@ -53,7 +54,7 @@ export class ProjectItemComponent implements OnInit {
         rstudioApp.disabled = this.shouldAppBeDisabled(rstudioApp.name);
 
         //If an jupyter container is running, disable launching rstudio to avoid git commit conflicts
-        this.project.sessions.forEach(session => {
+        this.project.liveAppSessions.forEach(session => {
           if(session.type == "jupyter") {
             rstudioApp.disabled = true
           }
@@ -113,22 +114,26 @@ export class ProjectItemComponent implements OnInit {
 
   manageMembers(project) {
     this.projectManager.projectInEdit = project;
-    this.projectManager.showManageProjectMembersDialog();
+    this.projectManager.showManageMembersDialog();
+  }
+
+  manageBundleLists(project) {
+    this.projectManager.projectInEdit = project;
+    this.projectManager.showManageBundleListsDialog();
   }
 
   shouldAppBeDisabled(appName) {
-    if(this.project.sessions.length == 0) {
-      return false;
-    }
-
-    for(let key in this.project.sessions) {
-      let session = this.project.sessions[key];
-      if(session.type == appName || session.type == "operations") {
-        return false;
+    for(let key in this.project.liveAppSessions) {
+      let session = this.project.liveAppSessions[key];
+      if(session.type == appName && session.username != this.userService.getSession().username) {
+        return true;
+      }
+      if(session.type != appName) {
+        return true;
       }
     }
 
-    return true;
+    return false;
   }
 
   sessionUpdateFromAppCtrlCallback(msg) {

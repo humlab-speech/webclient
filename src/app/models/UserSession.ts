@@ -5,5 +5,4 @@ export class UserSession {
     fullName:string;
     email:string;
     username:string;
-    personalAccessToken:string;
 }

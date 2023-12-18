@@ -3,12 +3,12 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { FileUploadService } from 'src/app/services/file-upload.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
-import { SessionsFormComponent, EmudbFormValues } from '../forms/sessions-form/sessions-form.component';
+import { SessionsFormComponent } from '../forms/sessions-form/sessions-form.component';
+import { DocumentationFormComponent } from '../forms/documentation-form/documentation-form.component';
 import { nanoid } from 'nanoid';
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
-import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
   selector: 'app-edit-emudb-dialog',
@@ -16,7 +16,8 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
   styleUrls: ['./edit-emudb-dialog.component.scss'],
 })
 export class EditEmudbDialogComponent {
-  @ViewChild(SessionsFormComponent, { static: true }) public emudbFormComponent: SessionsFormComponent;
+  @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;
+  @ViewChild(DocumentationFormComponent, { static: false }) public docsFormComponent: DocumentationFormComponent;
 
   @Input() projectManager: ProjectManagerComponent;
 
@@ -78,12 +79,6 @@ export class EditEmudbDialogComponent {
     //If there's a project associated with this dialog, load it in a container so we have access to it
     if(this.project != null) {
       console.log("Going into edit mode");
-      
-      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
-        this.emuDb = emuDb;
-        this.loadingStatus = false;
-        this.validateForm();
-      });
     }
   }
 
@@ -117,6 +112,7 @@ export class EditEmudbDialogComponent {
   
 
   async submitForm() {
+    console.log("edit-emudb-dialog submitForm");
     console.log(this.project);
     
     //set pristine=false on all controls below in order to trigger validation
@@ -131,6 +127,8 @@ export class EditEmudbDialogComponent {
 
     //validate form
     //this.emudbFormComponent.validate();
+
+    console.log(this.emudbFormComponent)
 
     this.projectService.loadingStatus$.subscribe((status) => {
       console.log(status)

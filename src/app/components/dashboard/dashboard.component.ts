@@ -17,10 +17,8 @@ export class DashboardComponent implements OnInit {
   signInTimeoutExpired:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
-  systemIsReady:boolean = false;
   userPassedAccessListCheck:boolean = false;
   gitlabReady:boolean = false;
-  userAccessListCheckPerformed:boolean = false;
   systemService:any = null;
   applicationName:string = environment.APPLICATION_NAME;
 
@@ -32,20 +30,8 @@ export class DashboardComponent implements OnInit {
     this.notifier = notifierService;
     this.systemService = systemService;
 
-    this.gitlabReady = this.systemService.gitlabIsReady;
-    this.systemIsReady = this.gitlabReady;
-
     systemService.eventEmitter.subscribe((event) => {
-      if(event == "gitlabIsReady") {
-        this.gitlabReady = true;
-        this.systemIsReady = true;
-      }
-      if(event == "gitlabIsNotReady") {
-        this.gitlabReady = false;
-        this.systemIsReady = false;
-      }
       if(event == "userAuthentication") {
-        this.userAccessListCheckPerformed = true;
         if(!systemService.userIsAuthenticated) {
           this.userPassedAccessListCheck = false;
         }
@@ -65,21 +51,16 @@ export class DashboardComponent implements OnInit {
     this.userSignedInCheckPerformed = true;
     if(session != null) {
       this.userIsSignedIn = true;
+      console.log("User is now signed in");
     }
-
-    if(this.systemService.getUserAuthenticationStatus() == "authenticated") {
-      this.userPassedAccessListCheck = true;
-      this.userAccessListCheckPerformed = true;
+    else {
+      this.userService.fetchSession().subscribe((response) => {
+        if(response.code == 200) {
+          this.userIsSignedIn = true;
+          console.log("User is now signed in");
+        }
+      });
     }
-
-    if(this.systemService.getUserAuthenticationStatus() == "rejected") {
-      this.userPassedAccessListCheck = false;
-      this.userAccessListCheckPerformed = true;
-    }
-
-    window.addEventListener('userSessionUpdated', () => {
-      this.userIsSignedIn = this.userService.userIsSignedIn;
-    });
   }
 
 }

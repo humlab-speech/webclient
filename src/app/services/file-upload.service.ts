@@ -79,49 +79,6 @@ export class FileUploadService {
 
   }
 
-  uploadOld(file, context:string = "", group:string = ""):Promise<string> {
-    console.log("Uploading "+file.name);
-
-
-    /* This might potentially work, taken from:
-    https://stackoverflow.com/questions/5587973/javascript-upload-file
-    
-    let formData = new FormData();
-    formData.append("audiofile", file);
-    fetch('/api/v1/upload', { method: "POST", body: formData });
-    */
-
-
-    this.statusStream.next("uploads-in-progress");
-
-    file.uploadComplete = false;
-    this.hasPendingUploads = true;
-    this.pendingUploads.push(file);
-
-    return new Promise((resolve, reject) => {
-      this.readFile(file).then(fileContents => {
-        let headers = {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        };
-        let body = {
-          filename: file.name,
-          file: fileContents,
-          context: context,
-          group: group
-        };
-        this.http.post<any>("/api/v1/upload", "data="+JSON.stringify(body), { headers }).subscribe(data => {
-          file.uploadComplete = true;
-          if(this.isAllUploadsComplete()) {
-            this.statusStream.next("all-uploads-complete");
-          }
-          resolve(data);
-        }, error => {
-          reject(error);
-        });
-      });
-    });
-  }
-
   cancelUpload(file) {
     for(let key in this.pendingUploads) {
       if(this.pendingUploads[key] === file) {

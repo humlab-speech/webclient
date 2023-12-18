@@ -44,6 +44,9 @@ import { ManageSessionsDialogComponent } from './components/manage-sessions-dial
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { SprScriptsFormComponent } from './components/forms/spr-scripts-form/spr-scripts-form.component';
 import { ManageSprScriptsDialogComponent } from './components/manage-spr-scripts-dialog/manage-spr-scripts-dialog.component';
+import { ManageBundleAssignmentDialogComponent } from './components/manage-bundle-assignment-dialog/manage-bundle-assignment-dialog.component';
+import { ManageBundleAssignmentFormComponent } from './components/forms/manage-bundle-assignment-form/manage-bundle-assignment-form.component';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 @NgModule({
   declarations: [
@@ -71,6 +74,8 @@ import { ManageSprScriptsDialogComponent } from './components/manage-spr-scripts
     ManageSessionsDialogComponent,
     SprScriptsFormComponent,
     ManageSprScriptsDialogComponent,
+    ManageBundleAssignmentDialogComponent,
+    ManageBundleAssignmentFormComponent,
   ],
   imports: [
     CommonModule,
@@ -92,6 +97,7 @@ import { ManageSprScriptsDialogComponent } from './components/manage-spr-scripts
     MatIconModule,
     MatTooltipModule,
     ClipboardModule,
+    NgxDatatableModule,
     NotifierModule.withConfig({
       position: {
         horizontal: {

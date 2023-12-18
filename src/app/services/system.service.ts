@@ -15,9 +15,6 @@ export class SystemService {
   public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
   public ws:WebSocket = null;
 
-  gitlabIsReady:boolean = true; //Make the assumption that it is ready until it's verified that it's not, just to prevent any UI-hiccups
-  gitlabIsReadyInterval:any;
-
   public wsObservable: Observable<MessageEvent>;
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
@@ -26,24 +23,9 @@ export class SystemService {
   public userIsAuthenticated:boolean = false;
 
   constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
-    console.log("System service init");
+    this.wsSubject = new Subject<MessageEvent>();
 
-    window.addEventListener('userSessionUpdated', () => {
-      if(this.ws == null) {
-        this.initWebSocket().then(() => {
-          //this.ws.send(JSON.stringify({ cmd: "accessListCheck", username: "" }));
-        });
-      }
-    });
-
-    this.isGitlabReady();
-  }
-
-  fetchOperationsSessionOLD(userSession:Object, project:Object): Observable<MessageEvent>{
-    this.initWebSocket().then((ws:WebSocket) => {
-      ws.send(JSON.stringify({ cmd: "fetchOperationsSession", user: userSession, project: project }));
-    });
-    return this.wsObservable;
+    this.initWebSocket();
   }
 
   async fetchOperationsSession(projectId) {
@@ -111,16 +93,6 @@ export class SystemService {
     */
   }
 
-  async commitOperationsSessionProjectToGitlab(sessionAccessCode:string) {
-    let msg = {
-      appSession: sessionAccessCode,
-      cmd: "save",
-      env: []
-    }
-
-    return this.sendCommandToBackend(msg);
-  }
-
   shutdownOperationsSession(sessionAccessCode:string) {
     if(sessionAccessCode == null || sessionAccessCode.length < 1) {
       console.log("No session to shutdown");
@@ -152,36 +124,36 @@ export class SystemService {
     return this.ws;
   }
 
-  async sendCommandToBackend(command) {
-    command.requestId = nanoid();
-    return new Promise((resolve, reject) => {
+  sendCommandToBackendObservable(command) {
+  }
 
+  async sendCommandToBackend(command) {
+
+    if(!command.requestId) {
+      command.requestId = nanoid();
+    }
+    
+    return new Promise((resolve, reject) => {
       //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
-
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
             expectedCmd = command.caCmd;
           }
-          if(data.cmd == expectedCmd) {
-            console.log(data)
-            //if this endpoint does not support the requestId feature, we ignore it
-            if(typeof data.requestId == "undefined") {
+
+          if(data.requestId == command.requestId) {
+            if(data.cmd != expectedCmd) {
+              console.error("sendCommandToBackend received return-data from another operation, the command was: "+data.cmd+", expected: "+expectedCmd);
               obs.unsubscribe();
-              resolve(data);
+              reject();
+              return;
             }
-            //if this endpoint supports the requestId feature, then it needs to match
-            else if(data.requestId == command.requestId) {
-              obs.unsubscribe();
-              resolve(data);
-            }
-            
+
+            obs.unsubscribe();
+            resolve(data);
           }
-          else {
-            //this is not necessarily a problem, but log a warning about it anyway
-            console.warn("sendCommandToBackend received return-data from another operation, the command was: "+data.cmd+", expected: "+expectedCmd);
-          }
+
         },
         error: (err) => {
           console.error(err);
@@ -189,93 +161,51 @@ export class SystemService {
         }
       });
   
-      if(this.ws != null) {
+      if(this.ws != null && this.ws.readyState == 1) {
         this.ws.send(JSON.stringify(command));
       }
       else {
-        console.error("sendCommandToBackend failed because there's no active websocket");
+        let sendAttemptInterval = setInterval(() => {
+          if(this.ws.readyState == 3) { //3 == CLOSED
+            this.initWebSocket();
+          }
+          if(this.ws != null && this.ws.readyState == 1) {
+            this.ws.send(JSON.stringify(command));
+            clearInterval(sendAttemptInterval);
+          }
+        }, 100);
       }
     });
   }
 
   async initWebSocket() {
-    if(this.wsHealthCheckInterval == null) {
-      this.wsHealthCheckInterval = setInterval(() => {
-        //WebSocket health check
-        if(this.ws == null || this.ws.readyState == 3) {
-          this.initWebSocket();
-        }
-      }, 10000);
-    }
-
-    return new Promise((resolve, reject) => {
-      if(!this.userService.userIsSignedIn) {
-        resolve(null);
-      }
-
-      if(this.ws != null) {
-        console.log("Recreating websocket");
-        this.ws.close();
-        this.ws = null;
-      }
-
+    return new Promise<void>((resolve, reject) => {
       let webSocketProto = "wss:";
       if(window.location.protocol == "http:") {
         webSocketProto = "ws:";
       }
-
       const wsUrl = webSocketProto+'//'+environment.BASE_DOMAIN;
-      console.log("Connecting websocket to "+wsUrl);
       this.ws = new WebSocket(wsUrl);
-      this.ws.onopen = () => {
-        console.log('Websocket connected');
-        if(this.wsError) {
-          this.wsError = false;
-          //this.notifierService.notify("info", "Connection to backend reestablished.");
-        }
-        resolve(this.ws);
+
+      this.ws.onopen = (event) => {
+        console.log('WebSocket connected');
+        resolve(); // Resolve the promise when the connection is open
       };
 
-      this.ws.onclose = () => {
-        if(this.ws != null) {
-          this.ws.close();
-        }
-        this.ws = null;
-        console.log('Websocket closed');
-      }
-
       this.ws.onerror = (error) => {
-        this.ws = null;
-        if(this.wsError) {
-          this.notifierService.notify("error", "Attempt to reconnect to backend failed.");
-        }
-        else {
-          //this.notifierService.notify("error", "Lost connection to backend.");
-          this.wsError = true;
-        }
-        console.log('Websocket error', error);
-      }
+        console.error('WebSocket error:', error);
+        //this.notifierService.notify("error", "Attempt to reconnect to backend failed.");
+        reject(error); // Reject the promise on error
+      };
 
-      this.wsSubject = new Subject();
+      this.ws.onclose = (event) => {
+        console.log('WebSocket closed:', event);
+        // Optionally, you can handle reconnection logic here
+      };
 
-      this.ws.onmessage = (messageEvent) => {
-        let msg = JSON.parse(messageEvent.data);
-        console.log(msg);
-
-        if(msg.type == "authentication-status") {
-          if(msg.message.result) {
-            this.userIsAuthenticated = true;
-          }
-          else {
-            //this.notifierService.notify("error", "Failed authentication because: "+msg.message.reason);
-            this.userIsAuthenticated = false;
-          }
-          this.userAuthenticationPerformed = true;
-          this.eventEmitter.emit("userAuthentication");
-        }
-
-        this.wsSubject.next(msg);
-      }
+      this.ws.onmessage = (event) => {
+        this.wsSubject.next(JSON.parse(event.data));
+      };
     });
   }
 
@@ -292,27 +222,5 @@ export class SystemService {
       }
     }
     
-  }
-
-  async isGitlabReady() {
-    this.gitlabIsReadyInterval = setInterval(() => {
-      this.gitlabReadyCheck();
-    }, 5000);
-    this.gitlabReadyCheck();
-  }
-
-  gitlabReadyCheck() {
-    this.http.get<any>("/api/v1/isgitlabready").subscribe(msg => {
-      this.gitlabIsReady = msg.body.gitlabIsReady;
-      if(msg.body.gitlabIsReady) {
-        clearInterval(this.gitlabIsReadyInterval);
-        console.log("gitlabIsReady");
-        this.eventEmitter.emit("gitlabIsReady");
-      }
-      else {
-        console.log("gitlabIsNotReady");
-        this.eventEmitter.emit("gitlabIsNotReady");
-      }
-    });
   }
 }

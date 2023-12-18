@@ -2,15 +2,16 @@ import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl, FormControlName } from '@angular/forms';
 import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
-import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
 import { ProjectManagerComponent } from '../project-manager.component';
 import { FileUploadService } from "../../../services/file-upload.service";
 import { NotifierService } from 'angular-notifier';
-import { Observable, of, Subject } from 'rxjs';
-import { map, debounceTime } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
-import { SessionsFormComponent as SessionsFormComponent } from '../../forms/sessions-form/sessions-form.component';
+import { SessionsFormComponent } from '../../forms/sessions-form/sessions-form.component';
+import { DocumentationFormComponent } from '../../forms/documentation-form/documentation-form.component';
 import { environment } from 'src/environments/environment';
+import { SystemService } from 'src/app/services/system.service';
 
 @Component({
   selector: 'app-project-dialog',
@@ -18,7 +19,8 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./project-dialog.component.scss']
 })
 export class ProjectDialogComponent implements OnInit {
-  @ViewChild(SessionsFormComponent, { static: true }) public emudbFormComponent: SessionsFormComponent;
+  @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;
+  @ViewChild(DocumentationFormComponent, { static: false }) public docsFormComponent: DocumentationFormComponent;
 
   EMUDB_INTEGRATION = environment.EMUDB_INTEGRATION;
 
@@ -46,18 +48,27 @@ export class ProjectDialogComponent implements OnInit {
 
   formContextId:string = nanoid();
 
-  constructor(private http:HttpClient, private fb:FormBuilder, private projectService:ProjectService, private userService:UserService, private fileUploadService:FileUploadService, private notifierService: NotifierService) {
+  constructor(private http:HttpClient, private fb:FormBuilder, private systemService:SystemService, private projectService:ProjectService, private userService:UserService, private fileUploadService:FileUploadService, private notifierService: NotifierService) {
     this.emuDbIntegrationEnabled = environment.EMUDB_INTEGRATION;
+    /*
+    console.log(this.docsFormComponent, this.emudbFormComponent);
+    setInterval(() => {
+      console.log(this.docsFormComponent, this.emudbFormComponent);
+    }, 1000);
+    */
   }
 
   ngOnInit(): void {
+    this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
+    console.log(this.project);
+
     this.setLoadingStatus(false);
 
     this.docFiles = this.fb.array([]);
 
     this.form = this.fb.group({
       projectName: new FormControl('', {
-        validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern("[a-zA-Z0-9 \\\-_]*")],
+        validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30)],
         updateOn: 'blur'
       }),
       docFiles: this.docFiles,
@@ -69,18 +80,21 @@ export class ProjectDialogComponent implements OnInit {
       this.validateForm();
     });
 
-    if(this.emuDbIntegrationEnabled) {
+    /*
+    if(this.emuDbIntegrationEnabled && false) {
       //This is stupid, but we need to wait for the sessions-form-module to initialize
+      
       this.setupEmuDbFormChangeListener = setInterval(() => {
         if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
           this.form.addControl("emuDb", this.emudbFormComponent.getFormGroup());
           clearInterval(this.setupEmuDbFormChangeListener);
         }
+        
       }, 100);
     }
-    
+    */
 
-    this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService)]);
+    this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService, this.systemService)]);
 
     this.fileUploadService.statusStream.subscribe((status) => {
       if(status == "uploads-in-progress") {
@@ -92,25 +106,24 @@ export class ProjectDialogComponent implements OnInit {
     });
 
     document.getElementById("projectName").focus();
-    
-
-    this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
 
     //If there's a project associated with this dialog, load it in a container so we have access to it
     if(this.project != null) {
       this.dialogTitle = "Edit project "+this.project.name;
-      this.form.addControl("project", new FormControl(this.project));
+      
+      this.form.addControl("id", new FormControl(this.project.id));
+      this.form.addControl("annotationLevels", new FormControl(this.project.annotationLevels));
+      this.form.addControl("annotationLinks", new FormControl(this.project.annotationLinks));
+      this.form.addControl("members", new FormControl(this.project.members));
+      this.form.addControl("name", new FormControl(this.project.name));
+      this.form.addControl("sessions", new FormControl(this.project.sessions));
+
       this.form.controls.projectName.setValue(this.project.name);
       this.form.controls.projectName.disable();
 
       this.setLoadingStatus(true);
       console.log("Going into edit mode");
-      
-      this.projectService.fetchEmuDbInProject(this.project.id).subscribe(emuDb => {
-        this.emuDb = emuDb;
-        this.emuDbLoadedSubject.next(true);
-        this.setLoadingStatus(false);
-      });
+      this.setLoadingStatus(false);
     }
     else {
       this.setLoadingStatus(false);
@@ -135,14 +148,24 @@ export class ProjectDialogComponent implements OnInit {
   }
   
   validateForm() {
-    if(this.fileUploadsComlete && this.form.status == "VALID") {
+    if(this.fileUploadsComlete && this.form.status == "VALID" && this.isLoading == false) {
       this.submitBtnEnabled = true;
     }
     else {
       this.submitBtnEnabled = false;
     }
 
-    return this.submitBtnEnabled;
+    let childFormsValid = true;
+    //also check if the sessions form is valid
+    if (this.docsFormComponent && this.docsFormComponent.form.status != "VALID") {
+      childFormsValid = false;
+    }
+
+    if (this.emudbFormComponent && !this.emudbFormComponent.formIsValid) {
+      childFormsValid = false;
+    }
+
+    return this.fileUploadsComlete && this.form.status == "VALID" && this.isLoading == false && childFormsValid;
   }
 
   get projectName() {
@@ -158,27 +181,88 @@ export class ProjectDialogComponent implements OnInit {
   }
 
   async saveProject(form) {
-    this.setLoadingStatus(true);
+    this.projectService.loadingStatus$.subscribe((status) => {
+      this.submitBtnLabel = status;
+    });
 
     if(!this.validateForm()) {
       this.notifierService.notify('warning', "This form is not ready to be submitted yet.");
-      this.setLoadingStatus(false);
+      //this.setLoadingStatus(false);
       return false;
     }
+
+    this.setLoadingStatus(true);
 
     this.projectService.loadingStatus$.subscribe(status => {
       this.submitBtnLabel = status;
     });
 
-    this.projectService.saveProject(form.form).then(result => {
-      this.projectService.fetchProjects(true).subscribe(msg => {
-        this.setLoadingStatus(false);
-        this.closeCreateProjectDialog();
+    let emuDbFormValues = this.emudbFormComponent.getFormGroup().getRawValue();
+    if(this.docsFormComponent.status == "Uploading") {
+      this.notifierService.notify('warning', "Please wait for the documentation files to finish uploading before submitting the form.");
+      return false;
+    }
+    
+    //merge with the main form
+    let formValues = form.form.getRawValue();
+    delete emuDbFormValues.project;
+
+    this.emudbFormComponent.sessions.value.forEach(formSess => {
+      let clearnedFiles = [];
+      formSess.files.forEach(fileFormData => {
+        clearnedFiles.push({
+          name: fileFormData.name,
+          size: fileFormData.size,
+          type: fileFormData.type
+        });
       });
+
+      formSess.files = clearnedFiles;
+    });
+
+    let mergedForm = formValues;
+    mergedForm.sessions = this.emudbFormComponent.sessions.value;
+    mergedForm.annotLevels = emuDbFormValues.annotLevels;
+    mergedForm.annotLevelLinks = emuDbFormValues.annotLevelLinks;
+    mergedForm.formContextId = this.formContextId;
+
+    mergedForm.docFiles = [];
+    this.docsFormComponent.docFiles.value.forEach(docFile => {
+      mergedForm.docFiles.push({
+        name: docFile.name,
+        size: docFile.size,
+        type: docFile.type
+      });
+    })
+
+    delete mergedForm.annotationLevels;
+    delete mergedForm.annotationLinks;
+    
+    this.projectService.saveProject(mergedForm).subscribe((data:any) => {
+      this.setTaskProgressPercentage(data.progressPercentage, "submitBtn", data.msg);
+
+      if(data.progressPercentage == 100) {
+        this.projectService.fetchProjects(true).subscribe(msg => {
+          this.setLoadingStatus(false);
+          this.closeCreateProjectDialog();
+        });
+      }
     });
   }
 
+  setTaskProgressPercentage(progressPercent, targetElementId = null, msg = null) {
+    if(targetElementId != null) {
+      let targetEl = document.getElementById(targetElementId);
+      targetEl.style.background = 'linear-gradient(90deg, #73A790 '+progressPercent+'%, #654c4f '+progressPercent+'%)';
+      targetEl.style.color = "#fff";
+    }
+    if(msg != null) {
+      this.submitBtnLabel = msg;
+    }
+  }
+
   setTaskProgress(progressStep, totalNumSteps, targetElementId = null, msg = null) {
+    console.log("setTaskProgress", progressStep, totalNumSteps, targetElementId, msg);
     let progressPercent = Math.ceil((progressStep / totalNumSteps) * 100);
     if(targetElementId != null) {
       let targetEl = document.getElementById(targetElementId);
@@ -227,33 +311,50 @@ export class ProjectDialogComponent implements OnInit {
     //TODO: Remove the uploaded file from the server?
   }
 
-  validateProjectName(http:HttpClient, userService:UserService) {
+  validateProjectName(http:HttpClient, userService:UserService, systemService:SystemService) {
     return function(control:AbstractControl):Observable<ValidationErrors> | null {
       const value: string = control.value;
-
       let session = userService.getSession();
-      let headers = {
-        "PRIVATE-TOKEN": session.personalAccessToken
-      };
 
-      return http.get(window.location.protocol+'//gitlab.' + environment.BASE_DOMAIN + '/api/v4/projects?search=' + value, { headers })
-      .pipe(
-        debounceTime(500),
-        map( (projects:any) => {
-          let isFormNameTaken = false;
-          for(let key in projects) {
-            if(projects[key].name == value) {
-              isFormNameTaken = true;
+      //use websocket backend
+      let requestId = nanoid();
+      //create a websocket request
+
+
+      return new Observable((observer) => {
+        systemService.wsSubject.subscribe((data:any) => {
+          if(data.type == "cmd-result" && data.cmd == "validateProjectName") {
+            if(data.requestId == requestId && data.progress == "end") {
+              let result = null;
+              if(data.result == false) {
+                //control.setErrors({ isFormNameTaken: true });
+                if(data.message == "Project name already exists") {
+                  result = { 'isFormNameTaken': true };
+                }
+                if(data.message == "Project name must be alphanumeric") {
+                  result = { 'pattern': true };
+                }
+              }
+              observer.next(result);
+              observer.complete();
             }
           }
-          return isFormNameTaken ? { 'isFormNameTaken': isFormNameTaken } : null;
-        })
-      );
+        });
+  
+        systemService.ws.send(JSON.stringify({
+          requestId: requestId,
+          type: 'cmd',
+          cmd: 'validateProjectName',
+          projectName: value,
+        }));
+
+      });
     }
   }
 
-  onDocDrop(event) { //this is from the docs form
+  onDocDrop(event) {
     this.docFiles.value.push(...event.addedFiles);
   }
+  
 
 }

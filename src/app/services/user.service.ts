@@ -18,15 +18,6 @@ export class UserService {
   constructor(private http:HttpClient) {
 
     this.sessionObs = new Subject();
-
-    this.updateSession(true);
-    setInterval(() => {
-      this.updateSession();
-    }, 60000);
-  }
-
-  createPersonalAccessToken():Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(window.location.protocol+"//"+environment.BASE_DOMAIN+"/api/v1/personalaccesstoken");
   }
   
   authenticate() {
@@ -37,45 +28,21 @@ export class UserService {
     return this.http.get<ApiResponse>(this.getSessionUrl);
   }
 
-  updateSession(createPersonalAccessToken:boolean = false) {
-    return this.fetchSession().subscribe((response) => {
-      if(response.code == 401) {
-        this.userIsSignedIn = false;
-        this.session = null;
-        this.sessionObs.next(this.session);
-        return;
-      }
-      this.session = <UserSession>response.body;
-      this.sessionObs.next(this.session);
-      this.userIsSignedIn = true;
-      window.dispatchEvent(new Event('userSessionUpdated'));
-
-      if(createPersonalAccessToken) {
-        this.createPersonalAccessToken().subscribe();
-      }
-    }, (error) => {
-      this.userIsSignedIn = false;
-      this.session = null;
-      this.sessionObs.next(this.session);
-    });
-  }
-
   setSession(session:UserSession) {
     this.session = session;
   }
 
   getSession():UserSession {
+    if(this.session == null) {
+      this.fetchSession().subscribe((response:ApiResponse) => {
+        this.session = <UserSession>response.body;
+      });
+    }
+
     return this.session;
   }
 
   getBundleListName() {
     return this.session.firstName.toLocaleLowerCase()+"."+this.session.lastName.toLocaleLowerCase();
-  }
-
-  searchUser(userSearchString) {
-    let headers = {
-      "PRIVATE-TOKEN": this.getSession().personalAccessToken
-    };
-    return this.http.get<any>(window.location.protocol+"//gitlab."+window.location.hostname+"/api/v4/users?search="+userSearchString, { "headers": headers })
   }
 }

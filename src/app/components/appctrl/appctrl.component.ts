@@ -8,6 +8,7 @@ import { UserService } from 'src/app/services/user.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
+import { SystemService } from 'src/app/services/system.service';
 
 @Component({
   selector: 'app-appctrl',
@@ -23,6 +24,7 @@ export class AppctrlComponent implements OnInit {
   private userService: UserService;
   private projectService: ProjectService;
   private readonly notifier: NotifierService;
+  private systemService: SystemService;
 
   showLoadingIndicator:boolean = false;
   hasRunningSessions:boolean = false;
@@ -32,10 +34,11 @@ export class AppctrlComponent implements OnInit {
   domain:string = window.location.hostname;
   showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, projectService: ProjectService, private router: Router) {
+  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, projectService: ProjectService, systemService: SystemService, private router: Router) {
     this.notifier = notifierService;
     this.userService = userService;
     this.projectService = projectService;
+    this.systemService = systemService;
     this.router = router;
   }
 
@@ -96,6 +99,41 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchContainerSession(appName) {
+    console.log("Launch container session", appName);
+    this.statusMsg = "Launching";
+    this.showLoadingIndicator = true;
+
+    this.systemService.sendCommandToBackend({
+      cmd: "launchContainerSession",
+      projectId: this.project.id,
+      appName: appName
+    }).then((data:any) => {
+      if(data.progress == "end" && data.result) {
+        let sessionAccessCode = data.result;
+        if(!sessionAccessCode) {
+          this.notifier.notify("error", "No sessionAccessCode received.");
+          return;
+        }
+        this.statusMsg = "Taking you there...";
+        this.showLoadingIndicator = true;
+        
+        let cookieParams = " SameSite=None; Secure";
+        if(environment.PROTOCOL == "http") {
+          cookieParams = "";
+        }
+        Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
+  
+        this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
+      }
+      else {
+        this.notifier.notify("error", data.message);
+      }
+    });
+
+  }
+
+  launchContainerSessionOLD(appName) {
+
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
 
@@ -136,41 +174,69 @@ export class AppctrlComponent implements OnInit {
   launchEmuWebAppSession() {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
+    
+    //set projectId cookie
+    Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
+    this.router.navigate(['/emu-webapp'], { queryParams: {
+      autoConnect: true,
+      serverUrl: "wss://emu-webapp.visp.local"
+    }});
+    /*
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     };
     let body = {
       projectId: this.project.id
     };
+    */
 
+    /*
+    //send command to backend
+    this.systemService.sendCommandToBackend({
+      cmd: "emuWebappSession",
+      projectId: this.project.id
+    }).then((data) => {
+      console.log(data);
+
+      
+      let sessionAccessCode = data.sessionAccessCode;
+      if(!sessionAccessCode) {
+        this.notifier.notify("error", "No sessionAccessCode received.");
+        return;
+      }
+      this.statusMsg = "Taking you there...";
+      this.showLoadingIndicator = true;
+      
+      let cookieParams = " SameSite=None; Secure";
+      if(environment.PROTOCOL == "http") {
+        cookieParams = "";
+      }
+      console.log("Setting SessionAccessCode cookie");
+      Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
+      //document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+";"+cookieParams;
+      console.log(document.cookie);
+
+      this.router.navigate(['/emu-webapp'], { queryParams: {
+        autoConnect: true,
+        serverUrl: "wss://emu-webapp.visp.local"
+      }});
+      
+    });
+    */
+
+    /*
     let bundleListName:string = "user.user";
     this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe(async (data) => {
       let session = this.userService.getSession();
-      
-      bundleListName = await new Promise((resolve, reject) => {
-      this.projectService.fetchBundleList(this.project, session.username).subscribe(bundleList => {
-          resolve(session.username);
-        }, (err) => {
-          console.log("No such bundle list! Going with user.user");
-          resolve(bundleListName);
-        });
-      });
-      
-      let gitlabURL:string = window.location.protocol+"//gitlab."+window.location.hostname;
-        let projectId:number = this.project.id;
-        let emuDBname:string  = "VISP";
-        let privateToken:string = data.body.personalAccessToken;
-        
-        this.router.navigate(['/emu-webapp'], { queryParams: {
-          gitlabURL: gitlabURL,
-          projectID: projectId,
-          gitlabPath: "Data/VISP_emuDB",
-          emuDBname: emuDBname,
-          bundleListName: bundleListName,
-          privateToken: privateToken
-        }});
+
+      this.router.navigate(['/emu-webapp'], { queryParams: {
+        autoConnect: true,
+        serverUrl: "wss://emu-webapp.visp.local"
+      }});
+
     });
+    */
   }
 
   launchOctraSession() {
@@ -190,8 +256,8 @@ export class AppctrlComponent implements OnInit {
   }
 
   updateHasRunningSessions() {
-    for(let key in this.project.sessions) {
-      if(this.project.sessions[key].type == this.hsApp.name) {
+    for(let key in this.project.liveAppSessions) {
+      if(this.project.liveAppSessions[key].type == this.hsApp.name) {
         this.hasRunningSessions = true;
         return this.hasRunningSessions;
       }
@@ -232,41 +298,40 @@ export class AppctrlComponent implements OnInit {
     this.statusMsg = "Closing";
     this.showLoadingIndicator = true;
 
-    console.log("Delete session", sessionAccessCode);
-
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: this.project.id,
-      sessionId: sessionAccessCode
-    };
-
-    this.http.post<any>('/api/v1/session/close', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      this.statusMsg = "";
-      this.showLoadingIndicator = false;
-      
-
-      //Clear session from local registry
-      for(let key in this.project.sessions) {
-        if(this.project.sessions[key].sessionCode == sessionAccessCode) {
-          this.project.sessions.splice(key, 1);
+    //send command to backend
+    this.systemService.sendCommandToBackend({
+      cmd: "closeSession",
+      sessionAccessCode: sessionAccessCode
+    }).then((data:any) => {
+      if(data.progress == "end" && data.result == "Session deleted") {
+        this.statusMsg = "";
+        this.showLoadingIndicator = false;
+        
+        //Clear session from local registry
+        for(let key in this.project.liveAppSessions) {
+          if(this.project.liveAppSessions[key].sessionAccessCode == sessionAccessCode) {
+            this.project.liveAppSessions.splice(key, 1);
+          }
         }
+        
+        console.log(this.project.liveAppSessions);
+        this.updateHasRunningSessions();
+  
+        this.projectItem.sessionUpdateFromAppCtrlCallback({
+          type: "close",
+          app: this.hsApp.name
+        });
       }
-      this.updateHasRunningSessions();
-
-      this.projectItem.sessionUpdateFromAppCtrlCallback({
-        type: "close",
-        app: this.hsApp.name
-      });
-
+      else {
+        this.notifier.notify("error", data.result);
+      }
     });
   }
 
   getSessionAccessCode() {
-    for(let key in this.project.sessions) {
-      if(this.project.sessions[key].type == this.hsApp.name) {
-        return this.project.sessions[key].sessionCode;
+    for(let key in this.project.liveAppSessions) {
+      if(this.project.liveAppSessions[key].type == this.hsApp.name) {
+        return this.project.liveAppSessions[key].sessionAccessCode;
       }
     }
     return false;

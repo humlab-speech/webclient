@@ -1,5 +1,8 @@
 @use '@angular/material' as mat;
 @include mat.core();
+
+@import '~@swimlane/ngx-datatable/index.css';
+
 $bright-navy-blue-palette: (
   50: #e3f2fd,
   100: #badffb,
@@ -174,6 +177,10 @@ app-signin-ctrl {
 button {
     border-style: solid;
     outline: 0;
+}
+
+.mat-tooltip {
+    font-size: 1.0rem;
 }
 
 popper-content h4 {
@@ -457,4 +464,8 @@ form input.ng-invalid {
     width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+}
+
+.button:hover {
+    cursor: pointer;
 }
