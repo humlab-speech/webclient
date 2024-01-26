@@ -161,7 +161,6 @@ export class AppctrlComponent implements OnInit {
         console.log("Setting SessionAccessCode cookie");
         Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
         //document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+";"+cookieParams;
-        console.log(document.cookie);
   
         this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
       },
@@ -180,63 +179,8 @@ export class AppctrlComponent implements OnInit {
 
     this.router.navigate(['/emu-webapp'], { queryParams: {
       autoConnect: true,
-      serverUrl: "wss://emu-webapp.visp.local"
+      serverUrl: "wss://emu-webapp."+window.location.hostname
     }});
-    /*
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: this.project.id
-    };
-    */
-
-    /*
-    //send command to backend
-    this.systemService.sendCommandToBackend({
-      cmd: "emuWebappSession",
-      projectId: this.project.id
-    }).then((data) => {
-      console.log(data);
-
-      
-      let sessionAccessCode = data.sessionAccessCode;
-      if(!sessionAccessCode) {
-        this.notifier.notify("error", "No sessionAccessCode received.");
-        return;
-      }
-      this.statusMsg = "Taking you there...";
-      this.showLoadingIndicator = true;
-      
-      let cookieParams = " SameSite=None; Secure";
-      if(environment.PROTOCOL == "http") {
-        cookieParams = "";
-      }
-      console.log("Setting SessionAccessCode cookie");
-      Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
-      //document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+";"+cookieParams;
-      console.log(document.cookie);
-
-      this.router.navigate(['/emu-webapp'], { queryParams: {
-        autoConnect: true,
-        serverUrl: "wss://emu-webapp.visp.local"
-      }});
-      
-    });
-    */
-
-    /*
-    let bundleListName:string = "user.user";
-    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe(async (data) => {
-      let session = this.userService.getSession();
-
-      this.router.navigate(['/emu-webapp'], { queryParams: {
-        autoConnect: true,
-        serverUrl: "wss://emu-webapp.visp.local"
-      }});
-
-    });
-    */
   }
 
   launchOctraSession() {
