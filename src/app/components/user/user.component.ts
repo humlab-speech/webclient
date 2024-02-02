@@ -16,7 +16,11 @@ export class UserComponent implements OnInit {
   constructor(private userService:UserService) { }
 
   ngOnInit(): void {
-    this.getUserDisplayName();
+    this.userService.fetchSession().subscribe((userSess:any) => {
+      if(userSess.body.eppn !== null) {
+        this.userIsSignedIn = true;
+      }
+    });
   }
 
   onNotify(evt) {
@@ -26,10 +30,8 @@ export class UserComponent implements OnInit {
   getUserDisplayName():string {
     let session = this.userService.getSession();
     if(session == null) {
-      this.userIsSignedIn = false;
       return "Not logged in";
     }
-    this.userIsSignedIn = true;
     return session.fullName;
   }
 
