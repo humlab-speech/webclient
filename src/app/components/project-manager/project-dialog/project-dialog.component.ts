@@ -123,6 +123,8 @@ export class ProjectDialogComponent implements OnInit {
 
       this.setLoadingStatus(true);
       console.log("Going into edit mode");
+      console.log(this.project);
+      console.log(this.form);
       this.setLoadingStatus(false);
     }
     else {

@@ -129,54 +129,43 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       this.addSession();
     }
     
-    if(this.annotLevelForms.length == 0) {
+    if(this.project) {
+      this.addSessions(this.project);
+      this.addAnnotLevels(this.project);
+      this.addAnnotLevelLinks(this.project);
+    }
+    else {
+      //if no project is provided, we'll add some default annotLevels and annotLevelLinks
       this.addAnnotLevel("Word", "ITEM");
       this.addAnnotLevel("Phonetic", "SEGMENT");
-    }
-
-    if(this.annotLevelLinks.length == 0) {
       this.addAnnotLevelLink("Word", "Phonetic");
-    }
-    
-    if(this.project) {
-
-      this.addSessions(this.project);
-      /*
-      this.emuDbLoadingStatus = true;
-      //If we load an existing project - disable editing annotation levels, for now
-      //we might be able to support this in the future, but not sure
-      this.showAnnotLevels = false;
-      this.showAnnotLevelLinks = false;
-
-      if(!this.parentForm.emuDb) { //if the parent form has not loaded the emuDb yet, wait for it
-        this.parentForm.emuDbLoaded$.subscribe(emuDbLoaded => {
-          if(!emuDbLoaded) {
-            this.notifierService.notify("error", "Could not load EmuDB");
-          }
-          this.addSessions(this.parentForm.emuDb);
-        });
-      }
-      else {
-        this.addSessions(this.parentForm.emuDb);
-      }
-      */
-      
     }
   }
 
-  addSessions(emuDb) {
+  addSessions(project) {
     this.emuDbLoadingStatus = false;
-    emuDb.sessions.forEach(async session => {
+    project.sessions.forEach(async session => {
       this.addSession(session);
+    });
+  }
+
+  addAnnotLevels(project) {
+    project.annotationLevels.forEach(annotLevel => {
+      this.addAnnotLevel(annotLevel.name, annotLevel.type);
+    });
+  }
+
+  addAnnotLevelLinks(project) {
+    project.annotationLinks.forEach(annotLevelLink => {
+      this.addAnnotLevelLink(annotLevelLink.superLevel, annotLevelLink.subLevel, annotLevelLink.type);
     });
   }
 
   adjustSessionNamesToAvoidConflict(externalSessions) {
     for(let key in this.sessions.value) {
       externalSessions.forEach(exSess => {
-        console.log(exSess.name, this.sessions.value[key].name);
         if(exSess.name == this.sessions.value[key].name) {
-          console.log('conflict');
+          console.log('session name conflict');
         }
       });
     }

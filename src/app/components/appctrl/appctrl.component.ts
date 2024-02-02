@@ -50,11 +50,38 @@ export class AppctrlComponent implements OnInit {
       this.statusMsg = "Running";
       this.showLoadingIndicator = false;
     }
+
+  }
+
+  preFlightChecks() {
+    let failures = [];
+    if(this.hsApp.name == "emu-webapp") {
+      let foundFiles = false;
+      //check that this project contains at least one session with files in it, otherwise emu-webapp should not be launchable
+      this.project.sessions.forEach((session) => {
+        if(session.files.length > 0) {
+          foundFiles = true;
+        }
+      });
+
+      if(!foundFiles) {
+        failures.push("No audio files in project.");
+      }
+    }
+
+    if(this.hsApp.disabled) {
+      //this.notifier.notify("info", "Can't launch "+this.hsApp.title+". Please close other applications first.");
+      failures.push("Please close other applications first.");
+    }
+
+    return failures;
   }
 
   launchProjectInApp() {
-    if(this.hsApp.disabled) {
-      this.notifier.notify("info", "Can't launch "+this.hsApp.title+". Please close other applications first.");
+
+    let showStoppers = this.preFlightChecks();
+    if(showStoppers.length > 0) {
+      this.notifier.notify("warning", showStoppers.join(" "));
       return;
     }
 

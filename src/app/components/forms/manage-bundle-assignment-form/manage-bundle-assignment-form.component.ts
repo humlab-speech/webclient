@@ -235,16 +235,6 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
     return false;
   }
 
-  userIsProjectOwner(userNode) {
-    for(let key in this.projectMembers) {
-      let owner = <any>this.project.owner;
-      if(this.projectMembers[key].username == userNode.id && this.projectMembers[key].id == owner.id) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   onChange(value) {
   }
   onTouched() {

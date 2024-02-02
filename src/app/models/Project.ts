@@ -9,7 +9,6 @@ export class Project {
     empty_repo?:boolean;
     archived?:boolean;
     visibility?:string;
-    owner?:object;
     wiki_enabled?: boolean;
     sessions?:any;
     liveAppSessions?:any;
