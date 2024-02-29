@@ -167,6 +167,19 @@ export class ProjectDialogComponent implements OnInit {
       childFormsValid = false;
     }
 
+    if(!this.fileUploadsComlete) {
+      console.log("File uploads are not complete");
+    }
+    if(this.form.status != "VALID") {
+      console.log("Form is not valid");
+    }
+    if(this.isLoading) {
+      console.log("Form is loading");
+    }
+    if(!childFormsValid) {
+      console.log("Child forms are not valid");
+    }
+
     return this.fileUploadsComlete && this.form.status == "VALID" && this.isLoading == false && childFormsValid;
   }
 
