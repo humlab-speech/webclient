@@ -149,7 +149,6 @@ export class SystemService {
             this.userIsAuthorized = true;
             this.eventEmitter.emit("userAuthorization");
           }
-
           
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
@@ -187,7 +186,7 @@ export class SystemService {
             this.ws.send(JSON.stringify(command));
             clearInterval(sendAttemptInterval);
           }
-        }, 100);
+        }, 1000);
       }
     });
   }

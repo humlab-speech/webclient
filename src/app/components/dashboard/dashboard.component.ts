@@ -35,9 +35,11 @@ export class DashboardComponent implements OnInit {
       if(event == "userAuthorization") {
         if(!systemService.userIsAuthorized) {
           this.userIsAuthorized = false;
+          console.log("Received userAuthorization event, user is not authorized");
         }
         else {
           this.userIsAuthorized = true;
+          console.log("Received userAuthorization event, user is now authorized");
         }
       }
     });

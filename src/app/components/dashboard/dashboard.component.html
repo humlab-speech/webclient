@@ -33,7 +33,7 @@
         </div>
         -->
         
-        <div id="userFailedAccessListCheckContainer" *ngIf="!userIsAuthorized">
+        <div id="userFailedAccessListCheckContainer" *ngIf="userIsSignedIn && !userIsAuthorized">
             <h2>Missing access grant</h2>
             <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
         </div>

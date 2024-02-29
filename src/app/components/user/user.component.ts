@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from "../../services/user.service";
 import { UserSession } from "../../models/UserSession";
+import Cookies from 'js-cookie';
 
 @Component({
   selector: 'app-user',
@@ -17,7 +18,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     this.userService.fetchSession().subscribe((userSess:any) => {
-      if(userSess.body.eppn !== null) {
+      if(userSess.body.eppn) {
         this.userIsSignedIn = true;
       }
     });
@@ -48,6 +49,15 @@ export class UserComponent implements OnInit {
   }
 
   signOut() {
+    //clear cookies
+    Cookies.set('SessionAccessCode', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
+    Cookies.set('PHPSESSID', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
+    Cookies.set('ProjectId', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
+    
+    document.cookie = "cookieName=SessionAccessCode; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "cookieName=PHPSESSID; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "cookieName=ProjectId; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
     window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
   }
 
