@@ -22,7 +22,7 @@
             <app-signin-ctrl></app-signin-ctrl>
         </div>
         
-        <app-project-manager *ngIf="userIsSignedIn" [dashboard]="this"></app-project-manager>
+        <app-project-manager *ngIf="userIsAuthorized" [dashboard]="this"></app-project-manager>
         
         <!--
         <div *ngIf="!systemIsReady" id="systemInitMsgContainer">
@@ -32,13 +32,11 @@
             </div>
         </div>
         -->
-
-        <!--
-        <div id="userFailedAccessListCheckContainer" *ngIf="userIsSignedIn">
+        
+        <div id="userFailedAccessListCheckContainer" *ngIf="!userIsAuthorized">
             <h2>Missing access grant</h2>
             <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
         </div>
-        -->
 
     </div>
     

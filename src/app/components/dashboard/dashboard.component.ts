@@ -4,6 +4,7 @@ import { UserSession } from "../../models/UserSession";
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from '../../services/system.service';
 import { environment } from 'src/environments/environment';
+import { nanoid } from 'nanoid';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +18,7 @@ export class DashboardComponent implements OnInit {
   signInTimeoutExpired:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
-  userPassedAccessListCheck:boolean = false;
+  userIsAuthorized:boolean = false;
   gitlabReady:boolean = false;
   systemService:any = null;
   applicationName:string = environment.APPLICATION_NAME;
@@ -31,12 +32,12 @@ export class DashboardComponent implements OnInit {
     this.systemService = systemService;
 
     systemService.eventEmitter.subscribe((event) => {
-      if(event == "userAuthentication") {
-        if(!systemService.userIsAuthenticated) {
-          this.userPassedAccessListCheck = false;
+      if(event == "userAuthorization") {
+        if(!systemService.userIsAuthorized) {
+          this.userIsAuthorized = false;
         }
         else {
-          this.userPassedAccessListCheck = true;
+          this.userIsAuthorized = true;
         }
       }
     });
@@ -61,6 +62,15 @@ export class DashboardComponent implements OnInit {
         }
       });
     }
+
+    let requestId = nanoid();
+    this.systemService.sendCommandToBackend({
+      cmd: "authorizeUser",
+      requestId: requestId
+    }).then((data) => {
+      console.log(data);
+    });
+
   }
 
 }

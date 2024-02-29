@@ -156,7 +156,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
         'eppn' => $_SESSION['eppn'],
         'username' => $_SESSION['username'],
         'phpSessionId' => $sid,
-        'authorized' => false,
+        'loggedIn' => false,
         'loginAllowed' => false
       ]);
     }

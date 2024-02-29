@@ -19,8 +19,8 @@ export class SystemService {
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
-  userAuthenticationPerformed:boolean = false;
-  public userIsAuthenticated:boolean = false;
+  userAuthorizationPerformed:boolean = false;
+  public userIsAuthorized:boolean = false;
 
   constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
     this.wsSubject = new Subject<MessageEvent>();
@@ -137,6 +137,20 @@ export class SystemService {
       //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
+
+          if(data.cmd == "authorization-status" && !data.data.result) {
+            this.userAuthorizationPerformed = true;
+            this.userIsAuthorized = false;
+            this.eventEmitter.emit("userAuthorization");
+            return;
+          }
+          else {
+            this.userAuthorizationPerformed = true;
+            this.userIsAuthorized = true;
+            this.eventEmitter.emit("userAuthorization");
+          }
+
+          
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
             expectedCmd = command.caCmd;
@@ -209,13 +223,13 @@ export class SystemService {
     });
   }
 
-  getUserAuthenticationStatus() {
-    if(!this.userAuthenticationPerformed) {
+  getUserAuthorizationStatus() {
+    if(!this.userAuthorizationPerformed) {
       return "not performed";
     }
     else {
-      if(this.userIsAuthenticated) {
-        return "authenticated";
+      if(this.userIsAuthorized) {
+        return "authorized";
       }
       else {
         return "rejected";
