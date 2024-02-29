@@ -140,11 +140,25 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
         'eppn' => $_SESSION['eppn'],
         'username' => $_SESSION['username'],
         'phpSessionId' => $sid,
-        'authorized' => true
+        'authorized' => true,
+        'loginAllowed' => true
       ]);
     }
     else {
-      addLog("User ".$_SESSION['username']." not found in database", "error");
+      //if the user does not exist in the mongodb, we add it, but do not authorize it
+      //addLog("User ".$_SESSION['username']." not found in database", "error");
+      //create the mongodb entry
+      $collection->insertOne([
+        'firstName' => $_SESSION['firstName'],
+        'lastName' => $_SESSION['lastName'],
+        'fullName' => $_SESSION['fullName'],
+        'email' => $_SESSION['email'],
+        'eppn' => $_SESSION['eppn'],
+        'username' => $_SESSION['username'],
+        'phpSessionId' => $sid,
+        'authorized' => false,
+        'loginAllowed' => false
+      ]);
     }
   }
   else {
