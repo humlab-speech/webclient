@@ -18,7 +18,7 @@ export class DashboardComponent implements OnInit {
   signInTimeoutExpired:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
-  userIsAuthorized:boolean = false;
+  userIsAuthorized:boolean = true;
   gitlabReady:boolean = false;
   systemService:any = null;
   applicationName:string = environment.APPLICATION_NAME;
@@ -26,7 +26,6 @@ export class DashboardComponent implements OnInit {
   private readonly notifier: NotifierService;
 
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
-    console.log(environment.APPLICATION_NAME);
 
     this.notifier = notifierService;
     this.systemService = systemService;
@@ -35,11 +34,11 @@ export class DashboardComponent implements OnInit {
       if(event == "userAuthorization") {
         if(!systemService.userIsAuthorized) {
           this.userIsAuthorized = false;
-          console.log("Received userAuthorization event, user is not authorized");
+          //console.log("Received userAuthorization event, user is not authorized");
         }
         else {
           this.userIsAuthorized = true;
-          console.log("Received userAuthorization event, user is now authorized");
+          //console.log("Received userAuthorization event, user is now authorized");
         }
       }
     });
