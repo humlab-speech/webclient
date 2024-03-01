@@ -161,28 +161,6 @@ export class ProjectService {
     });
   }
 
-  createProjectOLD(formValues:object, formContextId:string):Observable<any> {
-    window.dispatchEvent(new Event("project-create-in-progress"));
-
-    let body = {
-      form: formValues,
-      context: formContextId
-    };
-
-    return new Observable<any>(subscriber => {
-      this.systemService.wsSubject.subscribe((data:any) => {
-        console.log(data);
-        subscriber.next(data);
-      });
-
-      this.systemService.ws.send(JSON.stringify({
-        type: 'cmd',
-        cmd: 'createProject',
-        data: body
-      }));
-    });
-  }
-
   async readFileAsDataURL(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

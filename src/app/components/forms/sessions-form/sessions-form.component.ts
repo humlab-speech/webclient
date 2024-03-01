@@ -358,6 +358,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
     let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0] : { value: null, label: "No script" };
 
+    let dataSourceControl = new FormControl(session.dataSource);
+
     const sessionGroup = this.fb.group({
       new: new FormControl(session.new),
       deleted: new FormControl(false),
@@ -373,9 +375,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
-      dataSource: new FormControl(session.dataSource), //upload or record
+      dataSource: dataSourceControl, //upload or record
       recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sessionScript: new FormControl( defaultScript.value, this.validateSprScript),
+      sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(dataSourceControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
     });
@@ -495,11 +497,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     return returnVal;
   }
 
-  validateSprScript(control: AbstractControl): ValidationErrors | null {
-    if(control.value == null) {
-      return { 'sprScriptNotSelected': true };
-    }
-    return null;
+  validateSprScriptWithParent(dataSourceControl: AbstractControl): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const isRecordingSession = dataSourceControl.value === "record";
+      if (isRecordingSession && control.value == null) {
+        return { 'sprScriptNotSelected': true };
+      }
+      return null;
+    };
   }
 
   deleteSession(index, evt = null) {

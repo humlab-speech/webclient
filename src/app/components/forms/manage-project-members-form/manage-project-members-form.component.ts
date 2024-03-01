@@ -172,7 +172,6 @@ export class ManageProjectMembersFormComponent implements OnInit {
     //check that this user is not the last admin user on the project
     let numAdmins = 0;
     this.members.controls.forEach((member) => {
-      console.log(member.value.role)
       if(member.value.role == "admin") {
         numAdmins++;
       }
@@ -191,6 +190,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
     }).then((data:any) => {
       if(data.progress == "end" && data.result) {
         this.notifierService.notify("info", "Updated role for "+user.value.fullName);
+        this.projectService.fetchProjects(true).subscribe((projects) => {});
       }
       else {
         this.notifierService.notify("error", "Failed to update role for "+user.value.fullName);
@@ -226,6 +226,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
           role: "member",
           selected: false
         }));
+
+        this.projectService.fetchProjects(true).subscribe((projects) => {});
       }
 
     });
@@ -253,6 +255,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
         if(data.progress == "end" && data.result) {
           this.notifierService.notify("info", "Removed member "+user.value.fullName+" from the project");
           this.members.removeAt(this.members.controls.indexOf(user));
+          this.projectService.fetchProjects(true).subscribe((projects) => {});
         }
         else {
           this.notifierService.notify("error", data.message);
