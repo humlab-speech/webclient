@@ -3,9 +3,13 @@
 require 'api/vendor/autoload.php';
 use MongoDB\Client;
 
-$domain = ($_SERVER['HTTP_HOST'] != 'localhost') ? $_SERVER['HTTP_HOST'] : false;
+$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
+//if we are running on visp.local set cookie secure to false
+$secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
+$httpOnly = false;
 
-session_set_cookie_params(60*60*8, "/", $domain);
+session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
+
 session_start();
 $sid = session_id();
 $_SESSION['projectName'] = getenv("PROJECT_NAME");
