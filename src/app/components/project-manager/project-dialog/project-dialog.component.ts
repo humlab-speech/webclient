@@ -154,7 +154,7 @@ export class ProjectDialogComponent implements OnInit {
       this.submitBtnEnabled = true;
     }
     else {
-      this.submitBtnEnabled = false;
+      //this.submitBtnEnabled = false;
     }
 
     let childFormsValid = true;
