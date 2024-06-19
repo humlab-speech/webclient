@@ -1,22 +1,22 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, from } from 'rxjs';
 import { UserSession } from "../models/UserSession";
 import { ApiResponse } from "../models/ApiResponse";
 import { environment } from 'src/environments/environment';
+import { SystemService } from './system.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
   userIsSignedIn:boolean = false;
-  getSessionUrl:string = window.location.protocol+'//'+environment.API_ENDPOINT+'/api/v1/session';
+  getSessionUrl:string = '/api/v1/session';
   session:UserSession = null;
   //public sessionObs:Observable<UserSession>;
   public sessionObs:Subject<UserSession>;
   
-  constructor(private http:HttpClient) {
-
+  constructor(private http:HttpClient, private systemService:SystemService) {
     this.sessionObs = new Subject();
   }
   
@@ -26,6 +26,18 @@ export class UserService {
 
   fetchSession():Observable<ApiResponse> {
     return this.http.get<ApiResponse>(this.getSessionUrl);
+  }
+
+  fetchInviteCode():Observable<ApiResponse> {
+
+    let data = { 
+      cmd: "generateInviteCode",
+      data: {
+        projectId: null
+      }
+    };
+
+    return from(this.systemService.sendCommandToBackend(data));
   }
 
   setSession(session:UserSession) {
