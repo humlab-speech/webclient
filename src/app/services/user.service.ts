@@ -28,7 +28,7 @@ export class UserService {
     return this.http.get<ApiResponse>(this.getSessionUrl);
   }
 
-  fetchInviteCode():Observable<ApiResponse> {
+  fetchInviteCode():Observable<unknown> {
 
     let data = { 
       cmd: "generateInviteCode",
