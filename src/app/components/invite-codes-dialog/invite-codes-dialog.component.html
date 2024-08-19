@@ -1,0 +1,55 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+
+        <div class="dialog-header"><h2>Invitation codes</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <div *ngIf="showLoadingIndicator" id="loading-indicator">
+        </div>
+
+        <div *ngIf="inviteCodes.controls.length === 0" class="no-invite-codes">
+            <p>No invite codes created yet.</p>
+        </div>
+
+        <form [formGroup]="inviteCodesForm">
+            <table formArrayName="inviteCodes">
+                <thead>
+                    <th>Invite code</th>
+                    <th>Status</th>
+                    <th>Auto-join project</th>
+                    <th>Actions</th>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let codeControl of inviteCodes.controls; let i=index" [formGroupName]="i">
+                            <td class="invite-code-container">
+                                {{ codeControl.value.code }}
+                            </td>
+                            <td>
+                                <span *ngIf="codeControl.value.used == true">Used</span>
+                                <span *ngIf="codeControl.value.used == false">Unused</span>
+                            </td>
+                            <td>
+                                {{ codeControl.value.project }}
+                                <select [formControl]="codeControl.get('projectId')" (change)="onProjectSelected($event, codeControl)">
+                                    <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="form-btn" type="button" (click)="copyInviteCode(i)" title="Copy"><i class="fa fa-clone" aria-hidden="true"></i></button>
+                                <button class="form-btn" type="button" (click)="removeInviteCode(i)" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                            </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <br />
+            <button class="form-btn" type="button" (click)="addInviteCode()"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create invite code</button>
+            
+        </form>
+        
+    </div>
+
+</div>

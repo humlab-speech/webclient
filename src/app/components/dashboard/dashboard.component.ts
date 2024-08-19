@@ -3,6 +3,7 @@ import { UserService } from "../../services/user.service";
 import { UserSession } from "../../models/UserSession";
 import { NotifierService } from 'angular-notifier';
 import { SystemService } from '../../services/system.service';
+import { ModalService } from '../../services/modal.service';
 import { environment } from 'src/environments/environment';
 import { nanoid } from 'nanoid';
 
@@ -25,7 +26,7 @@ export class DashboardComponent implements OnInit {
 
   private readonly notifier: NotifierService;
 
-  constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService) {
+  constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService, private modalService: ModalService) {
 
     this.notifier = notifierService;
     this.systemService = systemService;
@@ -49,6 +50,11 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.modalService.displayModal$.subscribe(modal => {
+      this.modalActive = modal.active;
+      this.modalName = modal.modalName;
+    });
+
     let session = this.userService.getSession();
     this.userSignedInCheckPerformed = true;
     if(session != null) {
@@ -63,15 +69,10 @@ export class DashboardComponent implements OnInit {
         }
       });
     }
+  }
 
-    let requestId = nanoid();
-    this.systemService.sendCommandToBackend({
-      cmd: "authorizeUser",
-      requestId: requestId
-    }).then((data) => {
-      console.log(data);
-    });
-
+  closeModal() {
+    this.modalService.hideModal("invite-codes-dialog");
   }
 
 }

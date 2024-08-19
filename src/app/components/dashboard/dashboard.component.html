@@ -23,6 +23,8 @@
         </div>
         
         <app-project-manager *ngIf="userIsAuthorized" [dashboard]="this"></app-project-manager>
+
+        <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
         
         <!--
         <div *ngIf="!systemIsReady" id="systemInitMsgContainer">
@@ -35,7 +37,9 @@
         
         <div id="userFailedAccessListCheckContainer" *ngIf="userIsSignedIn && !userIsAuthorized">
             <h2>Missing access grant</h2>
-            <p>You have not yet been authorized to use this service. If you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
+            <p>If you have an invite code to this system, please enter it below.</p>
+            <app-invite-code-entry></app-invite-code-entry>
+            <p>If you do not have an invite code and you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
         </div>
 
     </div>

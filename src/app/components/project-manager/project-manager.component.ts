@@ -84,4 +84,9 @@ export class ProjectManagerComponent implements OnInit {
     this.dashboard.modalActive = true;
     this.dashboard.modalName = 'spr-scripts-dialog';
   }
+
+  showInviteCodesDialog(project = null) {
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'invite-codes-dialog';
+  }
 }

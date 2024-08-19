@@ -28,17 +28,49 @@ export class UserService {
     return this.http.get<ApiResponse>(this.getSessionUrl);
   }
 
-  fetchInviteCode():Observable<unknown> {
+  fetchInviteCodesByUser() {
+    let data = { 
+      cmd: "getInviteCodesByUser",
+      data: {}
+    };
+
+    return from(this.systemService.sendCommandToBackend(data));
+  }
+
+  generateInviteCode(projectId:string = ""):Observable<unknown> {
 
     let data = { 
       cmd: "generateInviteCode",
       data: {
-        projectId: null
+        projectId: projectId
       }
     };
 
     return from(this.systemService.sendCommandToBackend(data));
   }
+
+  updateInviteCodes(inviteCodes:any):Observable<unknown> {
+    let data = { 
+      cmd: "updateInviteCodes",
+      data: {
+        inviteCodes: inviteCodes
+      }
+    };
+
+    return from(this.systemService.sendCommandToBackend(data));
+  }
+
+  deleteInviteCode(code:string):Observable<unknown> {
+    let data = { 
+      cmd: "deleteInviteCode",
+      data: {
+        code: code
+      }
+    };
+
+    return from(this.systemService.sendCommandToBackend(data));
+  }
+
 
   setSession(session:UserSession) {
     this.session = session;

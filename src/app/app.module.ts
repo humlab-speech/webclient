@@ -47,6 +47,8 @@ import { ManageSprScriptsDialogComponent } from './components/manage-spr-scripts
 import { ManageBundleAssignmentDialogComponent } from './components/manage-bundle-assignment-dialog/manage-bundle-assignment-dialog.component';
 import { ManageBundleAssignmentFormComponent } from './components/forms/manage-bundle-assignment-form/manage-bundle-assignment-form.component';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { InviteCodesDialogComponent } from './components/invite-codes-dialog/invite-codes-dialog.component';
+import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-code-entry.component';
 
 @NgModule({
   declarations: [
@@ -76,6 +78,8 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
     ManageSprScriptsDialogComponent,
     ManageBundleAssignmentDialogComponent,
     ManageBundleAssignmentFormComponent,
+    InviteCodesDialogComponent,
+    InviteCodeEntryComponent,
   ],
   imports: [
     CommonModule,
