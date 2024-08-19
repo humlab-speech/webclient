@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { UserService } from "../../services/user.service";
 import { UserSession } from "../../models/UserSession";
 import Cookies from 'js-cookie';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-user',
@@ -13,8 +14,10 @@ export class UserComponent implements OnInit {
   accountMenuVisible:boolean = false;
   menuTimeout:any;
   userIsSignedIn:boolean = false;
+  showInviteUserDialogToggle:boolean = false;
 
-  constructor(private userService:UserService) { }
+  constructor(private userService:UserService, private modalService: ModalService) {
+  }
 
   ngOnInit(): void {
     this.userService.fetchSession().subscribe((userSess:any) => {
@@ -46,6 +49,19 @@ export class UserComponent implements OnInit {
     else {
       this.accountMenuVisible = show;
     }
+  }
+
+  showInviteCodesDialog() {
+    this.modalService.showModal("invite-codes-dialog");
+  }
+
+  inviteUser() {
+    console.log("Invite user");
+    this.userService.generateInviteCode().subscribe((response:any) => {
+      console.log(response);
+      let inviteCode = response.result;
+      console.log(inviteCode);
+    });
   }
 
   signOut() {

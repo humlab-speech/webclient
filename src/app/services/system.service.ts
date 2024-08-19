@@ -2,10 +2,10 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { from, Observable, Observer, Subject } from 'rxjs';
 import { NotifierService } from 'angular-notifier';
-import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { nanoid } from 'nanoid';
+import { WebSocketMessage } from '../models/WebSocketMessage';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class SystemService {
   userAuthorizationPerformed:boolean = false;
   public userIsAuthorized:boolean = false;
 
-  constructor(private http:HttpClient, private notifierService: NotifierService, private userService: UserService) {
+  constructor(private http:HttpClient, private notifierService: NotifierService) {
     this.wsSubject = new Subject<MessageEvent>();
 
     this.initWebSocket();
@@ -73,24 +73,6 @@ export class SystemService {
     }
 
     return this.sendCommandToBackend(msg);
-    /*
-    return new Promise((resolve, reject) => {
-      this.sendMessageToBackend(JSON.stringify(msg), {
-        next: (data) => {
-          if(data.cmd == cmd) {
-            resolve(data);
-          }
-          else {
-            console.warn("runCommandInOperationsSession received return-data from another operation, the command was: "+data.cmd+", expected: "+cmd);
-          }
-        },
-        error: (err) => {
-          console.error(err);
-          reject(err);
-        }
-      });
-    });
-    */
   }
 
   shutdownOperationsSession(sessionAccessCode:string) {
@@ -127,7 +109,7 @@ export class SystemService {
   sendCommandToBackendObservable(command) {
   }
 
-  async sendCommandToBackend(command) {
+  async sendCommandToBackend(command): Promise<WebSocketMessage> {
 
     if(!command.requestId) {
       command.requestId = nanoid();
@@ -137,7 +119,6 @@ export class SystemService {
       //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
-
           if(data.cmd == "authorization-status" && !data.data.result) {
             this.userAuthorizationPerformed = true;
             this.userIsAuthorized = false;
@@ -155,7 +136,12 @@ export class SystemService {
             expectedCmd = command.caCmd;
           }
 
-          if(data.requestId == command.requestId) {
+          if(typeof data.requestId == "undefined") {
+            console.warn("sendCommandToBackend received return-data without requestId, the command was: "+data.cmd+", expected: "+expectedCmd);
+            return;
+          }
+
+          if(data.requestId === command.requestId) {
             if(data.cmd != expectedCmd) {
               console.error("sendCommandToBackend received return-data from another operation, the command was: "+data.cmd+", expected: "+expectedCmd);
               obs.unsubscribe();

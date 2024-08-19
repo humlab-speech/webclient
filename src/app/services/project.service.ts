@@ -14,6 +14,7 @@ import {
   FormControl,
   FormArray,
 } from '@angular/forms';
+import { WebSocketMessage } from '../models/WebSocketMessage';
 
 @Injectable({
   providedIn: 'root'
@@ -55,8 +56,8 @@ export class ProjectService {
 
   fetchSprData(projectId:number) {
     //fetch speech recorder db data via the session-manager
-    return this.systemService.sendCommandToBackend({ cmd: "fetchSprData", projectId: projectId }).then((data) => {
-      console.log(data);
+    return this.systemService.sendCommandToBackend({ cmd: "fetchSprData", projectId: projectId }).then((wsMsg:WebSocketMessage) => {
+      console.log(wsMsg);
     });
   }
 
@@ -70,8 +71,8 @@ export class ProjectService {
         }
       };
 
-      this.systemService.sendCommandToBackend(data).then((data) => {
-        subscriber.next(data);
+      this.systemService.sendCommandToBackend(data).then((wsMsg:WebSocketMessage) => {
+        subscriber.next(wsMsg);
         subscriber.complete();
       });
     });
@@ -89,15 +90,14 @@ export class ProjectService {
         }
       };
 
-      this.systemService.sendCommandToBackend(data).then((data) => {
-        subscriber.next(data);
+      this.systemService.sendCommandToBackend(data).then((wsMsg:WebSocketMessage) => {
+        subscriber.next(wsMsg);
         subscriber.complete();
       });
     });
   }
 
   fetchProjects(forceNewFetch:boolean = false) {
-    console.log("fetchProjects");
     
     return new Observable(sub => {
       if(this.projectsLoaded && !forceNewFetch) {
@@ -108,6 +108,7 @@ export class ProjectService {
       else {
         let requestId = nanoid();
         //create a websocket request
+        /*
         this.systemService.wsSubject.subscribe((data:any) => {
           if(data.type == "cmd-result" && data.cmd == "fetchProjects") {
             if(data.requestId == requestId && data.progress == "end") {
@@ -126,12 +127,30 @@ export class ProjectService {
             }
           }
         });
+        */
 
         this.systemService.sendCommandToBackend({
           cmd: "fetchProjects",
           requestId: requestId
-        }).then((data) => {
-          console.log(data);
+        }).then((wsMsg:WebSocketMessage) => {
+          console.log(wsMsg)
+          if(wsMsg.message) {
+            return this.notifierService.notify("error", wsMsg.message);
+          }
+          else {
+            this.projects = <Project[]>wsMsg.data.projects;
+
+            this.projects.forEach(p => {
+              if(typeof p.sessions == "undefined") {
+                p.sessions = [];
+              }
+            });
+
+            this.projectsLoaded = true;
+            sub.next(this.projects);
+            this.projects$.next(this.projects);
+            sub.complete();
+          }
         });
 
       }
@@ -464,8 +483,8 @@ export class ProjectService {
       this.systemService.sendCommandToBackend({
         cmd: "saveProject",
         project: formValues,
-      }).then(projectId => {
-        console.log("Saved project", projectId);
+      }).then((wsMsg:WebSocketMessage) => {
+        console.log("Saved project", wsMsg);
       });
     });
   }
@@ -596,8 +615,8 @@ export class ProjectService {
           username: username
         }
       };
-      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
-        observer.next(res);
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
+        observer.next(wsMsg);
         observer.complete();
       });
     });
@@ -613,7 +632,7 @@ export class ProjectService {
           scripts: scripts
         }
       };
-      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
         observer.next("Saved spr scripts");
         observer.complete();
       });
@@ -629,8 +648,8 @@ export class ProjectService {
           scriptId: scriptId
         }
       };
-      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
-        observer.next(res);
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
+        observer.next(wsMsg);
         observer.complete();
       });
     });
@@ -646,8 +665,8 @@ export class ProjectService {
           fileName: fileName,
         }
       };
-      this.systemService.sendCommandToBackend(messageToBackend).then((res) => {
-        observer.next(res);
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
+        observer.next(wsMsg);
         observer.complete();
       });
     });
