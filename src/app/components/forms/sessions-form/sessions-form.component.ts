@@ -326,6 +326,26 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       }
     }
     else {
+      let sprSession = null;
+      if(session.dataSource == "record") {
+        sprSession = await new Promise((resolve, reject) => {
+          this.projectService.fetchSprSession(session.id).subscribe({
+            next: (cmdResponse:any) => {
+              resolve(cmdResponse.result);
+            },
+            error: (error) => {
+              console.log(error);
+              this.notifierService.notify("error", "Could not fetch speech recorder session data");
+              resolve(null);
+            }
+          });
+        });
+        
+        if(sprSession) {
+          session.sprSessionSealed = sprSession.sealed;
+        }
+      }
+      
       session.name = session.sessionName ? session.sessionName : session.name;
       session.new = false;
       session.collapsed = true;
@@ -380,6 +400,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(dataSourceControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
+      sprSessionSealed: new FormControl(session.sprSessionSealed)
     });
 
     //fetch the spr session from the mongodb based on session.meta.SessionId

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 
@@ -14,7 +14,6 @@ export class MenuBarComponent implements OnInit {
   constructor(private router: Router) {
     this.router = router;
     this.logoImagePath = environment.LOGO_IMAGE_PATH;
-    console.log(environment);
   }
 
   ngOnInit(): void {

@@ -14,6 +14,7 @@ import { UserService } from 'src/app/services/user.service';
 import { NotifierService } from 'angular-notifier';
 import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
+import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
   selector: 'app-manage-project-members-form',
@@ -100,8 +101,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
         this.systemService.sendCommandToBackend({
           cmd: "searchUsers",
           searchValue: searchValue
-        }).then((data:any) => {
-          this.searchUsers = data.result;
+        }).then((data:WebSocketMessage) => {
+          this.searchUsers = data.data;
           if (this.searchUsers.length > 0) {
             document.getElementById("user-select-options").style.display = "block";
           } else {
@@ -187,8 +188,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
       projectId: this.project.id,
       username: user.value.username,
       role: user.value.role
-    }).then((data:any) => {
-      if(data.progress == "end" && data.result) {
+    }).then((wsMsg:WebSocketMessage) => {
+      if(wsMsg.progress == "end" && wsMsg.data) {
         this.notifierService.notify("info", "Updated role for "+user.value.fullName);
         this.projectService.fetchProjects(true).subscribe((projects) => {});
       }
@@ -204,10 +205,9 @@ export class ManageProjectMembersFormComponent implements OnInit {
       cmd: "addProjectMember",
       projectId: this.project.id,
       username: user.username
-    }).then((data:any) => {
-
-      if(data.progress == "end" && !data.result) {
-        this.notifierService.notify("error", data.message);
+    }).then((wsMsg:WebSocketMessage) => {
+      if(wsMsg.progress == "end" && !wsMsg.data) {
+        this.notifierService.notify("error", wsMsg.message);
         return;
       }
 
@@ -215,14 +215,14 @@ export class ManageProjectMembersFormComponent implements OnInit {
       (<HTMLInputElement>document.getElementById("search-user-control")).value = "";
       this.searchUsers = [];
 
-      if(data.progress == "end" && data.result) {
+      if(wsMsg.progress == "end" && wsMsg.data) {
         this.notifierService.notify("info", "Added "+user.fullName+" to the project");
         this.members.push(this.fb.group({
-          username: data.user.username,
-          firstName: data.user.firstName,
-          lastName: data.user.lastName,
-          fullName: data.user.firstName + " " + data.user.lastName,
-          eppn: data.user.eppn,
+          username: wsMsg.data.user.username,
+          firstName: wsMsg.data.user.firstName,
+          lastName: wsMsg.data.user.lastName,
+          fullName: wsMsg.data.user.firstName + " " + wsMsg.data.user.lastName,
+          eppn: wsMsg.data.user.eppn,
           role: "member",
           selected: false
         }));
@@ -251,14 +251,14 @@ export class ManageProjectMembersFormComponent implements OnInit {
         cmd: "removeProjectMember",
         projectId: this.project.id,
         username: user.value.username
-      }).then((data:any) => {
-        if(data.progress == "end" && data.result) {
+      }).then((wsMsg:WebSocketMessage) => {
+        if(wsMsg.progress == "end" && wsMsg.result) {
           this.notifierService.notify("info", "Removed member "+user.value.fullName+" from the project");
           this.members.removeAt(this.members.controls.indexOf(user));
           this.projectService.fetchProjects(true).subscribe((projects) => {});
         }
         else {
-          this.notifierService.notify("error", data.message);
+          this.notifierService.notify("error", wsMsg.message);
         }
         
       });

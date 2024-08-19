@@ -9,6 +9,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
+import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
   selector: 'app-appctrl',
@@ -134,9 +135,9 @@ export class AppctrlComponent implements OnInit {
       cmd: "launchContainerSession",
       projectId: this.project.id,
       appName: appName
-    }).then((data:any) => {
-      if(data.progress == "end" && data.result) {
-        let sessionAccessCode = data.result;
+    }).then((wsMsg:WebSocketMessage) => {
+      if(wsMsg.progress == "end" && wsMsg.data) {
+        let sessionAccessCode = wsMsg.data;
         if(!sessionAccessCode) {
           this.notifier.notify("error", "No sessionAccessCode received.");
           return;
@@ -153,7 +154,7 @@ export class AppctrlComponent implements OnInit {
         this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
       }
       else {
-        this.notifier.notify("error", data.message);
+        this.notifier.notify("error", wsMsg.message);
       }
     });
 
@@ -273,8 +274,8 @@ export class AppctrlComponent implements OnInit {
     this.systemService.sendCommandToBackend({
       cmd: "closeSession",
       sessionAccessCode: sessionAccessCode
-    }).then((data:any) => {
-      if(data.progress == "end" && data.result == "Session deleted") {
+    }).then((data:WebSocketMessage) => {
+      if(data.progress == "end" && data.message == "Session deleted") {
         this.statusMsg = "";
         this.showLoadingIndicator = false;
         
@@ -294,7 +295,7 @@ export class AppctrlComponent implements OnInit {
         });
       }
       else {
-        this.notifier.notify("error", data.result);
+        this.notifier.notify("error", data.message);
       }
     });
   }

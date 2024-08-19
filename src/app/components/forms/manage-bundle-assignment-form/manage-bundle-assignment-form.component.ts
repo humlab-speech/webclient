@@ -12,6 +12,7 @@ import { Project } from '../../../models/Project';
 import { BundleListItem } from '../../../models/BundleListItem';
 import { UserService } from 'src/app/services/user.service';
 import { NotifierService } from 'angular-notifier';
+import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
   selector: 'app-manage-bundle-assignment-form',
@@ -109,9 +110,9 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
 
     for(let key in this.project.members) {
       let member = this.project.members[key];
-      let bundleListResponse:any = await this.fetchBundleList(member.username);
+      let bundleListResponse:WebSocketMessage = await this.fetchBundleList(member.username);
 
-      if(bundleListResponse.result == null) {
+      if(bundleListResponse.data == null) {
         this.notifierService.notify("warning", "Couldn't fetch bundle list for user "+member.username);
         continue;
       }
@@ -121,7 +122,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
         if(memberGroup.get('username').value != member.username) {
           return;
         }
-        bundleListResponse.result.bundles.forEach((bundleListItem) => {
+        bundleListResponse.data.bundles.forEach((bundleListItem) => {
           (memberGroup.get('sessions') as FormArray).controls.forEach((sessionGroup, sessionIndex) => {
             let sessionName = sessionGroup.get('name').value;
             if(bundleListItem.session == sessionName) {
@@ -445,7 +446,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
       cmd: "saveBundleLists",
       projectId: this.project.id,
       bundleLists: bundleLists
-    }).then((data) => {
+    }).then((data:WebSocketMessage) => {
       this.notifierService.notify("info", "Bundle assignment lists saved");
       this.submitBtnEnabled = true;
     });

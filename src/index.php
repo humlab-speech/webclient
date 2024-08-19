@@ -3,7 +3,8 @@
 require 'api/vendor/autoload.php';
 use MongoDB\Client;
 
-$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
+//$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
+$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".visp.local";
 //if we are running on visp.local set cookie secure to false
 $secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
 $httpOnly = false;
