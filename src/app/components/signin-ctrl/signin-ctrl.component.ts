@@ -29,7 +29,7 @@ export class SigninCtrlComponent implements OnInit {
   }
 
   signIn() {
-    this.userService.authenticate();
+    this.userService.redirectToAuthentication();
   }
 
 }

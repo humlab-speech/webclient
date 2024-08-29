@@ -18,7 +18,13 @@ export class ProjectManagerComponent implements OnInit {
   projectCreateInProgress:boolean = false;
   projectInEdit:Project|null = null;
 
-  constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) { }
+  constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) {
+    
+    userService.eventEmitter.subscribe((event) => {
+      console.log(event);
+    });
+    
+  }
 
   ngOnInit():void {
 
@@ -51,11 +57,37 @@ export class ProjectManagerComponent implements OnInit {
       this.projects = <Project[]>projects;
       this.projectsLoaded = true;
     });
+
     
-    this.projectService.fetchProjects(true).subscribe(projects => {
-      this.projects = <Project[]>projects;
-      this.projectsLoaded = true;
+    let getUserInterval = setInterval(() => {
+      let userSession = this.userService.getSession();
+      if(userSession) {
+        clearInterval(getUserInterval);
+      }
+
+      this.projectService.fetchProjects(true).subscribe(projects => {
+        this.projects = <Project[]>projects;
+        this.projectsLoaded = true;
+      });
+
+    }, 100);
+
+    /*
+    this.userService.eventEmitter.subscribe((event) => {
+      console.log(event);
     });
+
+    this.userService.sessionObs.subscribe((session) => {
+      console.log(session);
+      if(session) {
+        this.projectService.fetchProjects(true).subscribe(projects => {
+          this.projects = <Project[]>projects;
+          this.projectsLoaded = true;
+        });
+      }
+    });
+    */
+    
   }
 
   showSessionsDialog() {

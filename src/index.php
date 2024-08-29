@@ -67,8 +67,6 @@ if($shibHeadersFound) {
         $_SESSION['email'] = $_SERVER[$attributePrefix.'mail'];
     }
 
-    $_SESSION['authorized'] = true;
-
     //addLog(print_r($_SESSION, true), "debug");
 }
 
@@ -84,7 +82,6 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['email'] = "testuser2@example.com";
     $_SESSION['eppn'] = "testuser2@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
-    $_SESSION['authorized'] = true;
     $_SESSION['testUser'] = true;
   }
   else if($_GET['user'] == "test3") {
@@ -95,7 +92,6 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['email'] = "testuser3@example.com";
     $_SESSION['eppn'] = "testuser3@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
-    $_SESSION['authorized'] = true;
     $_SESSION['testUser'] = true;
   }
   else if($_GET['user'] == "test4") {
@@ -106,7 +102,6 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['email'] = "testuser4@example.com";
     $_SESSION['eppn'] = "testuser4@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
-    $_SESSION['authorized'] = true;
     $_SESSION['testUser'] = true;
   }
   else {
@@ -117,8 +112,8 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['email'] = "testuser@example.com";
     $_SESSION['eppn'] = "testuser@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
-    $_SESSION['authorized'] = true;
     $_SESSION['testUser'] = true;
+    $_SESSION['autoCreate'] = true;
   }
 }
 else {
@@ -134,39 +129,23 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   $database = $client->selectDatabase('visp');
   $collection = $database->selectCollection('users');
   $cursor = $collection->findOne(['username' => $_SESSION['username']]);
-  if($cursor == null) { //empty result / not found
-    if($_SESSION['testUser']) {
-      //create the mongodb entry
-      $collection->insertOne([
-        'firstName' => $_SESSION['firstName'],
-        'lastName' => $_SESSION['lastName'],
-        'fullName' => $_SESSION['fullName'],
-        'email' => $_SESSION['email'],
-        'eppn' => $_SESSION['eppn'],
-        'username' => $_SESSION['username'],
-        'phpSessionId' => $sid,
-        'authorized' => true,
-        'loginAllowed' => true
-      ]);
-    }
-    else {
-      //if the user does not exist in the mongodb, we add it, but do not authorize it
-      //addLog("User ".$_SESSION['username']." not found in database", "error");
-      //create the mongodb entry
-      $collection->insertOne([
-        'firstName' => $_SESSION['firstName'],
-        'lastName' => $_SESSION['lastName'],
-        'fullName' => $_SESSION['fullName'],
-        'email' => $_SESSION['email'],
-        'eppn' => $_SESSION['eppn'],
-        'username' => $_SESSION['username'],
-        'phpSessionId' => $sid,
-        'loggedIn' => false,
-        'loginAllowed' => false
-      ]);
-    }
+  if($cursor == null && $_SESSION['testUser'] && $_SESSION['autoCreate']) { //empty result / not found
+    //create the mongodb entry
+    $collection->insertOne([
+      'firstName' => $_SESSION['firstName'],
+      'lastName' => $_SESSION['lastName'],
+      'fullName' => $_SESSION['fullName'],
+      'email' => $_SESSION['email'],
+      'eppn' => $_SESSION['eppn'],
+      'username' => $_SESSION['username'],
+      'phpSessionId' => $sid,
+      'loginAllowed' => true,
+      'privileges' => [
+        'createInviteCodes' => false,
+      ]
+    ]);
   }
-  else {
+  else if($cursor != null) {
     //update the mongodb user object with the current phpsessid
     $collection->updateOne(
       ['username' => $_SESSION['username']],

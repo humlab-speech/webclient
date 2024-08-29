@@ -15,6 +15,8 @@ import {
   FormArray,
 } from '@angular/forms';
 import { WebSocketMessage } from '../models/WebSocketMessage';
+import { of, timer } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +34,6 @@ export class ProjectService {
   constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService, private notifierService:NotifierService) {
     this.projects$ = new Subject<Project[]>();
     this.loadingStatus$ = new Subject<string>();
-    //this.fetchProjects();
   }
 
   fetchMembers(projectId) {
@@ -97,64 +98,61 @@ export class ProjectService {
     });
   }
 
-  fetchProjects(forceNewFetch:boolean = false) {
-    
-    return new Observable(sub => {
-      if(this.projectsLoaded && !forceNewFetch) {
-        console.log("Projects already loaded");
-        sub.next(this.projects);
-        sub.complete();
-      }
-      else {
-        let requestId = nanoid();
-        //create a websocket request
-        /*
-        this.systemService.wsSubject.subscribe((data:any) => {
-          if(data.type == "cmd-result" && data.cmd == "fetchProjects") {
-            if(data.requestId == requestId && data.progress == "end") {
-              this.projects = <Project[]>data.result;
 
-              this.projects.forEach(p => {
-                if(typeof p.sessions == "undefined") {
-                  p.sessions = [];
-                }
-              });
+  fetchProjects(forceNewFetch: boolean = false): Observable<Project[]> {
+      return new Observable<Project[]>(sub => {
+          const attemptFetch = () => {
+              // Check that the user is logged in
+              let user = this.userService.getSession();
+              if (!user) {
+                  console.warn("User not logged in while trying to fetch projects");
 
-              this.projectsLoaded = true;
-              sub.next(this.projects);
-              this.projects$.next(this.projects);
-              sub.complete();
-            }
-          }
-        });
-        */
+                  // Retry after 200ms if user is not available
+                  timer(1000).subscribe(() => {
+                      attemptFetch();  // Recursive call to retry
+                  });
 
-        this.systemService.sendCommandToBackend({
-          cmd: "fetchProjects",
-          requestId: requestId
-        }).then((wsMsg:WebSocketMessage) => {
-          console.log(wsMsg)
-          if(wsMsg.message) {
-            return this.notifierService.notify("error", wsMsg.message);
-          }
-          else {
-            this.projects = <Project[]>wsMsg.data.projects;
-
-            this.projects.forEach(p => {
-              if(typeof p.sessions == "undefined") {
-                p.sessions = [];
+                  return;
               }
-            });
 
-            this.projectsLoaded = true;
-            sub.next(this.projects);
-            this.projects$.next(this.projects);
-            sub.complete();
-          }
-        });
+              if (this.projectsLoaded && !forceNewFetch) {
+                  console.log("Projects already loaded");
+                  sub.next(this.projects);
+                  sub.complete();
+              } else {
+                  let requestId = nanoid();
 
-      }
-    });
+                  this.systemService.sendCommandToBackend({
+                      cmd: "fetchProjects",
+                      requestId: requestId
+                  }).then((wsMsg: WebSocketMessage) => {
+                      if (wsMsg.message) {
+                          this.notifierService.notify("error", wsMsg.message);
+                          sub.next([]);
+                          sub.complete();
+                      } else {
+                          this.projects = <Project[]>wsMsg.data.projects || [];
+
+                          this.projects.forEach(p => {
+                              if (typeof p.sessions == "undefined") {
+                                  p.sessions = [];
+                              }
+                          });
+
+                          this.projectsLoaded = true;
+                          sub.next(this.projects);
+                          this.projects$.next(this.projects);
+                          sub.complete();
+                      }
+                  }).catch(err => {
+                      console.error("Error fetching projects", err);
+                      sub.error(err);
+                  });
+              }
+          };
+
+          attemptFetch();  // Initial attempt to fetch projects
+      });
   }
 
   getProjects():Project[] {

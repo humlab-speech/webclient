@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SystemService } from '../../services/system.service';
+import { ProjectService } from '../../services/project.service';
 import { WebSocketMessage } from '../../models/WebSocketMessage';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-invite-code-entry',
@@ -10,10 +12,16 @@ import { WebSocketMessage } from '../../models/WebSocketMessage';
 })
 export class InviteCodeEntryComponent implements OnInit {
   inviteCodeForm: FormGroup;
+  formMessage: string;
 
-  constructor(private fb: FormBuilder, private systemService: SystemService) { }
+  constructor(private fb: FormBuilder, 
+    private systemService: SystemService, 
+    private userService: UserService,
+    private projectService: ProjectService
+  ) { }
 
   ngOnInit(): void {
+    this.formMessage = '';
     this.inviteCodeForm = this.fb.group({
       code: ['', [Validators.required]]
     });
@@ -22,25 +30,38 @@ export class InviteCodeEntryComponent implements OnInit {
   onSubmit(): void {
     if (this.inviteCodeForm.valid) {
       const code = this.inviteCodeForm.get('code').value;
-      console.log(code)
-      //check code against backend - and don't use websockets, use regular http since websockets requires authentication
+      let userSession = this.userService.getSession();
+      
       let data = {
         cmd: "validateInviteCode",
         data: {
-          code: code
+          code: code,
+          session: userSession
         }
       };
 
       this.systemService.sendCommandToBackend(data).then((wsMsg:WebSocketMessage) => {
-        console.log(wsMsg);
+
         if (wsMsg.result) {
           //code is valid
-          //redirect to the registration page
-          window.location.href = '/register';
+          //redirect to base path
+          this.formMessage = 'Your code has been verified. You will be redirected in a few seconds.';
+          
+          setTimeout(() => {
+            console.log("Setting user authentication status to authorized");
+            this.formMessage = '';
+            this.userService.setAuthorizationStatus(true);
+
+            //re-fetch projects
+            this.projectService.fetchProjects(true).subscribe(projects => {
+              console.log(projects);
+            });
+          }, 3000);
+          
         } else {
           //code is invalid
           //display error message
-          alert("Invalid code");
+          this.formMessage = 'We were unable to verify this code. Please contact us at support@humlab.umu.se for assistance.';
         }
       });
 

@@ -19,8 +19,8 @@ export class SystemService {
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
-  userAuthorizationPerformed:boolean = false;
-  public userIsAuthorized:boolean = false;
+  
+  
 
   constructor(private http:HttpClient, private notifierService: NotifierService) {
     this.wsSubject = new Subject<MessageEvent>();
@@ -119,17 +119,27 @@ export class SystemService {
       //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
-          if(data.cmd == "authorization-status" && !data.data.result) {
-            this.userAuthorizationPerformed = true;
-            this.userIsAuthorized = false;
-            this.eventEmitter.emit("userAuthorization");
-            return;
+
+          /*
+          if(data.cmd == "authentication-status") {
+            if(data.data.result) {
+              this.userService.setUserAuthenticationStatus(true);
+              return;
+            }
+            else {
+              this.userService.setUserAuthenticationStatus(false);
+            }
           }
-          else {
-            this.userAuthorizationPerformed = true;
-            this.userIsAuthorized = true;
-            this.eventEmitter.emit("userAuthorization");
+
+          if(data.cmd == "authorization-status") {
+            if(data.data.result) {
+              this.userService.setAuthorizationStatus(true);
+            }
+            else {
+              this.userService.setAuthorizationStatus(false);
+            }
           }
+          */
           
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
@@ -187,7 +197,6 @@ export class SystemService {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = (event) => {
-        console.log('WebSocket connected');
         resolve(); // Resolve the promise when the connection is open
       };
 
@@ -208,18 +217,4 @@ export class SystemService {
     });
   }
 
-  getUserAuthorizationStatus() {
-    if(!this.userAuthorizationPerformed) {
-      return "not performed";
-    }
-    else {
-      if(this.userIsAuthorized) {
-        return "authorized";
-      }
-      else {
-        return "rejected";
-      }
-    }
-    
-  }
 }

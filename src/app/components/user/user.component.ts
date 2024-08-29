@@ -3,6 +3,7 @@ import { UserService } from "../../services/user.service";
 import { UserSession } from "../../models/UserSession";
 import Cookies from 'js-cookie';
 import { ModalService } from '../../services/modal.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user',
@@ -15,16 +16,31 @@ export class UserComponent implements OnInit {
   menuTimeout:any;
   userIsSignedIn:boolean = false;
   showInviteUserDialogToggle:boolean = false;
+  showInviteCodesMenuOption:boolean = false;
 
   constructor(private userService:UserService, private modalService: ModalService) {
   }
 
   ngOnInit(): void {
-    this.userService.fetchSession().subscribe((userSess:any) => {
-      if(userSess.body.eppn) {
+
+    this.userService.sessionObs.subscribe((session:UserSession) => {
+      if(session.eppn != null) {
         this.userIsSignedIn = true;
+        let userSession = this.userService.getSession();
+        console.log("User session", userSession);
+        if(userSession.privileges.createInviteCodes) {
+          this.showInviteCodesMenuOption = true;
+        }
+      }
+      else {
+        this.userIsSignedIn = false;
       }
     });
+
+    let userSession = this.userService.getSession();
+    if(userSession) {
+      this.userIsSignedIn = true;
+    }
   }
 
   onNotify(evt) {
@@ -55,26 +71,27 @@ export class UserComponent implements OnInit {
     this.modalService.showModal("invite-codes-dialog");
   }
 
-  inviteUser() {
-    console.log("Invite user");
-    this.userService.generateInviteCode().subscribe((response:any) => {
+  async signOut() {
+    console.log("Signing out");
+
+    //ask the server to sign us out
+    this.userService.signOut().subscribe((response) => {
       console.log(response);
-      let inviteCode = response.result;
-      console.log(inviteCode);
+      
+      //clear cookies
+      Cookies.set('SessionAccessCode', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
+      Cookies.set('PHPSESSID', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
+      Cookies.set('ProjectId', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
+      
+      document.cookie = "cookieName=SessionAccessCode; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "cookieName=PHPSESSID; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "cookieName=ProjectId; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      if(environment.production) {
+        window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
+      }
     });
-  }
-
-  signOut() {
-    //clear cookies
-    Cookies.set('SessionAccessCode', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
-    Cookies.set('PHPSESSID', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
-    Cookies.set('ProjectId', '', { domain: window.location.hostname, secure: true, sameSite: 'None' });
     
-    document.cookie = "cookieName=SessionAccessCode; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "cookieName=PHPSESSID; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "cookieName=ProjectId; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
   }
 
 }

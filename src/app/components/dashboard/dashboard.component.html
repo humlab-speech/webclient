@@ -1,13 +1,13 @@
 <div id="dashboard">
     <div id="main-content">
         <!--
-        <div id="final-authentication" *ngIf="userIsSignedIn">
+        <div id="final-authentication" *ngIf="userIsAuthenticated">
             <img src="assets/loading-indicator-4-dark.svg">
             <p>Performing final authentication</p>
         </div>
         -->
 
-        <div id="signed-out-content-container" *ngIf="!userIsSignedIn && userSignedInCheckPerformed && signInTimeoutExpired">
+        <div id="signed-out-content-container" *ngIf="!userIsAuthenticated && userAuthenticationCheckPerformed">
             <div *ngIf="applicationName == 'Visible Speech'" id="about-container">
                 <h2>About</h2>
                 Visible Speech is a collection of research tools for speech analysis.
@@ -34,10 +34,12 @@
             </div>
         </div>
         -->
-        
-        <div id="userFailedAccessListCheckContainer" *ngIf="userIsSignedIn && !userIsAuthorized">
+        <div id="userFailedAccessListCheckContainer" *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized">
+            
             <h2>Missing access grant</h2>
-            <p>If you have an invite code to this system, please enter it below.</p>
+
+            <p>You have successfully authenticated yourself, but you still lack the authorization to use this system.
+            This is normally provided via invite codes, if you have such a code, please enter it below.</p>
             <app-invite-code-entry></app-invite-code-entry>
             <p>If you do not have an invite code and you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.</p>
         </div>

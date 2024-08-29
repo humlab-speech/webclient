@@ -8,7 +8,7 @@
     </div>
 
     <ul *ngIf="accountMenuVisible" class="account-menu-dropdown">
-        <li (click)="showInviteCodesDialog()"><i class="fa fa-envelope" aria-hidden="true"></i> Invite user</li>
+        <li *ngIf="showInviteCodesMenuOption" (click)="showInviteCodesDialog()"><i class="fa fa-envelope" aria-hidden="true"></i> Invite user</li>
         <li (click)="signOut()"><i class="fa fa-sign-out" aria-hidden="true"></i> Sign out</li>
     </ul>
 </div>

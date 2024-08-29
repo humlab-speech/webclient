@@ -4,5 +4,7 @@ export class UserSession {
     lastName:string;
     fullName:string;
     email:string;
+    eppn:string;
     username:string;
+    privileges:any;
 }
