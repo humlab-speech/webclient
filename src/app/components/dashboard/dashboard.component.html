@@ -11,8 +11,7 @@
             <div *ngIf="applicationName == 'Visible Speech'" id="about-container">
                 <h2>About</h2>
                 Visible Speech is a collection of research tools for speech analysis.
-                If you do not have an account, you may visit the <a href="https://visp-demo.humlab.umu.se">demo-site</a> for a tour of its capabilties. If you wish to setup a project on the live system, 
-                please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
+                If you wish to have access to the system, please get in touch with us at <a href="mailto:support@humlab.umu.se">support@humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
             </div>
             <div *ngIf="applicationName == 'DataLab'" id="about-container">
                 <h2>About</h2>
@@ -22,7 +21,7 @@
             <app-signin-ctrl></app-signin-ctrl>
         </div>
         
-        <app-project-manager *ngIf="userIsAuthorized" [dashboard]="this"></app-project-manager>
+        <app-project-manager *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized" [dashboard]="this"></app-project-manager>
 
         <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
         

@@ -24,7 +24,7 @@ export class UserComponent implements OnInit {
   ngOnInit(): void {
 
     this.userService.sessionObs.subscribe((session:UserSession) => {
-      if(session.eppn != null) {
+      if(session && session.eppn != null) {
         this.userIsSignedIn = true;
         let userSession = this.userService.getSession();
         console.log("User session", userSession);

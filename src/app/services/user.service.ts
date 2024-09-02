@@ -26,8 +26,12 @@ export class UserService {
   
   constructor(private http:HttpClient, private systemService:SystemService) {
     this.sessionObs = new Subject();
-    this.authenticateUser();
-    this.authorizeUser();
+    this.authenticateUser().then((result:boolean) => {
+      if(result) {
+        this.authorizeUser();
+      }
+    });
+    
 
     this.fetchSession().subscribe((response:UserSession) => {
       this.importSession(<UserSession>response);
@@ -47,16 +51,21 @@ export class UserService {
     window.location.href = '/DS/Login'; //This url does not exist in the application, it is specified in apache as the trigger-url for shibboleth auth
   }
 
-  async authenticateUser() {
-    this.systemService.sendCommandToBackend({cmd: "authenticateUser", data: {}}).then((response:WebSocketMessage) => {
-      if(response.data.msg == "Authenticated") {
+  async authenticateUser():Promise<boolean> {
+    try {
+      const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: {} });
+      if (response.data.msg === "Authenticated") {
         this.setUserAuthenticationStatus(true);
-      }
-      else {
+        return true;
+      } else {
         this.setUserAuthenticationStatus(false);
+        return false;
       }
-    });
-
+    } catch (error) {
+      // Handle error if necessary
+      this.setUserAuthenticationStatus(false);
+      return false;  // or rethrow the error depending on your needs
+    }
   }
 
   async authorizeUser() {
