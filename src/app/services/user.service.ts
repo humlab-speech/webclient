@@ -20,7 +20,8 @@ export class UserService {
   session:UserSession = null;
   //public sessionObs:Observable<UserSession>;
   public sessionObs:Subject<UserSession>;
-  userAuthorizationPerformed:boolean = false;
+  userAuthorizationCheckPerformed:boolean = false;
+  userAuthenticationCheckPerformed:boolean = false;
   public userIsAuthenticated:boolean = false; //do we know who this user is?
   public userIsAuthorized:boolean = false; //does this user have access to the system?
   
@@ -88,6 +89,7 @@ export class UserService {
     else {
       this.userIsAuthenticated = false;
     }
+    this.userAuthenticationCheckPerformed = true;
     this.eventEmitter.emit("userAuthentication");
   }
 
@@ -99,11 +101,12 @@ export class UserService {
     else {
       this.userIsAuthorized = false;
     }
+    this.userAuthorizationCheckPerformed = true;
     this.eventEmitter.emit("userAuthorization");
   }
 
   getUserAuthorizationStatus() {
-    if(!this.userAuthorizationPerformed) {
+    if(!this.userAuthorizationCheckPerformed) {
       return "not performed";
     }
     else {

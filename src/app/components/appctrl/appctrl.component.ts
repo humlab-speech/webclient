@@ -131,13 +131,20 @@ export class AppctrlComponent implements OnInit {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
 
-    this.systemService.sendCommandToBackend({
+    this.systemService.sendCommandToBackendObservable({
       cmd: "launchContainerSession",
       projectId: this.project.id,
       appName: appName
-    }).then((wsMsg:WebSocketMessage) => {
-      if(wsMsg.progress == "end" && wsMsg.data) {
-        let sessionAccessCode = wsMsg.data;
+    }).subscribe((wsMsg:WebSocketMessage) => {
+      if(!wsMsg.result) {
+        this.notifier.notify("error", "Error: "+wsMsg.message);
+        return;
+      }
+      if(wsMsg.progress == "update") {
+        this.statusMsg = wsMsg.message;
+      }
+      if(wsMsg.progress == "end") {
+        let sessionAccessCode = wsMsg.message;
         if(!sessionAccessCode) {
           this.notifier.notify("error", "No sessionAccessCode received.");
           return;
@@ -153,11 +160,7 @@ export class AppctrlComponent implements OnInit {
   
         this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
       }
-      else {
-        this.notifier.notify("error", wsMsg.message);
-      }
     });
-
   }
 
   launchContainerSessionOLD(appName) {
@@ -275,7 +278,7 @@ export class AppctrlComponent implements OnInit {
       cmd: "closeSession",
       sessionAccessCode: sessionAccessCode
     }).then((data:WebSocketMessage) => {
-      if(data.progress == "end" && data.message == "Session deleted") {
+      if(data.progress == "end" && data.result) {
         this.statusMsg = "";
         this.showLoadingIndicator = false;
         

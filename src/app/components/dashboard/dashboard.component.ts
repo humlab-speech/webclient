@@ -53,7 +53,10 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
-    
+
+    this.userAuthenticationCheckPerformed = userService.userAuthenticationCheckPerformed;
+    this.userIsAuthenticated = userService.userIsAuthenticated;
+    this.userIsAuthorized = userService.userIsAuthorized;
   }
 
   ngOnInit(): void {

@@ -106,7 +106,59 @@ export class SystemService {
     return this.ws;
   }
 
-  sendCommandToBackendObservable(command) {
+  sendCommandToBackendObservable(command): Observable<WebSocketMessage> {
+    if(!command.requestId) {
+      command.requestId = nanoid();
+    }
+
+    return new Observable((observer) => {
+      //hook onto the websocket and listen for the response
+      let obs = this.wsSubject.subscribe({
+        next: (data:any) => {
+          
+          let expectedCmd = command.cmd;
+          if(command.cmd == "route-to-ca") {
+            expectedCmd = command.caCmd;
+          }
+
+          if(typeof data.requestId == "undefined") {
+            console.warn("sendCommandToBackendObservable received return-data without requestId, the command was: "+data.cmd+", expected: "+expectedCmd);
+            return;
+          }
+
+          if(data.requestId === command.requestId) {
+            if(data.cmd != expectedCmd) {
+              console.error("sendCommandToBackendObservable received return-data from another operation, the command was: "+data.cmd+", expected: "+expectedCmd);
+              observer.error();
+              return;
+            }
+
+            observer.next(data);
+          }
+
+        },
+        error: (err) => {
+          console.error(err);
+          observer.error(err);
+        }
+      });
+  
+      if(this.ws != null && this.ws.readyState == 1) {
+        this.ws.send(JSON.stringify(command));
+      }
+      else {
+        let sendAttemptInterval = setInterval(() => {
+          if(this.ws.readyState == 3) { //3 == CLOSED
+            this.initWebSocket();
+          }
+          if(this.ws != null && this.ws.readyState == 1) {
+            this.ws.send(JSON.stringify(command));
+            clearInterval(sendAttemptInterval);
+          }
+        }, 1000);
+      }
+
+    });
   }
 
   async sendCommandToBackend(command): Promise<WebSocketMessage> {
@@ -119,27 +171,6 @@ export class SystemService {
       //hook onto the websocket and listen for the response
       let obs = this.wsSubject.subscribe({
         next: (data:any) => {
-
-          /*
-          if(data.cmd == "authentication-status") {
-            if(data.data.result) {
-              this.userService.setUserAuthenticationStatus(true);
-              return;
-            }
-            else {
-              this.userService.setUserAuthenticationStatus(false);
-            }
-          }
-
-          if(data.cmd == "authorization-status") {
-            if(data.data.result) {
-              this.userService.setAuthorizationStatus(true);
-            }
-            else {
-              this.userService.setAuthorizationStatus(false);
-            }
-          }
-          */
           
           let expectedCmd = command.cmd;
           if(command.cmd == "route-to-ca") {
