@@ -32,6 +32,11 @@ export class InviteCodeEntryComponent implements OnInit {
       const code = this.inviteCodeForm.get('code').value;
       let userSession = this.userService.getSession();
       
+      if(userSession == null) {
+        console.error("User session is null");
+        return;
+      }
+      
       let data = {
         cmd: "validateInviteCode",
         data: {

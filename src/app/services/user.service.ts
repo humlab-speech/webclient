@@ -190,6 +190,7 @@ export class UserService {
       this.systemService.sendCommandToBackend({cmd: "getSession", data: {
         phpSessId: phpSessId
       }}).then((response:WebSocketMessage) => {
+        this.setSession(<UserSession>response.data);
         observer.next(<UserSession>response.data);
         observer.complete();
       });
