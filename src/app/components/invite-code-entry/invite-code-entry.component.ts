@@ -56,9 +56,11 @@ export class InviteCodeEntryComponent implements OnInit {
             console.log("Setting user authentication status to authorized");
             this.formMessage = '';
             this.userService.setAuthorizationStatus(true);
+            console.log("Fetching user session");
             this.userService.fetchSession().subscribe(session => {
               console.log("User session", session);
               //re-fetch projects
+              console.log("Fetching projects");
               this.projectService.fetchProjects(true).subscribe(projects => {
                 console.log(projects);
               });
