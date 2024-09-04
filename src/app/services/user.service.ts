@@ -185,7 +185,7 @@ export class UserService {
 
   fetchSession():Observable<UserSession> {
     let phpSessId = this.getCookie("PHPSESSID");
-
+    console.log(phpSessId);
     return new Observable<UserSession>((observer) => {
       this.systemService.sendCommandToBackend({cmd: "getSession", data: {
         phpSessId: phpSessId

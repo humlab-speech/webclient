@@ -57,6 +57,7 @@ export class InviteCodeEntryComponent implements OnInit {
             this.formMessage = '';
             this.userService.setAuthorizationStatus(true);
             this.userService.fetchSession().subscribe(session => {
+              console.log("User session", session);
               //re-fetch projects
               this.projectService.fetchProjects(true).subscribe(projects => {
                 console.log(projects);
