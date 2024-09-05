@@ -107,7 +107,7 @@ export class ProjectService {
               if (!user) {
                   console.warn("User not logged in while trying to fetch projects");
 
-                  // Retry after 200ms if user is not available
+                  // Retry if user is not available
                   timer(1000).subscribe(() => {
                       attemptFetch();  // Recursive call to retry
                   });

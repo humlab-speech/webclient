@@ -60,10 +60,12 @@ export class InviteCodeEntryComponent implements OnInit {
             this.userService.fetchSession().subscribe(session => {
               console.log("User session", session);
               //re-fetch projects
+              /*
               console.log("Fetching projects");
               this.projectService.fetchProjects(true).subscribe(projects => {
                 console.log(projects);
               });
+              */
             });
             
           }, 3000);

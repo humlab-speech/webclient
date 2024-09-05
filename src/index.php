@@ -73,6 +73,8 @@ if($shibHeadersFound) {
 //addLog("get: ".$_GET['login'], "debug");
 //addLog("env: ".getenv("TEST_USER_LOGIN_KEY"), "debug");
 
+$autoCreate = false;
+
 if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
   if($_GET['user'] == "test2") {
     addLog("Starting session for testuser2@example.com", "info");
@@ -113,7 +115,7 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
     $_SESSION['eppn'] = "testuser@example.com";
     $_SESSION['username'] = formatEppn($_SESSION['eppn']);
     $_SESSION['testUser'] = true;
-    $_SESSION['autoCreate'] = true;
+    $autoCreate = true;
   }
 }
 else {
@@ -129,8 +131,9 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   $database = $client->selectDatabase('visp');
   $collection = $database->selectCollection('users');
   $cursor = $collection->findOne(['username' => $_SESSION['username']]);
-  if($cursor == null && $_SESSION['testUser'] && $_SESSION['autoCreate']) { //empty result / not found
+  if($cursor == null) { //empty result / not found
     //create the mongodb entry
+    
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
       'lastName' => $_SESSION['lastName'],
@@ -139,11 +142,12 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       'eppn' => $_SESSION['eppn'],
       'username' => $_SESSION['username'],
       'phpSessionId' => $sid,
-      'loginAllowed' => true,
+      'loginAllowed' => false,
       'privileges' => [
         'createInviteCodes' => false,
       ]
     ]);
+    
   }
   else if($cursor != null) {
     //update the mongodb user object with the current phpsessid
@@ -174,6 +178,22 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   <link rel="stylesheet" href="../node_modules/font-awesome/scss/font-awesome.scss">
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>
+    window.visp = {
+      projectName: "<?php echo $_SESSION['projectName']; ?>",
+      username: "<?php echo $_SESSION['username']; ?>",
+      eppn: "<?php echo $_SESSION['eppn']; ?>",
+      firstName: "<?php echo $_SESSION['firstName']; ?>",
+      lastName: "<?php echo $_SESSION['lastName']; ?>",
+      fullName: "<?php echo $_SESSION['fullName']; ?>",
+      email: "<?php echo $_SESSION['email']; ?>",
+      phpSessionId: "<?php echo $sid; ?>",
+      shibSessionId: "<?php echo $_SESSION['shibSessionId']; ?>",
+      shibSessionExpires: "<?php echo $_SESSION['shibSessionExpires']; ?>",
+      shibSessionInactivity: "<?php echo $_SESSION['shibSessionInactivity']; ?>",
+      shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
+    };
+  </script>
 </head>
 <body>
   <app-root></app-root>

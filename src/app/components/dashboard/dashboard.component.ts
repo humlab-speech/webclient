@@ -5,7 +5,6 @@ import { NotifierService } from 'angular-notifier';
 import { SystemService } from '../../services/system.service';
 import { ModalService } from '../../services/modal.service';
 import { environment } from 'src/environments/environment';
-import { nanoid } from 'nanoid';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,12 +22,16 @@ export class DashboardComponent implements OnInit {
   gitlabReady:boolean = false;
   systemService:any = null;
   applicationName:string = environment.APPLICATION_NAME;
+  userFullName:string = "";
+  userSession:UserSession;
 
   private readonly notifier: NotifierService;
 
   constructor(private userService:UserService, notifierService: NotifierService, systemService: SystemService, private modalService: ModalService) {
     this.notifier = notifierService;
     this.systemService = systemService;
+
+    this.userFullName = (window as any).visp.fullName;
 
     userService.eventEmitter.subscribe((event) => {
       if(event == "userAuthentication") {
@@ -38,6 +41,7 @@ export class DashboardComponent implements OnInit {
         }
         else {
           this.userIsAuthenticated = true;
+          this.userSession = userService.getSession();
           console.log("Received userAuthentication event, user is now authenticated");
         }
         this.userAuthenticationCheckPerformed = true;
@@ -49,6 +53,7 @@ export class DashboardComponent implements OnInit {
         }
         else {
           this.userIsAuthorized = true;
+          this.userSession = userService.getSession();
           console.log("Received userAuthorization event, user is now authorized");
         }
       }

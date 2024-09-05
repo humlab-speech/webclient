@@ -54,7 +54,7 @@ export class UserService {
 
   async authenticateUser():Promise<boolean> {
     try {
-      const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: {} });
+      const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: (window as any).visp });
       if (response.data.msg === "Authenticated") {
         this.setUserAuthenticationStatus(true);
         return true;
@@ -185,7 +185,6 @@ export class UserService {
 
   fetchSession():Observable<UserSession> {
     let phpSessId = this.getCookie("PHPSESSID");
-    console.log(phpSessId);
     return new Observable<UserSession>((observer) => {
       this.systemService.sendCommandToBackend({cmd: "getSession", data: {
         phpSessId: phpSessId

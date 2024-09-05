@@ -20,10 +20,6 @@ export class ProjectManagerComponent implements OnInit {
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) {
     
-    userService.eventEmitter.subscribe((event) => {
-      console.log(event);
-    });
-    
   }
 
   ngOnInit():void {
@@ -58,36 +54,18 @@ export class ProjectManagerComponent implements OnInit {
       this.projectsLoaded = true;
     });
 
-    
-    let getUserInterval = setInterval(() => {
-      let userSession = this.userService.getSession();
-      if(userSession) {
-        clearInterval(getUserInterval);
-      }
-
-      this.projectService.fetchProjects(true).subscribe(projects => {
-        this.projects = <Project[]>projects;
-        this.projectsLoaded = true;
-      });
-
-    }, 100);
-
-    /*
     this.userService.eventEmitter.subscribe((event) => {
-      console.log(event);
-    });
-
-    this.userService.sessionObs.subscribe((session) => {
-      console.log(session);
-      if(session) {
+      if(event == "userAuthorization" && !this.projectsLoaded) {
         this.projectService.fetchProjects(true).subscribe(projects => {
-          this.projects = <Project[]>projects;
-          this.projectsLoaded = true;
         });
       }
     });
-    */
-    
+
+    let userSession = this.userService.getSession();
+    if(userSession) {
+      this.projectService.fetchProjects(true).subscribe(projects => {
+      });
+    }
   }
 
   showSessionsDialog() {

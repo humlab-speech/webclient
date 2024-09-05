@@ -77,10 +77,11 @@ export class UserComponent implements OnInit {
     //ask the server to sign us out
     this.userService.signOut().subscribe((response) => {
       console.log(response);
-      
+      console.log('.'+window.location.hostname);
       //clear cookies
       Cookies.set('SessionAccessCode', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
       Cookies.set('PHPSESSID', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
+      Cookies.set('PHPSESSID', '', { domain: '.'+window.location.hostname, path: '/', secure: true, sameSite: 'None' });
       Cookies.set('ProjectId', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
       
       document.cookie = "cookieName=SessionAccessCode; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -89,6 +90,9 @@ export class UserComponent implements OnInit {
 
       if(environment.production) {
         window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
+      }
+      else {
+        window.location.href = '/';
       }
     });
     
