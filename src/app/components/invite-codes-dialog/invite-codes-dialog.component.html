@@ -16,7 +16,7 @@
 
         <form [formGroup]="inviteCodesForm">
             <table formArrayName="inviteCodes">
-                <thead>
+                <thead *ngIf="inviteCodes.controls.length > 0">
                     <th>Invite code</th>
                     <th>Status</th>
                     <th>Auto-join project</th>
