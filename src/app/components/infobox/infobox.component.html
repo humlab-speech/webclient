@@ -21,6 +21,12 @@
         <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
             <ul>
 
+                <li class="link-button">
+                    <a (click)="tutorial()">
+                        <i class="fa fa-info-circle" aria-hidden="true"></i><div>VISP Tutorial</div>
+                    </a>
+                </li>
+
                 <li *ngIf="emuWebAppEnabled" class="link-button">
                     <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual" target="_blank">
                         <i class="fa fa-book" aria-hidden="true"></i><div>EMU Manual</div>

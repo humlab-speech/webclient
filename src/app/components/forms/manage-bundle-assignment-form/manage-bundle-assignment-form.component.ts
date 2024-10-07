@@ -112,7 +112,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
       let member = this.project.members[key];
       let bundleListResponse:WebSocketMessage = await this.fetchBundleList(member.username);
 
-      if(bundleListResponse.data == null) {
+      if(!bundleListResponse.result) {
         this.notifierService.notify("warning", "Couldn't fetch bundle list for user "+member.username);
         continue;
       }
@@ -122,7 +122,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
         if(memberGroup.get('username').value != member.username) {
           return;
         }
-        bundleListResponse.data.bundles.forEach((bundleListItem) => {
+        bundleListResponse.data.data.bundles.forEach((bundleListItem) => {
           (memberGroup.get('sessions') as FormArray).controls.forEach((sessionGroup, sessionIndex) => {
             let sessionName = sessionGroup.get('name').value;
             if(bundleListItem.session == sessionName) {

@@ -49,6 +49,7 @@ import { ManageBundleAssignmentFormComponent } from './components/forms/manage-b
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { InviteCodesDialogComponent } from './components/invite-codes-dialog/invite-codes-dialog.component';
 import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-code-entry.component';
+import { HelpDialogComponent } from './components/help-dialog/help-dialog.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +81,7 @@ import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-
     ManageBundleAssignmentFormComponent,
     InviteCodesDialogComponent,
     InviteCodeEntryComponent,
+    HelpDialogComponent,
   ],
   imports: [
     CommonModule,

@@ -94,23 +94,33 @@ export class AppctrlComponent implements OnInit {
     switch(this.hsApp.name) {
       case "rstudio":
         this.launchContainerSession("rstudio");
+        this.systemService.setCurrentApplication("rstudio");
       break;
       case "emu-webapp":
         this.launchEmuWebAppSession();
+        this.systemService.setCurrentApplication("emu-webapp");
       break;
       case "octra":
         this.launchOctraSession();
+        this.systemService.setCurrentApplication("octra");
       break;
       case "jupyter":
         this.launchContainerSession("jupyter");
+        this.systemService.setCurrentApplication("jupyter");
         break;
       case "vscode":
         this.launchContainerSession("vscode");
+        this.systemService.setCurrentApplication("vscode");
       break;
       case "script":
         this.showScriptAppDialog();
+        this.systemService.setCurrentApplication("script");
       break;
     }
+
+    //send event signaling that the app has been launched
+    window.dispatchEvent(new Event('app-launched'));
+    window.dispatchEvent(new Event('app-launched-'+this.hsApp.name));
   }
 
   showScriptAppDialog() {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-container-session-render',
@@ -8,8 +9,12 @@ import { Component, OnInit } from '@angular/core';
 export class ContainerSessionRenderComponent implements OnInit {
   public token:string = "";
   public showLoadingIndicator:boolean = true;
+  private modalService: ModalService;
+  public modalActive:boolean = false;
+  public modalName:string = "";
 
-  constructor() {
+  constructor(modalService: ModalService) {
+    this.modalService = modalService;
     let token = window.location.search.substr(window.location.search.indexOf("token=")+6);
     this.token = token;
   }
@@ -35,5 +40,16 @@ export class ContainerSessionRenderComponent implements OnInit {
         break;
     }
     
+
+    this.modalService.displayModal$.subscribe(modal => {
+      this.modalActive = modal.active;
+      this.modalName = modal.modalName;
+    });
   }
+
+  openModal() {
+    console.log("Opening modal");
+    this.modalService.showModal("invite-codes-dialog");
+  }
+  
 }

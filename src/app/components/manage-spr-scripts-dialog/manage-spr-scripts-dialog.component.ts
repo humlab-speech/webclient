@@ -191,7 +191,7 @@ export class ManageSprScriptsDialogComponent implements OnInit {
     this.projectService.saveSprScripts(user.username, this.form.value.scripts).subscribe((response) => {
       console.log(response);
       this.projectManager.dashboard.modalActive = false;
-      this.notifierService.notify("success", "Scripts saved successfully.");
+      this.notifierService.notify("info", "Scripts saved successfully.");
     });
 
   }

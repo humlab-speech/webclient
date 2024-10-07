@@ -467,6 +467,10 @@ export class ProjectService {
               msg: "Project saved",
               progressPercentage: 100
             });
+
+            //send out an event signaling that the project has been saved
+            window.dispatchEvent(new CustomEvent('projectSaved', { detail: { projectId: data.result.projectId } }));
+
             subscriber.complete();
           }
           else {

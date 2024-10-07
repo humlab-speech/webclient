@@ -2,5 +2,9 @@
     <div id="loading-indicator-container" *ngIf="showLoadingIndicator">
         <img src="/assets/loading-indicator-4-dark.svg">
     </div>
+
     <iframe id="proxied-container" src=""></iframe>
+
+    <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
+    <app-help-dialog *ngIf="(modalActive && modalName=='help-dialog')"></app-help-dialog>
 </div>

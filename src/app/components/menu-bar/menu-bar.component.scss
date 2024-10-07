@@ -80,3 +80,12 @@
     height:70%;
     object-fit: contain;
 }
+
+#tutorial-button {
+    color: #fff;
+    cursor: pointer;
+}
+
+#tutorial-button > span {
+    margin-left: .3em;
+}

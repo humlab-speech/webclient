@@ -39,6 +39,7 @@
     "ngx-popperjs": "^13.0.0",
     "normalize.css": "^8.0.1",
     "rxjs": "^7.5.7",
+    "shepherd.js": "^13.0.3",
     "speechrecorderng": "^3.0.1",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"

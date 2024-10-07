@@ -9,7 +9,7 @@ export class ModalService {
   displayModal$ = this.displayModalSource.asObservable();
 
   showModal(modalName:string) {
-    console.log("showing modal");
+    console.log("showing modal", modalName);
     this.displayModalSource.next({
       modalName: modalName,
       active: true

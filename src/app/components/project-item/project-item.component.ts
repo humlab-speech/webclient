@@ -65,7 +65,7 @@ export class ProjectItemComponent implements OnInit {
       if(hsAppName == "emu-webapp") {
         let emuWebApp = new HsApp();
         emuWebApp.name = "emu-webapp";
-        emuWebApp.title = "EMU-WebApp";
+        emuWebApp.title = "Transcription tool";
         emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
         emuWebApp.disabled = this.shouldAppBeDisabled(emuWebApp.name);
         this.hsApplications.push(emuWebApp);
@@ -73,7 +73,7 @@ export class ProjectItemComponent implements OnInit {
       if(hsAppName == "jupyter") {
         let jupyterApp = new HsApp();
         jupyterApp.name = "jupyter";
-        jupyterApp.title = "Jupyter";
+        jupyterApp.title = "Notebook tool";
         jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
         jupyterApp.disabled = this.shouldAppBeDisabled(jupyterApp.name);
 

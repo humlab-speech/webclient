@@ -71,6 +71,10 @@ export class UserComponent implements OnInit {
     this.modalService.showModal("invite-codes-dialog");
   }
 
+  showHelpDialog() {
+    this.modalService.showModal("help-dialog");
+  }
+
   async signOut() {
     console.log("Signing out");
 

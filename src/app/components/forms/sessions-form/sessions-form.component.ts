@@ -567,7 +567,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         console.log("upload done");
       })
     }
-    
+
+    //dispatch event
+    window.dispatchEvent(new Event('audioUpload'));    
   }
 
   async uploadFile(file:File, session) {

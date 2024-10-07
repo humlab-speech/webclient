@@ -20,12 +20,22 @@ export class SystemService {
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
   
-  
 
   constructor(private http:HttpClient, private notifierService: NotifierService) {
     this.wsSubject = new Subject<MessageEvent>();
 
     this.initWebSocket();
+  }
+
+  setCurrentApplication(app) {
+    this.eventEmitter.emit(app);
+
+    //set cookie
+    Cookies.set('CurrentApplication', app, { domain: window.location.hostname, secure: true, sameSite: 'None' });
+  }
+
+  getCurrentApplication() {
+    return Cookies.get('CurrentApplication');
   }
 
   async fetchOperationsSession(projectId) {
