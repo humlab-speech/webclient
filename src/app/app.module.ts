@@ -50,6 +50,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { InviteCodesDialogComponent } from './components/invite-codes-dialog/invite-codes-dialog.component';
 import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-code-entry.component';
 import { HelpDialogComponent } from './components/help-dialog/help-dialog.component';
+import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +83,7 @@ import { HelpDialogComponent } from './components/help-dialog/help-dialog.compon
     InviteCodesDialogComponent,
     InviteCodeEntryComponent,
     HelpDialogComponent,
+    HelpCtrlComponent,
   ],
   imports: [
     CommonModule,

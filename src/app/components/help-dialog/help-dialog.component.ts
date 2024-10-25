@@ -21,6 +21,27 @@ export class HelpDialogComponent implements OnInit {
       },
       useModalOverlay: true
     });
+
+  }
+
+  getCurrentNavigation() {
+    let app = this.modalService.getCurrentNavigation();
+    if(app == "") {
+      //fall back to getting the cookie: CurrentApplication
+
+      let cookie = document.cookie;
+      let cookieArray = cookie.split(';');
+      let currentApplication = "";
+      cookieArray.forEach(element => {
+        if(element.includes("CurrentApplication")) {
+          currentApplication = element.split('=')[1];
+        }
+      });
+
+      app = currentApplication;
+    }
+
+    return app;
   }
 
   ngOnInit(): void {

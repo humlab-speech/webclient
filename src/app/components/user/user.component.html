@@ -1,15 +1,15 @@
 <div class="account" *ngIf="userIsSignedIn" (mouseover)="showAccountMenu(true)" (mouseout)="showAccountMenu(false, true)">
     <div class="account-container">
-        <h2 class="user-displayname" (notify)="onNotify($event)">
+        <div class="user-displayname" (notify)="onNotify($event)">
             <i class="fa fa-user-circle-o" aria-hidden="true"></i>
             &nbsp;
             {{ getUserDisplayName() }}
-        </h2>
+        </div>
     </div>
 
     <ul *ngIf="accountMenuVisible" class="account-menu-dropdown">
         <li *ngIf="showInviteCodesMenuOption" (click)="showInviteCodesDialog()"><i class="fa fa-envelope" aria-hidden="true"></i> Invite user</li>
-        <!--<li (click)="showHelpDialog()"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</li>-->
+        <li (click)="showHelpDialog()"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</li>
         <li (click)="signOut()"><i class="fa fa-sign-out" aria-hidden="true"></i> Sign out</li>
     </ul>
 </div>

@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
+import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
   selector: 'app-appctrl',
@@ -26,6 +27,7 @@ export class AppctrlComponent implements OnInit {
   private projectService: ProjectService;
   private readonly notifier: NotifierService;
   private systemService: SystemService;
+  private modalService: ModalService;
 
   showLoadingIndicator:boolean = false;
   hasRunningSessions:boolean = false;
@@ -35,12 +37,21 @@ export class AppctrlComponent implements OnInit {
   domain:string = window.location.hostname;
   showSaveButton:boolean = true;
 
-  constructor(private http:HttpClient, notifierService: NotifierService, userService: UserService, projectService: ProjectService, systemService: SystemService, private router: Router) {
+  constructor(
+    private http:HttpClient, 
+    notifierService: NotifierService, 
+    userService: UserService, 
+    projectService: ProjectService, 
+    systemService: SystemService, 
+    private router: Router,
+    modalService: ModalService
+  ) {
     this.notifier = notifierService;
     this.userService = userService;
     this.projectService = projectService;
     this.systemService = systemService;
     this.router = router;
+    this.modalService = modalService;
   }
 
   ngOnInit(): void {
@@ -79,6 +90,8 @@ export class AppctrlComponent implements OnInit {
   }
 
   launchProjectInApp() {
+
+    this.modalService.setCurrentNavigation(this.hsApp.name);
 
     let showStoppers = this.preFlightChecks();
     if(showStoppers.length > 0) {

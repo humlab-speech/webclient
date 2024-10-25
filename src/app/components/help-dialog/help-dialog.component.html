@@ -9,24 +9,59 @@
 
         <div class="dialog-content">
             <div class="help-content">
-                <h2>What is this?</h2>
+                
+                <div *ngIf="getCurrentNavigation() == 'emu-webapp'">
+                    <h2>What is this?</h2>
+                    You are now running the EMU-webApp, which is a "browser-based labeling and correction tool that offers a multitude of labeling and visualization features".
+
+                    <h2>How to use this tool</h2>
+                </div>
+
+                <div *ngIf="getCurrentNavigation() == 'jupyter'">
+                    <h2>What is this?</h2>
+                    You are now running the Jupyter notebook application.
+                    Using the emuR library, you can load your Emu-R database and perform various analyses on it.
+                    The code you run here is executed on the VISP server and not on your local machine.
+
+                    <h2>How to use this tool</h2>
+<pre>
+Write your code in the editor on the right side of the screen.
+On your left you will see your project directory.
+
+You need to save your work in order for it to be stored on the VISP server. 
+You can go back and forth between the dashboard and the Jupyter session without losing your work.
+However, the system will periodically shut down idle sessions, so save your work and don't count on your session being available
+the next time you login.
+</pre>
+                </div>
+
+                <div *ngIf="getCurrentNavigation() == 'rstudio'">
+
+                    <h2>What is this?</h2>
                 You are now running RStudio with access to your project.
-                The code you run here will be executed on the server and you can use this to analyze your data.
+                Using the emuR library, you can load your Emu-R database and perform various analyses on it.
+                The code you run here is executed on the VISP server and not on your local machine.
 
                 <h2>How to use this tool</h2>
-                Write your code in the editor on the left side of the screen.
-                On your lower right you will see your project directory.
+<pre>
+Write your code in the editor on the left side of the screen.
+On your lower right you will see your project directory.
+
+You need to save your work in order for it to be stored on the VISP server. 
+You can go back and forth between the dashboard and the RStudio session without losing your work.
+However, the system will periodically shut down idle sessions, so save your work and don't count on your session being available
+the next time you login.
+
+Please see <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/" target="_blank">The EMU-SDMS Manual</a> for more information on how to use the emuR library.
+</pre>
                 
-                Don't forget to save your work by clicking the save button before shutting down your RStudio session.
-                You can go back to the dashboard by clicking the "Back to dashboard" button on the top right corner of the screen.
-                This will not cause you to lose your work since you can rejoin the session later as long as it is still running, however,
-                the Visible Speech system will periodically shut down idle sessions to save resources, 
-                so please save your work and try not to rely on your session still running when you come back next time.
-                
+                </div>
+
+                <div *ngIf="getCurrentNavigation() == 'jupyter' || getCurrentNavigation() == 'rstudio'">
                 <h2>Code examples</h2>
                 <ul>
                     <li>
-                        Loading your Emu-R database:
+                        <h3>Loading your Emu-R database</h3>
                         <div class="code-container">
                         <pre><code id="code1">
 # Load the emuR library
@@ -41,7 +76,7 @@ db_handle <- load_emuDB(db_path)
                     </li>
 
                     <li>
-                        View the sessions in your database:
+                        <h3>View the sessions in your database</h3>
                         <div class="code-container">
                         <pre><code id="code2">
 # View the sessions in your loaded Emu-R database
@@ -53,7 +88,7 @@ print(sessions)
                     </li>
 
                     <li>
-                        Plot the dataset:
+                        <h3>Plot the dataset</h3>
                         <div class="code-container">
                         <pre><code id="code3">
 # Plot the first segment's spectrogram
@@ -63,6 +98,7 @@ plot(seg_list[1, ])
                         </div>
                     </li>
                 </ul>
+            </div>
 
 
                 <!--<span (click)="startTour()">Tutorial</span>-->

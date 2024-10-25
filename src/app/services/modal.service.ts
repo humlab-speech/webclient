@@ -7,6 +7,16 @@ import { Subject } from 'rxjs';
 export class ModalService {
   private displayModalSource = new Subject<any>();
   displayModal$ = this.displayModalSource.asObservable();
+  public currentNav = '';
+
+  setCurrentNavigation(nav:string) {
+    this.currentNav = nav;
+    console.log("currentNav", this.currentNav);
+  }
+
+  getCurrentNavigation() {
+    return this.currentNav;
+  }
 
   showModal(modalName:string) {
     console.log("showing modal", modalName);

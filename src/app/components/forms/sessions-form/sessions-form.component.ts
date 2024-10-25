@@ -323,6 +323,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         dataSource: "upload",
         new: true,
         collapsed: false,
+        sprSessionSealed: false
       }
     }
     else {
@@ -331,7 +332,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         sprSession = await new Promise((resolve, reject) => {
           this.projectService.fetchSprSession(session.id).subscribe({
             next: (cmdResponse:any) => {
-              resolve(cmdResponse.result);
+              resolve(cmdResponse.data);
             },
             error: (error) => {
               console.log(error);
@@ -405,7 +406,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
     //fetch the spr session from the mongodb based on session.meta.SessionId
     this.projectService.fetchSprScriptBySessionId(session.id).subscribe((data:any) => {
-      let sprScript = data.result;
+      let sprScript = data.data;
       if(sprScript != null) {
         sessionGroup.controls.sessionScript.setValue(sprScript.scriptId);
       }
