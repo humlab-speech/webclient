@@ -12,9 +12,21 @@
                 
                 <div *ngIf="getCurrentNavigation() == 'emu-webapp'">
                     <h2>What is this?</h2>
-                    You are now running the EMU-webApp, which is a "browser-based labeling and correction tool that offers a multitude of labeling and visualization features".
+                    You are now running the EMU-webApp, which is a labeling and correction tool that offers a multitude of labeling and visualization features.
 
                     <h2>How to use this tool</h2>
+
+                    <pre>
+On the left side of the screen you will see your bundles. 
+Only bundles that have been assigned to you in the dashboard interface by your project leader will be shown here.
+Even if you are the project leader, you still need to assign the annotation of the bundles to yourself in order for them to show up here.
+
+On your right you will be able to play back the bundle audio as well as analyze and annotate it in various ways. The EMU-webApp offers a multitude of tools for this purpose and is far too comprehensive to go through in detail here.
+
+However, some commonly used functionalities are:
+
+[INSERT EXAMPLES OF COMMON FUNCTIONALITIES HERE]
+                    </pre>
                 </div>
 
                 <div *ngIf="getCurrentNavigation() == 'jupyter'">
@@ -67,9 +79,10 @@ Please see <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/" target="_bla
 # Load the emuR library
 library(emuR)
 
-# Load your Emu-R database (replace 'path_to_database' with the actual path to your database)
-db_path <- "path_to_database"
-db_handle <- load_emuDB(db_path)
+# Load your Emu-R database. Within Visible Speech, the database location is assumed to be the same for all projects,
+# This command will therefore always provide you with a reference ’VISP’ to your speech database
+db_path <- "~/project/Data/VISP_emuDB"
+VISP <- load_emuDB(db_path)
                         </code></pre>
                         <button class="copy-btn" (click)="copyCode('code1')">Copy</button>
                         </div>
@@ -79,8 +92,8 @@ db_handle <- load_emuDB(db_path)
                         <h3>View the sessions in your database</h3>
                         <div class="code-container">
                         <pre><code id="code2">
-# View the sessions in your loaded Emu-R database
-sessions <- list_sessions(db_handle)
+# List the recording sessions in your database
+sessions <- list_sessions(VISP)
 print(sessions)
                         </code></pre>
                         <button class="copy-btn" (click)="copyCode('code2')">Copy</button>
@@ -88,15 +101,50 @@ print(sessions)
                     </li>
 
                     <li>
-                        <h3>Plot the dataset</h3>
+                        <h3>List bundles</h3>
                         <div class="code-container">
                         <pre><code id="code3">
-# Plot the first segment's spectrogram
-plot(seg_list[1, ])
+#”Bundles” is the name used for individual sound files and associated other signal files in a session.
+# You can list all bundles in a database
+
+list_bundles(VISP)
+
+# You can also list all bundles or sessions matching a pattern
+# In the example below you will get all the bundles of sessions with names (perhaps recording date) starting with 2024
+
+list_bundles(VISP,sessionPattern="2024.*")
+
+# You can always get help for a command using ¨?¨, e.g.
+
+?list_bundles
                         </code></pre>
                         <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
                         </div>
                     </li>
+
+                    <li>
+                        <h3>Other usage</h3>
+                        <div class="code-container">
+                        <pre><code id="code3">
+# Anything that is a attribute definition can be queried for labels.
+# We here assume that you have a Word level set up, similar to our default setup
+
+query(VISP,"Word !=''") #Provides a list of all non-empty word labels
+
+query(VISP,"Word =~ '^s.*'") # Uses a regular expression to find all words beginning with ‘s’
+
+query(VISP,"Word !=''. -> Word =~ '^s.*'") # Finds all (not empty) word labels preceeding a word starting with ‘s’  
+
+# We can make queries that relate to the link between transcription tiers
+
+# (note the [] braces)
+
+query(VISP,"[Phonetic != '' ^ Word =~ '^s.*']")
+                        </code></pre>
+                        <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
+                        </div>
+                    </li>
+
                 </ul>
             </div>
 

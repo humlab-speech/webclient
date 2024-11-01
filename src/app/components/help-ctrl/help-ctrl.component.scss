@@ -1,6 +1,47 @@
+@import "../../../colors.scss";
+
 #help-button {
     color: #fff;
     cursor: pointer;
     font-size: 1.2em;
     font-weight: normal;
+}
+
+.link-button > a {
+    display:flex;
+    align-items: center;
+    font-size: 1rem;
+    margin:0;
+    padding:0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.link-button > a > i {
+    display:flex;
+    justify-content: center;
+    background: $comp4;
+    color: #fff;
+    margin:0;
+    padding: 0.5em;
+    height: 1em;
+    width: 1em;
+    color: #000;
+}
+
+.link-button > a > div {
+    display:inline-block;
+    position:relative;
+    background: rgb(155, 200, 250);
+    background: $dog-ear-gradient;
+    color: $black;
+    margin:0;
+    padding: 0.5em;
+    height: 1em;
+    width: 7em;
+    overflow: hidden;
+}
+
+.link-button > a > div:hover {
+    background-color: lighten($comp4, 10%);
 }
