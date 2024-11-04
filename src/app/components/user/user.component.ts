@@ -93,7 +93,8 @@ export class UserComponent implements OnInit {
       document.cookie = "cookieName=ProjectId; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
       if(environment.production) {
-        window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
+        //window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname+'/api/v1/signout';
+        window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname;
       }
       else {
         window.location.href = '/';
