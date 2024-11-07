@@ -169,7 +169,6 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   updateRole(user) {
-
     //check that this user is not the last admin user on the project
     let numAdmins = 0;
     this.members.controls.forEach((member) => {

@@ -45,6 +45,11 @@ export class ProjectItemComponent implements OnInit {
       callback: this.showImportAudioDialog
     });
 
+
+    let sess = this.userService.getSession();
+    let projects = this.projectService.getProjects();
+    let projectMember = projects.find(project => project.id == this.project.id).members.find(member => member.eppn == sess.eppn);
+
     environment.ENABLED_APPLICATIONS.forEach((hsAppName) => {
       if(hsAppName == "rstudio") {
         let rstudioApp = new HsApp();
@@ -56,11 +61,12 @@ export class ProjectItemComponent implements OnInit {
         //If an jupyter container is running, disable launching rstudio to avoid git commit conflicts
         this.project.liveAppSessions.forEach(session => {
           if(session.type == "jupyter") {
-            rstudioApp.disabled = true
+            rstudioApp.disabled = true;
           }
         });
-
-        this.hsApplications.push(rstudioApp);
+        if(projectMember.role == "admin" || projectMember.role == "analyzer") {
+          this.hsApplications.push(rstudioApp);
+        }
       }
       if(hsAppName == "emu-webapp") {
         let emuWebApp = new HsApp();
@@ -76,8 +82,10 @@ export class ProjectItemComponent implements OnInit {
         jupyterApp.title = "Notebook tool";
         jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
         jupyterApp.disabled = this.shouldAppBeDisabled(jupyterApp.name);
-
-        this.hsApplications.push(jupyterApp);
+        
+        if(projectMember.role == "admin" || projectMember.role == "analyzer") {
+          this.hsApplications.push(jupyterApp);
+        }
       }
       if(hsAppName == "octra") {
         let octraApp = new HsApp();

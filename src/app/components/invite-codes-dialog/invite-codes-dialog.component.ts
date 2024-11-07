@@ -33,6 +33,7 @@ export class InviteCodesDialogComponent implements OnInit {
         inviteCodes.push(this.fb.group({ 
           code: [inviteCode.code, Validators.required],
           used: inviteCode.used,
+          role: inviteCode.role,
           projectIds: projectIdsFormArray,
           projectId: projectIdsArray[0] || null,
         }));
@@ -62,6 +63,7 @@ export class InviteCodesDialogComponent implements OnInit {
       inviteCodes.push(this.fb.group({ 
         code: [response.result, Validators.required],
         used: false,
+        role: 'transcriber',
         projectIds: this.fb.array([]),
         projectId: null,
       }));
@@ -89,7 +91,16 @@ export class InviteCodesDialogComponent implements OnInit {
     this.userService.updateInviteCodes(inviteCodesData).subscribe((response: any) => {
       console.log(response);
     });
-}
+  }
+
+  onRoleSelected(event: any, codeControl: FormControl): void {
+    //send update to the backend
+    let inviteCodes = this.inviteCodesForm.get('inviteCodes') as FormArray;
+    let inviteCodesData = inviteCodes.value;
+    this.userService.updateInviteCodes(inviteCodesData).subscribe((response: any) => {
+      console.log(response);
+    });
+  }
 
   closeDialog() {
     this.modalService.hideModal("invite-codes-dialog");

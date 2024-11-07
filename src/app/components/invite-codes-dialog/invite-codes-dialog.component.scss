@@ -28,3 +28,31 @@
 tr:hover {
     background-color: #f0f0f0;
 }
+
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Removes double borders between cells */
+    margin-top: 1rem;
+    font-family: Arial, sans-serif;
+}
+
+table th,
+table td {
+    padding: 12px; /* Adds spacing inside each cell */
+    border: 1px solid #ddd; /* Adds a border around each cell */
+    text-align: left; /* Aligns text to the left */
+}
+
+table th {
+    background-color: #f4f4f4; /* Light background color for headers */
+    font-weight: bold; /* Makes header text bold */
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternating row colors for readability */
+}
+
+table tr:hover {
+    background-color: #e2e2e2; /* Adds a hover effect to highlight the row */
+}

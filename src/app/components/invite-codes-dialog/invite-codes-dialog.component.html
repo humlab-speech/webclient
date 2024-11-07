@@ -19,7 +19,8 @@
                 <thead *ngIf="inviteCodes.controls.length > 0">
                     <th>Invite code</th>
                     <th>Status</th>
-                    <th>Auto-join project</th>
+                    <th>Assign to project</th>
+                    <th>Role</th>
                     <th>Actions</th>
                 </thead>
                 <tbody>
@@ -35,6 +36,13 @@
                                 {{ codeControl.value.project }}
                                 <select [formControl]="codeControl.get('projectId')" (change)="onProjectSelected($event, codeControl)">
                                     <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select [formControl]="codeControl.get('role')" (change)="onRoleSelected($event, codeControl)">
+                                    <option value="admin">Admin</option>
+                                    <option value="analyzer">Analyzer</option>
+                                    <option value="transcriber">Transcriber</option>
                                 </select>
                             </td>
                             <td>
