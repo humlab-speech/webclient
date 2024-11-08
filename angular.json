@@ -32,7 +32,8 @@
             "styles": [
               "node_modules/shepherd.js/dist/css/shepherd.css",
               "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/@swimlane/ngx-datatable/index.css"
             ],
             "scripts": []
           },
@@ -126,7 +127,11 @@
               ]
             },
             "visp.dev": {
-              "sourceMap": true,
+              "sourceMap": {
+                "scripts": true,
+                "styles": true,
+                "vendor": true
+              },
               "optimization": {
                 "scripts": false,
                 "styles": {
@@ -205,5 +210,7 @@
       }
     }
   },
-  "defaultProject": "webclient-ng"
+  "cli": {
+    "analytics": false
+  }
 }
