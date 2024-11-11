@@ -2,7 +2,7 @@
     <div class="project-manager-header">
         <div class="project-manager-title-container">
             <h2>Your Projects</h2>
-            <button id="create-project-btn" (click)="showProjectDialog()">
+            <button *ngIf="showCreateProjectButton" id="create-project-btn" (click)="showProjectDialog()">
                 <i class="fa fa-plus-circle" aria-hidden="true"></i>
                 Create new project
             </button>

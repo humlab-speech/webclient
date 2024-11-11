@@ -58,6 +58,24 @@ export class ProjectDialogComponent implements OnInit {
     */
   }
 
+  /*
+
+  this.userService.sessionObs.subscribe((session:UserSession) => {
+      if(session && session.eppn != null) {
+        this.userIsSignedIn = true;
+        let userSession = this.userService.getSession();
+        console.log("User session", userSession);
+        if(userSession.privileges.createInviteCodes) {
+          this.showInviteCodesMenuOption = true;
+        }
+      }
+      else {
+        this.userIsSignedIn = false;
+      }
+    });
+
+  */
+
   ngOnInit(): void {
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
     console.log(this.project);
@@ -79,20 +97,6 @@ export class ProjectDialogComponent implements OnInit {
     this.form.statusChanges.subscribe((status) => {
       this.validateForm();
     });
-
-    /*
-    if(this.emuDbIntegrationEnabled && false) {
-      //This is stupid, but we need to wait for the sessions-form-module to initialize
-      
-      this.setupEmuDbFormChangeListener = setInterval(() => {
-        if(typeof this.emudbFormComponent.getFormGroup() != "undefined") {
-          this.form.addControl("emuDb", this.emudbFormComponent.getFormGroup());
-          clearInterval(this.setupEmuDbFormChangeListener);
-        }
-        
-      }, 100);
-    }
-    */
 
     this.form.controls['projectName'].setAsyncValidators([this.validateProjectName(this.http, this.userService, this.systemService)]);
 

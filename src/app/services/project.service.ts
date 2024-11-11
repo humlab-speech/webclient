@@ -436,6 +436,9 @@ export class ProjectService {
   }
 
   parseProgress(progressString) {
+    if(progressString == "end") {
+      return { currentStep: 1, totalSteps: 1 };
+    }
     // Check if the progressString matches the expected format (e.g., '13/17')
     const match = progressString.match(/^(\d+)\/(\d+)$/);
   
@@ -463,6 +466,9 @@ export class ProjectService {
         if(data.type == "cmd-result" && data.cmd == "saveProject") {
           let progress = this.parseProgress(data.progress);
           if(progress.currentStep == progress.totalSteps) {
+            if(!data.result) {
+              this.notifierService.notify("error", data.message);
+            }
             subscriber.next({
               msg: "Project saved",
               progressPercentage: 100

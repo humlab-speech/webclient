@@ -17,12 +17,15 @@ export class ProjectManagerComponent implements OnInit {
   projects:Project[];
   projectCreateInProgress:boolean = false;
   projectInEdit:Project|null = null;
+  showCreateProjectButton:boolean = false;
 
   constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) {
     
   }
 
   ngOnInit():void {
+
+
 
     /*
     window.addEventListener('show-spr-scripts-dialog', () => {
@@ -63,9 +66,12 @@ export class ProjectManagerComponent implements OnInit {
 
     let userSession = this.userService.getSession();
     if(userSession) {
-      this.projectService.fetchProjects(true).subscribe(projects => {
-      });
+      if(userSession.privileges.createProjects) {
+        this.showCreateProjectButton = true;
+      }
+      this.projectService.fetchProjects(true).subscribe(projects => {});
     }
+
   }
 
   showSessionsDialog() {
