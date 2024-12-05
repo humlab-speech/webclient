@@ -150,7 +150,7 @@ export class TranscribeDialogComponent implements OnInit {
     bundle.patchValue({ oldStatus: bundle.value.status });
     bundle.patchValue({ status: 'Queued' });
 
-    this.notifierService.notify('info', "Transcription request sent. You will be notified when all your transcriptions are complete.");
+    //this.notifierService.notify('info', "Transcription request sent. You will be notified when all your transcriptions are complete.");
   }
 
   removeTranscriptionFromQueue(bundle: any): void {
