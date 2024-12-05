@@ -69,6 +69,8 @@ export class DashboardComponent implements OnInit {
       this.modalActive = modal.active;
       this.modalName = modal.modalName;
     });
+
+    this.systemService.setCurrentApplication("dashboard");
   }
 
   closeModal() {

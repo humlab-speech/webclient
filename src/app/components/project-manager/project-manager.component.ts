@@ -3,6 +3,7 @@ import { UserService } from "../../services/user.service";
 import { ProjectService } from "../../services/project.service";
 import { Project } from "../../models/Project";
 import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { ModalService } from "../../services/modal.service";
 
 @Component({
   selector: 'app-project-manager',
@@ -19,8 +20,8 @@ export class ProjectManagerComponent implements OnInit {
   projectInEdit:Project|null = null;
   showCreateProjectButton:boolean = false;
 
-  constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient) {
-    
+  constructor(private userService:UserService, private projectService:ProjectService, private http:HttpClient, private modalService: ModalService) {
+    this.modalService = modalService;
   }
 
   ngOnInit():void {
@@ -72,6 +73,13 @@ export class ProjectManagerComponent implements OnInit {
       this.projectService.fetchProjects(true).subscribe(projects => {});
     }
 
+  }
+
+  showTranscribeDialog(project = null) { 
+    this.projectInEdit = project;
+    this.dashboard.modalActive = true;
+    this.dashboard.modalName = 'transcribe-dialog';
+    this.modalService.showModal('transcribe-dialog');
   }
 
   showSessionsDialog() {

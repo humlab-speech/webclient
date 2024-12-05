@@ -1,0 +1,118 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+      <div class="dialog-header">
+        <h2>
+            Transcriptions
+        </h2>
+        <div class="dialog-close-btn" (click)="closeDialog()">
+          <i class="fa fa-times" aria-hidden="true"></i>
+        </div>
+      </div>
+  
+      <div *ngIf="!transcriptionQueueItemsLoaded" class="loading-spinner">
+        <img src="../../../assets/loading-indicator-4-dark.svg">
+      </div>
+
+      <div *ngIf="transcriptionQueueItemsLoaded" class="dialog-content">
+        <form [formGroup]="transcriptionForm">
+          <table>
+            <thead>
+              <tr>
+                <th>
+                    Session
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'session' is a directory with some associated metadata."></i>
+                </th>
+                <th>
+                    Bundle
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'bundle' is an audio file with some associated metadata."></i>
+                </th>
+                <th>
+                    Language
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="If you know which language is being spoken in this audio file, you can help the auto-transcription process by designating the language used. Otherwise it will try to determine the language automatically."></i>
+                </th>
+                <th>
+                    Actions
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="VISP uses the Whisper model for automatically transcribing speech to text."></i>
+                </th>
+                <th>
+                  Transcriptions
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip=""></i>
+              </th>
+              </tr>
+            </thead>
+            <tbody formArrayName="bundles">
+              <tr *ngFor="let bundle of bundles.controls; let i = index" [formGroupName]="i">
+                <td>{{ bundle.value.sessionName }}</td>
+                <td>{{ bundle.value.name }}</td>
+                <td>
+                  <select 
+                    formControlName="language" 
+                    class="language-select" 
+                    [ngClass]="{'touched-control': bundle.get('language').touched}" 
+                    (change)="onLanguageSelected(i, $event)">
+                    <option *ngFor="let lang of languages" [value]="lang.id">
+                      {{ lang.name }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+
+                  <button *ngIf="bundle.value.status == ''" class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
+                    <div class="btn-icon-box">
+                      <i class="fa fa-plus" aria-hidden="true" matTooltip=""></i>
+                    </div>
+                    <span>Transcribe</span>
+                  </button>
+
+                  <button *ngIf="bundle.value.status == 'Complete' || bundle.value.status == 'Error'" class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
+                    <div class="btn-icon-box">
+                      <i class="fa fa-undo" aria-hidden="true" matTooltip=""></i>
+                    </div>
+                    <span>Redo</span>
+                  </button>
+
+                  <button *ngIf="bundle.value.status == 'Queued' || bundle.value.status == 'Running'" 
+                    class="btn transcribe-button" 
+                    type="button" 
+                    (click)="removeTranscriptionFromQueue(bundle)" 
+                    [ngClass]="{ 'disabled': bundle.value.status == 'Running' }"
+                    [disabled]="bundle.value.status == 'Running'"
+                    >
+                    <div class="btn-icon-box">
+                      <i class="fa fa-minus" aria-hidden="true" matTooltip=""></i>
+                    </div>
+                    <span>Cancel</span>
+                  </button>
+
+                </td>
+                <td>
+                  <div *ngIf="bundle.value.status == 'Complete'" class="download-container">
+
+                    <select formControlName="selectedFileType">
+                      <option value="srt">SRT subtitle file</option>
+                      <option value="txt">Text file</option>
+                    </select>
+
+                    <button class="download-button-container" (click)="downloadTranscription(bundle)">
+                      <div class="btn-icon-box">
+                        <i class="fa fa-download" aria-hidden="true" matTooltip="Download transcription files."></i>
+                      </div>
+                    </button>
+                  </div>
+                  <div *ngIf="bundle.value.status != 'Complete'">
+                    <div class="transcription-status">
+                      {{ bundle.value.status ? bundle.value.status : 'Not transcribed' }}
+                      <div *ngIf="bundle.value.status == 'Running'" class="loading-spinner">
+                        <img src="../../../assets/loading-indicator-4-dark.svg">
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
+  

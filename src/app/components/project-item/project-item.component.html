@@ -48,6 +48,15 @@
             <div class="gitlab-menu-container">
                 <ul>
                     <li>
+                        <div (click)="transcribeDialog(this.project)">
+                            <div class="list-button">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                &nbsp;
+                                Transcriptions
+                            </div>
+                        </div>
+                    </li>
+                    <li>
                         <div (click)="editEmuDb(this.project)">
                             <div class="list-button">
                                 <i class="fa fa-pencil-square-o" aria-hidden="true"></i>

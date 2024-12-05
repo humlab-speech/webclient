@@ -85,7 +85,7 @@ export class ProjectDialogComponent implements OnInit {
     this.docFiles = this.fb.array([]);
 
     this.form = this.fb.group({
-      projectName: new FormControl('', {
+      projectName: new FormControl("", {
         validators: [Validators.required, Validators.minLength(3), Validators.maxLength(30)],
         updateOn: 'blur'
       }),
@@ -135,6 +135,7 @@ export class ProjectDialogComponent implements OnInit {
       this.setLoadingStatus(false);
     }
 
+    this.validateForm();
   }
 
   setLoadingStatus(isLoading = true, label = "Loading") {
@@ -176,6 +177,16 @@ export class ProjectDialogComponent implements OnInit {
     }
     if(this.form.status != "VALID") {
       console.log("Form is not valid");
+
+      Object.keys(this.form.controls).forEach((controlName) => {
+        const control = this.form.controls[controlName];
+        
+        if (control.invalid) {
+          console.log(`${controlName} is invalid`);
+          console.log(control.errors); // Shows why the control is invalid
+        }
+      });
+      
     }
     if(this.isLoading) {
       console.log("Form is loading");

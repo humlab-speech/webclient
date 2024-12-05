@@ -9,6 +9,50 @@
 
         <div class="dialog-content">
             <div class="help-content">
+
+                <div *ngIf="getCurrentNavigation() == 'dashboard'">
+                    <p>This guide will help you navigate the main components and tools of the Visible Speech platform.</p>
+                
+                    <h2 id="your-projects"><strong>Your Projects</strong></h2>
+                    <p>This section displays the projects you have access to. Each project card includes two main sections:</p>
+                
+                    <h3 id="applications"><strong>Applications</strong></h3>
+                    <p>Here you’ll find the tools available for your project:</p>
+                    <ul>
+                        <li><strong>Transcription Tool</strong>: Use this for transcribing audio files with advanced features.</li>
+                        <li><strong>Notebook Tool</strong>: An integrated development environment (Jupyter notebook) for analyzing speech data.</li>
+                        <li><strong>RStudio</strong>: An integrated development environment (RStudio) for analyzing speech data.</li>
+                    </ul>
+                
+                    <h3 id="operations"><strong>Operations</strong></h3>
+                    <p>Manage your project workflows with these options:</p>
+                    <ul>
+                        <li><strong>Sessions</strong>: View and manage sessions in your project. Think of a session as a recording session, containing the audio files from that session.</li>
+                        <li><strong>Assign Annotation Tasks</strong>: Distribute tasks to project members for data annotation. The assigments are integrated with the transcription tool.</li>
+                        <li><strong>Members</strong>: Manage your project's team members and their roles.</li>
+                        <li><strong>Manage Recording Scripts</strong>: Create and edit recording scripts associated with your project. A script is a set of prompts for the user to speak.</li>
+                    </ul>
+                
+                    <h2 id="data-management"><strong>Data Management</strong></h2>
+                    <p>This section, located on the right-hand side, outlines the platform's integration with Git for version control. It ensures that your data is securely managed on our servers.</p>
+                
+                    <h2 id="help-guides"><strong>Help & Guides</strong></h2>
+                    <p>Find useful resources to get started and troubleshoot:</p>
+                    <ul>
+                        <li><strong>VISP Tutorial</strong>: Step-by-step instructions for using the Visible Speech platform.</li>
+                        <li><strong>EMU Manual</strong>: Detailed documentation for advanced users.</li>
+                    </ul>
+                
+                    <h2 id="tools-resources"><strong>Tools & Resources</strong></h2>
+                    <p>Quick links to additional tools and services:</p>
+                    <ul>
+                        <li><strong>Octra</strong>: Access Octra, our standalone transcription editing tool. Octra is not integrated with the rest of the VISP system, and thus does not require any login.</li>
+                    </ul>
+                
+                    <p>If you have any additional questions, feel free to contact our support team via the <strong>E-mail</strong> button in the Help & Guides section.</p>
+                    <p>Enjoy using the Visible Speech platform!</p>
+
+                </div>
                 
                 <div *ngIf="getCurrentNavigation() == 'emu-webapp'">
                     <h2>What is this?</h2>

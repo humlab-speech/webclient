@@ -41,9 +41,9 @@
             <app-sessions-form [project]="this.project" [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-sessions-form>
             -->
 
-            <app-documentation-form #documentationForm *ngIf="standardDirectoryStructure.value" [context]="this"></app-documentation-form>
+            
             <app-sessions-form #sessionsForm [project]="this.project" [parentForm]="this" [formContextId]="this.formContextId" [projectManager]="this.projectManager"></app-sessions-form>
-
+            <app-documentation-form #documentationForm *ngIf="standardDirectoryStructure.value" [context]="this"></app-documentation-form>
 
 
             <br />

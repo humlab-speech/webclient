@@ -1,0 +1,208 @@
+@import '../../../colors.scss';
+
+.modal-dialog-container {
+    max-width: 80%;
+    max-height: 80%;
+    overflow: auto;
+}
+
+
+.dialog-content {
+    max-width: 100%;
+}
+
+.transcribe-button span {
+    margin-right: 0.5em;
+}
+
+.transcription-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.transcription-status > .loading-spinner {
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    width: auto;
+}
+
+.download-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.download-container select {
+  height: 2em;
+}
+
+.download-button-container {
+  margin: 0;
+  padding: 0;
+  margin-left: 0.1em;
+}
+
+.download-button-container .btn-icon-box {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $primary;
+  height:2em;
+  width:2em;
+  margin:0;
+  padding:0em;
+  color: #fff;
+}
+
+select.language-select {
+  height: 2em;
+}
+
+li {
+    margin-bottom: 1em;
+    list-style-type: none;
+}
+
+.container {
+    width: 14em;
+}
+
+.form-btn {
+    cursor: pointer;
+    font-size: 1.0rem;
+    margin-left: 1em;
+}
+
+#loading-indicator {
+    min-width: 2em;
+    min-height: 2em;
+    background-image: url('../../../assets/loading-indicator-4-dark.svg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+tr:hover {
+    background-color: #f0f0f0;
+}
+
+.code-container {
+    position: relative;
+    background-color: #f6f8fa; /* GitHub-style light grey background */
+    border: 1px solid #d1d5da;
+    border-radius: 5px;
+    padding: 15px;
+    font-family: "Courier New", Courier, monospace; /* Monospace font */
+    font-size: 14px;
+    overflow-x: auto;
+    white-space: pre-wrap; /* Preserve code formatting */
+  }
+
+pre {
+    margin: 0;
+    overflow: auto; /* Horizontal scrolling if content overflows */
+    white-space: pre-wrap; /* Ensure long code lines wrap */
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #eff3f6;
+    border: 1px solid #d1d5da;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+.copy-btn:hover {
+    background-color: #e1e4e8;
+}
+
+h3 {
+    border-width: 0;
+    margin-bottom: 0.2em;
+    margin-left: 0;
+    margin-top: 1.5em;
+    padding-left: 0;
+    font-size: 1.0rem;
+}
+
+pre {
+    font-family: "Gothic A1", sans-serif; /* Customize font here */
+}
+
+.sessions-list ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.sessions-list > ul > li {
+  margin: 10px 0;
+}
+
+.bundles-list {
+  margin-left: 20px;
+}
+
+.bundle-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bundle-info button {
+  margin-left: 10px;
+}
+
+button {
+  cursor: pointer;
+  font-size: 1.0rem;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+
+.btn {
+  display:flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: $comp3;
+  //background: $dog-ear-gradient;
+  color: $black;
+  margin:0;
+  padding:0;
+  height: 2em;
+  margin: 0.2em;
+}
+
+.btn span {
+  margin-right: 0.5em;
+}
+
+.btn-icon-box {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $primary;
+  height:1.5em;
+  width:1.5em;
+  margin:0;
+  padding:0.25em;
+  margin-right: 0.5em;
+  color: #fff;
+}
+
+.btn-icon-box img {
+}
+
+.btn:hover {
+  background-color: lighten($comp2, 10%);
+}

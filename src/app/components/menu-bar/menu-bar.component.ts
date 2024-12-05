@@ -37,6 +37,7 @@ export class MenuBarComponent implements OnInit {
 
   backButtonClicked() {
     this.router.navigate(['/']);
+    this.systemService.setCurrentApplication("dashboard");
   }
 
 }

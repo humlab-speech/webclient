@@ -315,9 +315,16 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
     let files = [];
     if(session == null) {
+      let sessionNumber = 1;
+      let defaultSessionName = "Session "+sessionNumber;
+      while(this.sessions.controls.find(s => s.get('name').value == defaultSessionName)) {
+        sessionNumber++;
+        defaultSessionName = "Session "+sessionNumber;
+      }
+
       session = {
         id: nanoid(),
-        name: "",
+        name: defaultSessionName,
         speakerGender: null,
         speakerAge: 35,
         dataSource: "upload",

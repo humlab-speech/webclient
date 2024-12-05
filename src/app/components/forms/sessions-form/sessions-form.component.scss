@@ -67,7 +67,7 @@ li {
     background: $lightgrey;
     border-radius: 0.25em;
     padding: 0em;
-    max-width: 40em;
+    width: 100%;
 }
 
 .section-container .section-content {
@@ -318,4 +318,16 @@ button:disabled:hover {
 .header-flex-container i {
     position: relative;
     top: -0.15em;
+}
+
+summary {
+    cursor: pointer;
+}
+
+h3.annotation-header {
+    display: inline-block;
+}
+
+.annotation-container {
+    margin-left: 2em;
 }

@@ -29,7 +29,6 @@ export class SystemService {
 
   setCurrentApplication(app) {
     this.eventEmitter.emit(app);
-
     //set cookie
     Cookies.set('CurrentApplication', app, { domain: window.location.hostname, secure: true, sameSite: 'None' });
   }

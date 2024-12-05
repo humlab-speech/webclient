@@ -33,10 +33,13 @@ export class UserService {
       }
     });
     
-
     this.fetchSession().subscribe((response:UserSession) => {
       this.importSession(<UserSession>response);
     });
+
+    setInterval(() => {
+      this.checkValidityOfPhpSessionCookie();
+    }, 60000);
   }
 
   signOut():Observable<unknown> {
@@ -49,7 +52,7 @@ export class UserService {
   }
   
   redirectToAuthentication() {
-    window.location.href = '/DS/Login'; //This url does not exist in the application, it is specified in apache as the trigger-url for shibboleth auth
+    window.location.href = '/DS/Login'; //This url does not exist in the angular application, it is specified in apache as the trigger-url for shibboleth auth
   }
 
   async authenticateUser():Promise<boolean> {
@@ -206,5 +209,15 @@ export class UserService {
 
   getBundleListName() {
     return this.session.firstName.toLocaleLowerCase()+"."+this.session.lastName.toLocaleLowerCase();
+  }
+
+  checkValidityOfPhpSessionCookie() {
+    let phpSessId = this.getCookie("PHPSESSID");
+    if(phpSessId == "") {
+      //redirect to front page
+      window.location.href = '/'
+      return false;
+    }
+    return true;
   }
 }

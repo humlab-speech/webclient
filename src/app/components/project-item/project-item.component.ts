@@ -115,6 +115,11 @@ export class ProjectItemComponent implements OnInit {
     this.hsApplications.reverse();
   }
 
+  transcribeDialog(project) {
+    this.projectManager.projectInEdit = this.project;
+    this.projectManager.showTranscribeDialog(project);
+  }
+
   sessionsDialog(project) {
     this.projectManager.projectInEdit = project; //not sure this is needed
     this.projectManager.showSessionsDialog();

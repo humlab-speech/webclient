@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../services/modal.service';
 import ShepherdBase from 'shepherd.js';
+import { SystemService } from 'src/app/services/system.service';
 
 @Component({
   selector: 'app-help-dialog',
@@ -9,10 +10,12 @@ import ShepherdBase from 'shepherd.js';
 })
 export class HelpDialogComponent implements OnInit {
 
-  modalService: any;
+  modalService: ModalService;
+  systemService: SystemService;
   shepherd: any;
 
-  constructor(modalService:ModalService) {
+  constructor(modalService:ModalService, systemService: SystemService) {
+    this.systemService = systemService;
     this.modalService = modalService;
     this.shepherd = new ShepherdBase.Tour({
       defaultStepOptions: {
@@ -25,23 +28,7 @@ export class HelpDialogComponent implements OnInit {
   }
 
   getCurrentNavigation() {
-    let app = this.modalService.getCurrentNavigation();
-    if(app == "") {
-      //fall back to getting the cookie: CurrentApplication
-
-      let cookie = document.cookie;
-      let cookieArray = cookie.split(';');
-      let currentApplication = "";
-      cookieArray.forEach(element => {
-        if(element.includes("CurrentApplication")) {
-          currentApplication = element.split('=')[1];
-        }
-      });
-
-      app = currentApplication;
-    }
-
-    return app;
+    return this.systemService.getCurrentApplication();
   }
 
   ngOnInit(): void {

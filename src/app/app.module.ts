@@ -51,6 +51,7 @@ import { InviteCodesDialogComponent } from './components/invite-codes-dialog/inv
 import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-code-entry.component';
 import { HelpDialogComponent } from './components/help-dialog/help-dialog.component';
 import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
+import { TranscribeDialogComponent } from './components/transcribe-dialog/transcribe-dialog.component';
 
 @NgModule({
   declarations: [
@@ -84,6 +85,7 @@ import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
     InviteCodeEntryComponent,
     HelpDialogComponent,
     HelpCtrlComponent,
+    TranscribeDialogComponent
   ],
   imports: [
     CommonModule,
