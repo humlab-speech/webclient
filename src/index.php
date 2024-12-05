@@ -9,7 +9,7 @@ $domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".vi
 $secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
 $httpOnly = false;
 
-session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
+session_set_cookie_params(60*60*2, "/", $domain, $secure, $httpOnly);
 
 session_start();
 $sid = session_id();
