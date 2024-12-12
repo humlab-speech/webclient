@@ -73,6 +73,12 @@ export class TranscribeDialogComponent implements OnInit {
       //console.log('Transcription queue items fetched:', msg);
 
       if(msg.cmd == "fetchTranscriptionQueueItems" && msg.progress == "end") {
+        if(msg.result == false) {
+          console.error('Failed to fetch transcription queue items:', msg);
+          this.notifierService.notify('error', msg.message);
+          this.transcriptionQueueItemsLoaded = true;
+          return;
+        }
         const queueItems = msg.data;
 
         // Update the form with the queue items status

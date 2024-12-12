@@ -9,6 +9,12 @@
         </div>
       </div>
   
+      <div class="dialog-description">
+        Here you can have your audio files automatically transcribed. 
+        Click on the 'Transcribe' button to queue your audio files for transcription. 
+        This process will take some time and you will be emailed when the transcription is complete, at which point you can return to this dialog to download the transcription files.
+      </div>
+
       <div *ngIf="!transcriptionQueueItemsLoaded" class="loading-spinner">
         <img src="../../../assets/loading-indicator-4-dark.svg">
       </div>
@@ -41,6 +47,7 @@
               </tr>
             </thead>
             <tbody formArrayName="bundles">
+              <tr *ngIf="bundles.controls.length == 0"><td colspan="5">There are no files in this project.</td></tr>
               <tr *ngFor="let bundle of bundles.controls; let i = index" [formGroupName]="i">
                 <td>{{ bundle.value.sessionName }}</td>
                 <td>{{ bundle.value.name }}</td>
