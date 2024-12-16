@@ -554,14 +554,16 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   onAudioUpload(event, session) {
+    /*
     let allowedFilesTypes = ['audio/wav', 'audio/x-wav', 'application/zip', 'application/x-zip-compressed'];
-
+    
     for(let key in event.addedFiles) {
       if(allowedFilesTypes.includes(event.addedFiles[key].type) == false) {
-        this.notifierService.notify('warning', 'There file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
+        this.notifierService.notify('warning', 'The file ' + event.addedFiles[key].name + ' is of an invalid type ' + event.addedFiles[key].type + '. Please only upload WAV files here.');
         event.addedFiles.splice(key, 1);
       }
     }
+    */
 
     if(event.addedFiles.length == 0) {
       return;
@@ -571,8 +573,21 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
-      this.uploadFile(file, session).then(() => {
-        console.log("upload done");
+      this.uploadFile(file, session).then((uploadResultData:any) => {
+        if(uploadResultData.code == 400) {
+          this.notifierService.notify('error', file.name + ': ' + uploadResultData.body);
+
+          //remove the file from the form
+          for(let key in session.value.files) {
+            if(session.value.files[key].name == file.name) {
+              session.value.files.splice(key, 1);
+            }
+          }
+        }
+        else {
+          console.log("upload done");
+        }
+        
       })
     }
 
@@ -655,22 +670,5 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     
     this.projectManager.showSprScriptsDialog(project);
   }
-  
-
-
-  /*
-  async uploadFile(file:File) { //this is from the docs form
-    return await this.fileUploadService.upload(file, this.context.formContextId, "docs");
-  }
-
-  onRemove(file) { //this is from the docs form
-    for(let key in this.docFiles) {
-      if(this.docFiles[key] == file) {
-        let keyNum:number = +key;
-        this.docFiles.splice(keyNum, 1);
-      }
-    }
-  }
-  */
 
 }

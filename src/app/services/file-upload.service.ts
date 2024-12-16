@@ -66,18 +66,24 @@ export class FileUploadService {
       formData.append("fileData", file);
     }
 
-    return this.http.post<any>("/api/v1/upload", formData).subscribe(data => {
-      file.uploadComplete = true;
-        if(this.isAllUploadsComplete()) {
-          this.statusStream.next("all-uploads-complete");
+    return new Promise((resolve, reject) => {
+      this.http.post<any>("/api/v1/upload", formData).subscribe({
+        next: (data) => {
+          file.uploadComplete = true;
+          if (this.isAllUploadsComplete()) {
+            this.statusStream.next("all-uploads-complete");
+          }
+          resolve(data);
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error);
         }
-        return data;
-    }, error => {
-      console.error(error)
-      return error;
+      });
     });
 
   }
+
 
   cancelUpload(file) {
     for(let key in this.pendingUploads) {
