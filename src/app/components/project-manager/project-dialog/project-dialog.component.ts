@@ -309,6 +309,10 @@ export class ProjectDialogComponent implements OnInit {
   }
 
   closeCreateProjectDialog() {
+    if(this.isLoading) {
+      this.notifierService.notify('warning', "Please wait for the current task to finish before closing the dialog.");
+      return;
+    }
     this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
   }

@@ -79,7 +79,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   storedEmuDb:any = null; //The EmuDB as it exists in Gitlab (if any)
   sessionAccessCode:string = null;
   formIsValid:boolean = true;
-  emuDbLoadingStatus:boolean = false;
+  emuDbLoadingStatus:boolean = true;
 
   get value(): EmudbFormValues {
     return this.form.value;
@@ -135,6 +135,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       this.addAnnotLevelLinks(this.project);
     }
     else {
+      this.emuDbLoadingStatus = false;
       //if no project is provided, we'll add some default annotLevels and annotLevelLinks
       this.addAnnotLevel("Word", "ITEM");
       this.addAnnotLevel("Phonetic", "SEGMENT");
@@ -142,11 +143,12 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
   }
 
-  addSessions(project) {
+  async addSessions(project) {
+    for(let key in project.sessions) {
+      let session = project.sessions[key];
+      await this.addSession(session);
+    }
     this.emuDbLoadingStatus = false;
-    project.sessions.forEach(async session => {
-      this.addSession(session);
-    });
   }
 
   addAnnotLevels(project) {
@@ -411,17 +413,23 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       sprSessionSealed: new FormControl(session.sprSessionSealed)
     });
 
-    //fetch the spr session from the mongodb based on session.meta.SessionId
-    this.projectService.fetchSprScriptBySessionId(session.id).subscribe((data:any) => {
-      let sprScript = data.data;
-      if(sprScript != null) {
-        sessionGroup.controls.sessionScript.setValue(sprScript.scriptId);
-      }
-      else {
-        sessionGroup.controls.sessionScript.setValue(defaultScript.value);
-      }
-      
+
+    await new Promise((resolve, reject) => {
+      //fetch the spr session from the mongodb based on session.meta.SessionId
+      this.projectService.fetchSprScriptBySessionId(session.id).subscribe((data:any) => {
+        let sprScript = data.data;
+        if(sprScript != null) {
+          sessionGroup.controls.sessionScript.setValue(sprScript.scriptId);
+          resolve(sprScript);
+        }
+        else {
+          sessionGroup.controls.sessionScript.setValue(defaultScript.value);
+          resolve(null);
+        }
+      });
     });
+
+    
 
     if(session.new) {
       this.sessions.insert(0, sessionGroup);
@@ -443,7 +451,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       if(sessionFormGroup.controls.id.value == sessionId) {
         sessionFormGroup.controls.files.value.forEach(file => {
           this.projectService.deleteBundle(projectId, sessionId, file.name).subscribe((data:any) => {
-            if(data.result != "Success") {
+            if(data.result === false) {
               this.notifierService.notify("error", "Could not delete file "+file.name);
             }
           });
@@ -468,7 +476,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
     
     this.projectService.deleteBundle(projectId, sessionId, fileName).subscribe((data:any) => {
-      if(data.result == "Success") {
+      if(data.result !== false) {
         this.notifierService.notify("info", "File "+fileName+" deleted");
 
         //now delete the file from the form
@@ -486,7 +494,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         
       }
       else {
-        this.notifierService.notify("error", "Could not delete file "+fileName);
+        this.notifierService.notify("error", data.message);
       }
     });
   }

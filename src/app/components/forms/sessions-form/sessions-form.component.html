@@ -34,6 +34,13 @@
             No sessions available.
         </div>
 
+        <div *ngIf="emuDbLoadingStatus">
+            <div class="loading-indicator">
+                <img src="../../../assets/loading-indicator-4-dark.svg">
+                &nbsp;Loading project
+            </div>
+        </div>
+
         <div formArrayName="sessions">
             <div *ngIf="sessions.pristine == false && sessions.status == 'INVALID'" >
                 <div class="form-error-msg" *ngIf="sessions.errors?.sessionNameNotUnique">
@@ -134,7 +141,7 @@
                             -->
                         </div>
                         <ngx-dropzone *ngIf="session.value.dataSource == 'upload'" [expandable]="true" (change)="onAudioUpload($event, session)">
-                            <ngx-dropzone-label>Drop your WAV files here</ngx-dropzone-label>
+                            <ngx-dropzone-label>Drop your audio files here</ngx-dropzone-label>
                             <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
                                 <ngx-dropzone-label>
                                     <i class="fa fa-file-audio-o" aria-hidden="true"></i>

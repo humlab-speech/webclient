@@ -309,7 +309,12 @@ export class ProjectService {
     return new Observable<any>(subscriber => {
       this.systemService.wsSubject.subscribe((data:any) => {
         if(data.type == "cmd-result" && data.cmd == "deleteProject") {
-          if(data.progress == "end") {
+          if(data.result === false) {
+            this.notifierService.notify("error", data.message);
+            subscriber.next(data);
+            subscriber.complete();
+          }
+          if(data.progress == "end" && data.result !== false) {
             subscriber.next(data);
             subscriber.complete();
           }
@@ -475,13 +480,13 @@ export class ProjectService {
             });
 
             //send out an event signaling that the project has been saved
-            window.dispatchEvent(new CustomEvent('projectSaved', { detail: { projectId: data.result.projectId } }));
+            window.dispatchEvent(new CustomEvent('projectSaved'));
 
             subscriber.complete();
           }
           else {
             subscriber.next({
-              msg: data.result,
+              msg: data.message,
               progressPercentage: Math.round(progress.currentStep / progress.totalSteps * 100)
             });
           }
