@@ -80,6 +80,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   sessionAccessCode:string = null;
   formIsValid:boolean = true;
   emuDbLoadingStatus:boolean = true;
+  supportReOpeningSealedSprSession:boolean = false;
 
   get value(): EmudbFormValues {
     return this.form.value;
@@ -465,6 +466,33 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       if (sessionFormGroup.controls.id.value == sessionId) {
         const filesFormArray = sessionFormGroup.get('files') as FormArray;
         filesFormArray.clear();
+      }
+    });
+  }
+
+  downloadBundle(projectId, sessionId, fileName) {
+    this.projectService.downloadBundle(projectId, sessionId, fileName).subscribe((response:any) => {
+      if(response.result === false) {
+        this.notifierService.notify("error", "Could not download file "+fileName);
+      }
+      else {
+        this.notifierService.notify("info", "File "+fileName+" downloaded");
+        let base64 = response.data.file;
+        let binaryString = window.atob(base64);
+        let binaryLen = binaryString.length;
+        let bytes = new Uint8Array(binaryLen);
+        for (let i = 0; i < binaryLen; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        let blob = new Blob([bytes], { type: 'application/octet-stream' });
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = response.data.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
       }
     });
   }

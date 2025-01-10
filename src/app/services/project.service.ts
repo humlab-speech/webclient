@@ -668,6 +668,23 @@ export class ProjectService {
     });
   }
 
+  downloadBundle(projectId, sessionId, fileName) {
+    return new Observable((observer) => {
+      let messageToBackend = {
+        cmd: "downloadBundle",
+        data: {
+          projectId: projectId,
+          sessionId: sessionId,
+          fileName: fileName,
+        }
+      };
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
+        observer.next(wsMsg);
+        observer.complete();
+      });
+    });
+  }
+
   deleteBundle(projectId, sessionId, fileName) {
     return new Observable((observer) => {
       let messageToBackend = {

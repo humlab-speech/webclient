@@ -198,10 +198,13 @@
                                     Session status
                                     <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Indicates whether the recording session is open to receive recordings or sealed from future recordings. A recording session is automatically sealed once all the prompts are recorded."></i>
                                 </h6>
-                                <select formControlName="sprSessionSealed">
+                                <select *ngIf="supportReOpeningSealedSprSession" formControlName="sprSessionSealed">
                                     <option value="false">Open</option>
                                     <option value="true">Sealed</option>
                                 </select>
+                                <div *ngIf="!supportReOpeningSealedSprSession">
+                                    {{ session.value.sprSessionSealed ? 'Sealed' : 'Open' }}
+                                </div>
                             </div>
                         </div>
 
@@ -216,6 +219,9 @@
                             <table>
                                 <tr *ngFor="let file of session.value.files">
                                     <td>{{ file.name }}</td>
+                                    <td>
+                                        <i class="fa fa-download tooltip-zone-dark button" (click)="downloadBundle(project.id, session.value.id, file.name)" aria-hidden="true"></i>
+                                    </td>
                                     <td>
                                         <i class="fa fa-trash-o tooltip-zone-dark button" (click)="deleteBundle(project.id, session.value.id, file.name)" aria-hidden="true"></i>
                                     </td>
