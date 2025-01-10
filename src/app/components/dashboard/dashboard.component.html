@@ -1,16 +1,10 @@
 <div id="dashboard">
     <div id="main-content">
-
         <div id="signed-out-content-container" *ngIf="!userIsAuthenticated && userAuthenticationCheckPerformed">
-            <div *ngIf="applicationName == 'Visible Speech'" id="about-container">
+            <div id="about-container">
                 <h2>About</h2>
                 Visible Speech is a collection of research tools for speech analysis.
                 If you wish to have access to the system, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
-            </div>
-            <div *ngIf="applicationName == 'DataLab'" id="about-container">
-                <h2>About</h2>
-                Datalab allows you as a researcher to store your data in a version controlled manner and work with that data using online computational tools.
-                <br /><br />Datalab is being developed by Humlab at Umeå university.
             </div>
             <app-signin-ctrl></app-signin-ctrl>
         </div>
