@@ -81,10 +81,11 @@ export class AppctrlComponent implements OnInit {
       }
     }
 
+    /*
     if(this.hsApp.disabled) {
-      //this.notifier.notify("info", "Can't launch "+this.hsApp.title+". Please close other applications first.");
       failures.push("Please close other applications first.");
     }
+    */
 
     return failures;
   }
