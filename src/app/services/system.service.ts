@@ -247,8 +247,20 @@ export class SystemService {
       };
 
       this.ws.onclose = (event) => {
-        console.log('WebSocket closed:', event);
-        // Optionally, you can handle reconnection logic here
+        if (event.wasClean) {
+          console.log(`WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
+        } else {
+          console.warn(`WebSocket disconnected unexpectedly, code=${event.code}`);
+        }
+    
+        // Determine who closed the connection
+        if (event.code === 1000) {
+          console.log("Client or server closed the connection normally.");
+        } else if (event.code === 1006) {
+          console.warn("Connection lost.");
+        } else {
+          console.log("Closed with code:", event.code);
+        }
       };
 
       this.ws.onmessage = (event) => {
