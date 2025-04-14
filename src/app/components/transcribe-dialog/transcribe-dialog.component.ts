@@ -25,6 +25,14 @@ export class TranscribeDialogComponent implements OnInit {
   availableLanguages = ['Automatic Detection', 'afrikaans', 'albanian', 'amharic', 'arabic', 'armenian', 'assamese', 'azerbaijani', 'bashkir', 'basque', 'belarusian', 'bengali', 'bosnian', 'breton', 'bulgarian', 'cantonese', 'catalan', 'chinese', 'croatian', 'czech', 'danish', 'dutch', 'english', 'estonian', 'faroese', 'finnish', 'french', 'galician', 'georgian', 'german', 'greek', 'gujarati', 'haitian creole', 'hausa', 'hawaiian', 'hebrew', 'hindi', 'hungarian', 'icelandic', 'indonesian', 'italian', 'japanese', 'javanese', 'kannada', 'kazakh', 'khmer', 'korean', 'lao', 'latin', 'latvian', 'lingala', 'lithuanian', 'luxembourgish', 'macedonian', 'malagasy', 'malay', 'malayalam', 'maltese', 'maori', 'marathi', 'mongolian', 'myanmar', 'nepali', 'norwegian', 'nynorsk', 'occitan', 'pashto', 'persian', 'polish', 'portuguese', 'punjabi', 'romanian', 'russian', 'sanskrit', 'serbian', 'shona', 'sindhi', 'sinhala', 'slovak', 'slovenian', 'somali', 'spanish', 'sundanese', 'swahili', 'swedish', 'tagalog', 'tajik', 'tamil', 'tatar', 'telugu', 'thai', 'tibetan', 'turkish', 'turkmen', 'ukrainian', 'urdu', 'uzbek', 'vietnamese', 'welsh', 'yiddish', 'yoruba'];
   languages = [];
 
+  models = [{
+    id: 'whisper',
+    name: 'Whisper',
+  }, {
+    id: 'kb-whisper',
+    name: 'KB Whisper',
+  }];
+
   private intervalId: any;
   public transcriptionQueueItemsLoaded: boolean = false;
 
@@ -115,6 +123,7 @@ export class TranscribeDialogComponent implements OnInit {
             id: [file.id],
             name: [file.name, Validators.required],
             language: [session.language || 'Automatic Detection', Validators.required], // Default to session language or auto
+            model: ['whisper', Validators.required], // Default model
             status: "",
             oldStatus: "",
             selectedFileType: ['srt'],
@@ -132,6 +141,13 @@ export class TranscribeDialogComponent implements OnInit {
     console.log(`Language updated for bundle ${bundle.value.name}: ${selectedLanguage}`);
   }
 
+  onModelSelected(bundleIndex: number, event: Event): void {
+    const selected = (event.target as HTMLSelectElement).value;
+    const bundle = this.bundles.at(bundleIndex) as FormGroup;
+    bundle.patchValue({ model: selected });
+    console.log(`Model updated for bundle ${bundle.value.name}: ${selected}`);
+  }
+
   // Add a bundle to the transcription queue
   addToTranscriptionQueue(bundle: any): void {
     console.log('Adding bundle to transcription queue:', bundle);
@@ -143,6 +159,7 @@ export class TranscribeDialogComponent implements OnInit {
         session: bundle.value.sessionName,
         bundle: bundle.value.name,
         language: bundle.value.language,
+        model: bundle.value.model,
       }
     }).then((msg:WebSocketMessage) => {
       if(!msg.result) {

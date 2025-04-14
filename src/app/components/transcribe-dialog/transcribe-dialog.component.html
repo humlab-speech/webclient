@@ -33,6 +33,11 @@
                     <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'bundle' is an audio file bundled with some associated metadata."></i>
                 </th>
                 <th>
+                    Model
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="The Whisper model to be used for transcription. If you are transcribing Swedish then 'KB Whisper' is probably going to be the better option in most cases. For everything else you are probably better off using the regular Whisper model."></i>
+                </th>
+                <th>
+                <th>
                     Language
                     <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="If you know which language is being spoken in this audio file, you can help the auto-transcription process by designating the language used. Otherwise it will try to determine the language automatically."></i>
                 </th>
@@ -53,8 +58,19 @@
                 <td>{{ bundle.value.name }}</td>
                 <td>
                   <select 
+                    formControlName="model" 
+                    class="model-select transcription-select" 
+                    [ngClass]="{'touched-control': bundle.get('model').touched}" 
+                    (change)="onModelSelected(i, $event)">
+                    <option *ngFor="let model of models" [value]="model.id">
+                      {{ model.name }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <select 
                     formControlName="language" 
-                    class="language-select" 
+                    class="language-select transcription-select" 
                     [ngClass]="{'touched-control': bundle.get('language').touched}" 
                     (change)="onLanguageSelected(i, $event)">
                     <option *ngFor="let lang of languages" [value]="lang.id">
@@ -95,7 +111,7 @@
                 <td>
                   <div *ngIf="bundle.value.status == 'Complete'" class="download-container">
 
-                    <select formControlName="selectedFileType">
+                    <select formControlName="selectedFileType" class="transcription-select">
                       <option value="srt">SRT subtitle file</option>
                       <option value="txt">Text file</option>
                     </select>
@@ -122,4 +138,3 @@
       </div>
     </div>
   </div>
-  
