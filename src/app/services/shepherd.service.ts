@@ -27,7 +27,7 @@ export class ShepherdService {
 
     window.addEventListener('audioUpload', () => {
       setTimeout(() => {
-        this.tour.show('annotation-levels');
+        this.tour.show('save-project');
       }, 500);
     });
 
@@ -105,6 +105,7 @@ export class ShepherdService {
       },
     });
 
+    /*
     this.tour.addStep({
       text: `
       Here you can drop any documents you might have that are associated with the project, such as your data management plan. However this is completely optional. Click 'Next' to continue.
@@ -124,7 +125,7 @@ export class ShepherdService {
         element: '#project-manager-root > app-project-dialog > div > div > form > app-documentation-form > div',
       },
     });
-    
+    */
 
     this.tour.addStep({
       text: `
@@ -168,6 +169,7 @@ export class ShepherdService {
       },
     });
 
+    /*
     this.tour.addStep({
       text: `
       Here you can enter some metadata about who speaks in this session. However this is entirely optional. Click 'Next' to continue.
@@ -188,6 +190,7 @@ export class ShepherdService {
         on: 'top'
       },
     });
+    */
 
     this.tour.addStep({
       id: "audio-upload",
@@ -197,8 +200,6 @@ export class ShepherdService {
       <br /><br />
       Let's choose 'Upload audio files' for now and drop in a wav file. If you do not have a wav file of your own, you can download an example file here: 
       <a href='https://visp.humlab.umu.se/LS010003sentence1.wav' target='_blank'>LS010003sentence1.wav</a>
-       <br /><br />
-      Click 'Next' to continue.
       `,
       buttons: [
         {
@@ -214,6 +215,7 @@ export class ShepherdService {
       scrollTo: true,
     });
 
+    /*
     this.tour.addStep({
       id: "annotation-levels",
       text: `
@@ -237,8 +239,10 @@ export class ShepherdService {
         on: 'top'
       },
     });
+    */
 
     this.tour.addStep({
+      id: "save-project",
       text: `
       Click the 'Save' button to create the project.
       `,
@@ -262,7 +266,7 @@ export class ShepherdService {
 
     this.tour.addStep({
       text: `
-      Please wait for the project to be created. This will take a few seconds.
+      Please wait for the project to be created. This will take a moment.
       `,
     });
 

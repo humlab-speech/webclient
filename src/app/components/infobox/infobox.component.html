@@ -21,7 +21,7 @@
         <div class="info-box-content" *ngSwitchCase="'help-and-guides'">
             <ul>
 
-                <li class="link-button">
+                <li class="link-button" *ngIf="userIsLoggedIn">
                     <a (click)="tutorial()">
                         <i class="fa fa-info-circle" aria-hidden="true"></i><div>VISP Tutorial</div>
                     </a>

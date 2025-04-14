@@ -476,3 +476,13 @@ form input.ng-invalid {
 .tutorial-exit-btn {
     background: map-get($crimson-palette, 900) !important;
 }
+
+.shepherd-content {
+    background: #fff;
+}
+
+.shepherd-element {
+    background: transparent;
+    border-width: 0px !important;
+    box-shadow: none !important;
+}
