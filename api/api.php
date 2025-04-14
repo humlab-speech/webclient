@@ -71,19 +71,6 @@ class Application {
         //log the request
         $this->addLog("Request: ".$reqPath, "debug");
         $this->addLog("Request method: ".$_SERVER['REQUEST_METHOD'], "debug");
-
-        //Strip multiple leading /
-        while(strpos($reqPath, "/") === 0) {
-            $reqPath = substr($reqPath, 1);
-        }
-        $reqPath = "/".$reqPath;
-
-        // **IGNORE PATHS THAT DO NOT START WITH "/api"**
-        if (strpos($reqPath, "/api") !== 0) {
-            // Log that the request is being ignored (optional)
-            $this->addLog("Ignoring request: ".$reqPath." - does not start with /api", "debug");
-            return "";
-        }
         
         //Special case for letting the session-manager validate & retrieve a PHP session
         if(isset($_GET['f']) && $_GET['f'] == "session") {
@@ -110,10 +97,9 @@ class Application {
         //PUBLIC METHODS
         if($reqMethod == "GET") {
             switch($reqPath) {
-                case "/api/v1/isgitlabready":
-                    $this->addLog("GET: /api/v1/isgitlabready", "debug");
-                    $sessManApiResponse = $this->sessionManagerInterface->isGitlabReady();
-                    $ar = new ApiResponse($sessManApiResponse['code'], $sessManApiResponse['body']);
+                case "/api/v1/test":
+                    $this->addLog("GET: /api/v1/test", "debug");
+                    $ar = new ApiResponse(200, "Hello, this is the API");
                     return $ar->toJSON(false);
                 break;
             }
@@ -153,55 +139,15 @@ class Application {
 
             $this->addLog("GET: ".$reqPath, "debug");
 
-            /*
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/test");
-            if($matchResult['matched']) {
-                $apiResponse = $this->getGitlabUser();
-                $gitlabUser = $apiResponse->body;
-                $apiResponse = $this->addUserToGitlabProjects($gitlabUser);
-            }
-            */
-            /*
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/personalaccesstoken");
-            if($matchResult['matched']) {
-                $apiResponse = $this->getPersonalAccessToken();
-            }
-            */
-            /*
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/user");
-            if($matchResult['matched']) {
-                $apiResponse = $this->getGitlabUser();
-            }
-            */
             $matchResult = $this->restMatchPath($reqPath, "/api/v1/session");
             if($matchResult['matched']) {
                 $apiResponse = $this->getUserSessionAttributes();
             }
-            /*
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/user/project");
-            if($matchResult['matched']) {
-                $apiResponse = $this->getGitlabUserProjects();
-            }
-            */
+            
             $matchResult = $this->restMatchPath($reqPath, "/api/v1/signout");
             if($matchResult['matched']) {
                 $apiResponse = $this->signOut();
             }
-            /*
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/user/project/:project_id/session");
-            if($matchResult['matched']) {
-                $apiResponse = $this->getProjectOperationsSession($matchResult['varMap']['project_id']);
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/availibility/project/:project_id/session/:session_name");
-            if($matchResult['matched']) {
-                $apiResponse = $this->checkAvailabilityOfEmuSessionName($matchResult['varMap']['project_id'], $matchResult['varMap']['session_name']);
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/gitlabtoken");
-            if($matchResult['matched']) {
-                $this->addLog("GET: /api/v1/gitlabtoken", "debug");
-                $apiResponse = $this->fetchGitlabAccessToken();
-            }
-            */
 
             if($apiResponse !== false) {
                 return $apiResponse->toJSON();
@@ -331,7 +277,14 @@ class Application {
                 }
             }
             */
-            return $apiResponse->toJSON();
+            if($apiResponse !== false) {
+                return $apiResponse->toJSON();
+            }
+            else {
+                $this->addLog("No API response found for POST request", "error");
+                $ar = new ApiResponse(400, "No API response found for POST request");
+                return $ar->toJSON();
+            }
         }
     }
 
