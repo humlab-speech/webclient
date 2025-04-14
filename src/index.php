@@ -1,6 +1,6 @@
 <?php
 
-require '/var/www/webapi/vendor/autoload.php';
+require 'api/vendor/autoload.php';
 use MongoDB\Client;
 
 //$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
