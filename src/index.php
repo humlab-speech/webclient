@@ -133,6 +133,8 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   $cursor = $collection->findOne(['username' => $_SESSION['username']]);
   if($cursor == null) { //empty result / not found
     //create the mongodb entry
+    // For test users, automatically grant access. For real users, access must be granted via access list.
+    $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
     
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
@@ -142,7 +144,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       'eppn' => $_SESSION['eppn'],
       'username' => $_SESSION['username'],
       'phpSessionId' => $sid,
-      'loginAllowed' => false,
+      'loginAllowed' => $loginAllowed,
       'privileges' => [
         'createInviteCodes' => false,
       ]
