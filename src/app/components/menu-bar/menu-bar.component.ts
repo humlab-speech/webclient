@@ -12,6 +12,7 @@ import { ShepherdService } from 'src/app/services/shepherd.service';
 export class MenuBarComponent implements OnInit {
 
   public containerSessionViewActive:boolean = false;
+  public showBackToDashboardButton:boolean = false;
   logoImagePath:string = "";
   constructor(private router: Router, private systemService: SystemService, private shepherdService: ShepherdService) {
     this.router = router;
@@ -26,11 +27,12 @@ export class MenuBarComponent implements OnInit {
         let pathParts = value.url.split("/");
         let firstPathPart = pathParts[1];
 
-        if(firstPathPart.indexOf("?")) {
+        if(firstPathPart.indexOf("?") != -1) {
           firstPathPart = firstPathPart.substring(0, firstPathPart.indexOf("?"));
         }
 
         this.containerSessionViewActive = firstPathPart == "app" || firstPathPart == "emu-webapp";
+        this.showBackToDashboardButton = firstPathPart == "app" || firstPathPart == "emu-webapp" || firstPathPart == "octra";
       }
     });
   }

@@ -18,10 +18,10 @@ export class ModalService {
     return this.currentNav;
   }
 
-  showModal(modalName:string) {
-    console.log("showing modal", modalName);
+  showModal(modalName:string, ...args: any[]) {
     this.displayModalSource.next({
       modalName: modalName,
+      args: args,
       active: true
     });
   }

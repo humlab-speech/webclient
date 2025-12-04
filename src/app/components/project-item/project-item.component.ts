@@ -2,7 +2,7 @@ import { Component, OnInit, Input, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Project } from '../../models/Project';
 import { ProjectService } from '../../services/project.service';
-import { HsApp } from "../../models/HsApp";
+import { VispApp } from "../../models/VispApp";
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
 import { SystemService } from 'src/app/services/system.service';
 import { environment } from 'src/environments/environment';
@@ -31,7 +31,7 @@ export class ProjectItemComponent implements OnInit {
   members:[];
   projectMembersUrl:string = "";
 
-  hsApplications:HsApp[] = [];
+  vispApplications:VispApp[] = [];
   projectOperations:object[] = [];
 
   constructor(private http:HttpClient, private projectService:ProjectService, private systemService:SystemService, private notifierService:NotifierService, private userService:UserService) {}
@@ -50,9 +50,9 @@ export class ProjectItemComponent implements OnInit {
     let projects = this.projectService.getProjects();
     let projectMember = projects.find(project => project.id == this.project.id).members.find(member => member.eppn == sess.eppn);
 
-    environment.ENABLED_APPLICATIONS.forEach((hsAppName) => {
-      if(hsAppName == "rstudio") {
-        let rstudioApp = new HsApp();
+    environment.ENABLED_APPLICATIONS.forEach((vispAppName) => {
+      if(vispAppName == "rstudio") {
+        let rstudioApp = new VispApp();
         rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
         rstudioApp.title = "RStudio";
         rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
@@ -65,54 +65,55 @@ export class ProjectItemComponent implements OnInit {
           }
         });
         if(projectMember.role == "admin" || projectMember.role == "analyzer") {
-          this.hsApplications.push(rstudioApp);
+          this.vispApplications.push(rstudioApp);
         }
       }
-      if(hsAppName == "emu-webapp") {
-        let emuWebApp = new HsApp();
+      if(vispAppName == "emu-webapp") {
+        let emuWebApp = new VispApp();
         emuWebApp.name = "emu-webapp";
         emuWebApp.title = "Transcription tool";
         emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
         emuWebApp.disabled = this.shouldAppBeDisabled(emuWebApp.name);
-        this.hsApplications.push(emuWebApp);
+        this.vispApplications.push(emuWebApp);
       }
-      if(hsAppName == "jupyter") {
-        let jupyterApp = new HsApp();
+      if(vispAppName == "jupyter") {
+        let jupyterApp = new VispApp();
         jupyterApp.name = "jupyter";
         jupyterApp.title = "Notebook tool";
         jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
         jupyterApp.disabled = this.shouldAppBeDisabled(jupyterApp.name);
         
         if(projectMember.role == "admin" || projectMember.role == "analyzer") {
-          this.hsApplications.push(jupyterApp);
+          this.vispApplications.push(jupyterApp);
         }
       }
-      if(hsAppName == "octra") {
-        let octraApp = new HsApp();
+      if(vispAppName == "octra") {
+        let octraApp = new VispApp();
         octraApp.name = "octra";
         octraApp.title = "Octra";
-        //this.hsApplications.push(octraApp);
+        octraApp.icon = "app-icons/88x88-color/octra-icon.png";
+        this.vispApplications.push(octraApp);
       }
-      if(hsAppName == "script") {
-        let scriptApp = new HsApp();
+      if(vispAppName == "script") {
+        let scriptApp = new VispApp();
         scriptApp.name = "script";
         scriptApp.title = "Scripts";
         scriptApp.icon = "app-icons/88x88-bw/script-icon.png";
-        //this.hsApplications.push(scriptApp);
+        //this.vispApplications.push(scriptApp);
       }
-      if(hsAppName == "vscode") {
-        let vscodeApp = new HsApp();
+      if(vispAppName == "vscode") {
+        let vscodeApp = new VispApp();
         vscodeApp.name = "vscode";
         vscodeApp.title = "VS Code";
         vscodeApp.icon = "app-icons/88x88-color/vscode-icon.png";
         vscodeApp.disabled = this.shouldAppBeDisabled(vscodeApp.name);
 
-        this.hsApplications.push(vscodeApp);
+        this.vispApplications.push(vscodeApp);
       }
 
     });
 
-    this.hsApplications.reverse();
+    this.vispApplications.reverse();
   }
 
   transcribeDialog(project) {
@@ -151,15 +152,15 @@ export class ProjectItemComponent implements OnInit {
 
   sessionUpdateFromAppCtrlCallback(msg) {
     if(msg.type == "launch") {
-      this.hsApplications.forEach(hsApp => {
-        if(hsApp.name != msg.app) {
-          hsApp.disabled = true;
+      this.vispApplications.forEach(vispApp => {
+        if(vispApp.name != msg.app) {
+          vispApp.disabled = true;
         }
       });
     }
     if(msg.type == "close") {
-      this.hsApplications.forEach(hsApp => {
-        hsApp.disabled = false;
+      this.vispApplications.forEach(vispApp => {
+        vispApp.disabled = false;
       });
     }
     

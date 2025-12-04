@@ -52,6 +52,7 @@ import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-
 import { HelpDialogComponent } from './components/help-dialog/help-dialog.component';
 import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
 import { TranscribeDialogComponent } from './components/transcribe-dialog/transcribe-dialog.component';
+import { OctraSelectBundleDialogComponent } from './components/octra-select-bundle-dialog/octra-select-bundle-dialog.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +86,8 @@ import { TranscribeDialogComponent } from './components/transcribe-dialog/transc
     InviteCodeEntryComponent,
     HelpDialogComponent,
     HelpCtrlComponent,
-    TranscribeDialogComponent
+    TranscribeDialogComponent,
+    OctraSelectBundleDialogComponent
   ],
   imports: [
     CommonModule,

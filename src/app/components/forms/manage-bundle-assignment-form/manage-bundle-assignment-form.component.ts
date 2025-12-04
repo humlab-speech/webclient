@@ -13,6 +13,7 @@ import { BundleListItem } from '../../../models/BundleListItem';
 import { UserService } from 'src/app/services/user.service';
 import { NotifierService } from 'angular-notifier';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
+import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
   selector: 'app-manage-bundle-assignment-form',
@@ -43,10 +44,12 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
   };
 
   notifierService:NotifierService;
+  modalService:ModalService;
 
 
-  constructor(private fb:FormBuilder, private projectService:ProjectService, private systemService:SystemService, private userService:UserService, notifierService: NotifierService) {
+  constructor(private fb:FormBuilder, private projectService:ProjectService, private systemService:SystemService, private userService:UserService, notifierService: NotifierService, modalService: ModalService) {
     this.notifierService = notifierService;
+    this.modalService = modalService;
   }
 
 
@@ -449,7 +452,14 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
     }).then((data:WebSocketMessage) => {
       this.notifierService.notify("info", "Bundle assignment lists saved");
       this.submitBtnEnabled = true;
+
+      //close dialog
+      this.closeDialog();
     });
+  }
+
+  closeDialog() {
+    this.modalService.hideModal("octra-select-bundle-dialog");
   }
 
   showComment(bundle) {

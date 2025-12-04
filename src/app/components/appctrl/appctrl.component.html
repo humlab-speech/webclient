@@ -1,11 +1,25 @@
 <fieldset>
     <div class="button-status-wrapper">
-        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
-            <div class="app-btn-icon-box">
-                <img [src]="appIconPath">
-            </div>
-            <div>{{ btnTitle }}</div>
-        </button>
+
+        <div *ngIf="vispApp.name == 'octra'">
+            <button [disabled]="showLoadingIndicator" class="app-btn" (click)="selectAppOptions()">
+                <div class="app-btn-icon-box">
+                    <img [src]="appIconPath">
+                </div>
+                <div>{{ btnTitle }}</div>
+            </button>
+        </div>
+
+        <div *ngIf="vispApp.name != 'octra'">
+            <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
+                <div class="app-btn-icon-box">
+                    <img [src]="appIconPath">
+                </div>
+                <div>{{ btnTitle }}</div>
+            </button>
+        </div>
+
+        
 
         <div *ngIf="statusMsg.length > 0" class="status-msg-container app-btn-row-container">
            <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-light.svg">

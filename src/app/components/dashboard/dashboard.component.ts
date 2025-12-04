@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   userAuthenticationCheckPerformed:boolean = false;
   modalActive:boolean = false;
   modalName:string = "";
+  modalArgs:any[] = [];
   userIsAuthenticated:boolean = false;
   userIsAuthorized:boolean = false;
   gitlabReady:boolean = false;
@@ -68,6 +69,7 @@ export class DashboardComponent implements OnInit {
     this.modalService.displayModal$.subscribe(modal => {
       this.modalActive = modal.active;
       this.modalName = modal.modalName;
+      this.modalArgs = modal.args || [];
     });
 
     this.systemService.setCurrentApplication("dashboard");

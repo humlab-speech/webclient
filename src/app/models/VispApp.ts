@@ -1,4 +1,4 @@
-export class HsApp {
+export class VispApp {
     name:string;
     title:string;
     icon?:string;

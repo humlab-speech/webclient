@@ -1,0 +1,34 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+
+        <div class="dialog-header"><h2>Select bundle</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <div class="dialog-content">
+
+            <form [formGroup]="selectionForm">
+                <div class="form-group">
+                    <label for="session-select">Session:</label>
+                    <select id="session-select" formControlName="session" class="transcription-select">
+                        <option *ngFor="let session of sessionOptions" [value]="session.value">{{ session.label }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bundle-select">Bundle:</label>
+                    <select id="bundle-select" formControlName="bundle" class="transcription-select">
+                        <option *ngFor="let bundle of bundleOptions" [value]="bundle.value">{{ bundle.label }}</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <button type="button" (click)="bundleSelected()" [disabled]="!selectionForm.get('session').value || !selectionForm.get('bundle').value">
+            Launch Octra
+        </button>
+
+    </div>
+</div>

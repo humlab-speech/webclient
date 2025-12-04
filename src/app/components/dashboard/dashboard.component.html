@@ -14,6 +14,8 @@
         <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
 
         <app-help-dialog *ngIf="(modalActive && modalName=='help-dialog')"></app-help-dialog>
+
+        <app-octra-select-bundle-dialog *ngIf="(modalActive && modalName=='octra-select-bundle-dialog')" [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
         
         <div id="userFailedAccessListCheckContainer" *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized">
             
