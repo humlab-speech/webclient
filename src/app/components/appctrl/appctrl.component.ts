@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Project } from '../../models/Project';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { HsApp } from "../../models/HsApp";
+import { VispApp } from "../../models/VispApp";
 import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
@@ -21,7 +21,7 @@ export class AppctrlComponent implements OnInit {
 
   @Input() project: Project;
   @Input() projectItem: any;
-  @Input() hsApp: HsApp;
+  @Input() vispApp: VispApp;
 
   private userService: UserService;
   private projectService: ProjectService;
@@ -55,8 +55,8 @@ export class AppctrlComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.appIconPath = "/assets/"+this.hsApp.icon;
-    this.btnTitle = this.hsApp.title;
+    this.appIconPath = "/assets/"+this.vispApp.icon;
+    this.btnTitle = this.vispApp.title;
     
     if(this.updateHasRunningSessions()) {
       this.statusMsg = "Running";
@@ -67,7 +67,7 @@ export class AppctrlComponent implements OnInit {
 
   preFlightChecks() {
     let failures = [];
-    if(this.hsApp.name == "emu-webapp") {
+    if(this.vispApp.name == "emu-webapp") {
       let foundFiles = false;
       //check that this project contains at least one session with files in it, otherwise emu-webapp should not be launchable
       this.project.sessions.forEach((session) => {
@@ -82,7 +82,7 @@ export class AppctrlComponent implements OnInit {
     }
 
     /*
-    if(this.hsApp.disabled) {
+    if(this.vispApp.disabled) {
       failures.push("Please close other applications first.");
     }
     */
@@ -90,9 +90,13 @@ export class AppctrlComponent implements OnInit {
     return failures;
   }
 
-  launchProjectInApp() {
+  selectAppOptions() {
+    //launch popup with app options
+    this.modalService.showModal("octra-select-bundle-dialog", this.project);
+  }
 
-    this.modalService.setCurrentNavigation(this.hsApp.name);
+  launchProjectInApp() {
+    this.modalService.setCurrentNavigation(this.vispApp.name);
 
     let showStoppers = this.preFlightChecks();
     if(showStoppers.length > 0) {
@@ -102,10 +106,10 @@ export class AppctrlComponent implements OnInit {
 
     this.projectItem.sessionUpdateFromAppCtrlCallback({
       type: "launch",
-      app: this.hsApp.name
+      app: this.vispApp.name
     });
 
-    switch(this.hsApp.name) {
+    switch(this.vispApp.name) {
       case "rstudio":
         this.launchContainerSession("rstudio");
         this.systemService.setCurrentApplication("rstudio");
@@ -134,7 +138,7 @@ export class AppctrlComponent implements OnInit {
 
     //send event signaling that the app has been launched
     window.dispatchEvent(new Event('app-launched'));
-    window.dispatchEvent(new Event('app-launched-'+this.hsApp.name));
+    window.dispatchEvent(new Event('app-launched-'+this.vispApp.name));
   }
 
   showScriptAppDialog() {
@@ -241,22 +245,17 @@ export class AppctrlComponent implements OnInit {
   launchOctraSession() {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
+    
+    //set projectId cookie
+    Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: this.project.id
-    };
-    this.http.post<any>('/api/v1/'+this.hsApp.name+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      let url = window.location.protocol+"//"+this.hsApp.name+"."+this.domain+"/";
-      this.goToUrl(url);
-    });
+    this.router.navigate(['/octra'], { queryParams: {
+    }});
   }
 
   updateHasRunningSessions() {
     for(let key in this.project.liveAppSessions) {
-      if(this.project.liveAppSessions[key].type == this.hsApp.name) {
+      if(this.project.liveAppSessions[key].type == this.vispApp.name) {
         this.hasRunningSessions = true;
         return this.hasRunningSessions;
       }
@@ -318,7 +317,7 @@ export class AppctrlComponent implements OnInit {
   
         this.projectItem.sessionUpdateFromAppCtrlCallback({
           type: "close",
-          app: this.hsApp.name
+          app: this.vispApp.name
         });
       }
       else {
@@ -329,7 +328,7 @@ export class AppctrlComponent implements OnInit {
 
   getSessionAccessCode() {
     for(let key in this.project.liveAppSessions) {
-      if(this.project.liveAppSessions[key].type == this.hsApp.name) {
+      if(this.project.liveAppSessions[key].type == this.vispApp.name) {
         return this.project.liveAppSessions[key].sessionAccessCode;
       }
     }

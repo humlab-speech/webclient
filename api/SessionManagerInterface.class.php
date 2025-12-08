@@ -56,8 +56,8 @@ class SessionManagerInterface {
      * 
      * Similar to fetchSession but ALWAYS creates a new session, never returns an existing one.
      */
-    function createSession($projectId, $hsApp = "operations", $volumes = []) {
-        $this->app->addLog("Call: createSession(".$projectId.", ".$hsApp.")", "debug");
+    function createSession($projectId, $vispApp = "operations", $volumes = []) {
+        $this->app->addLog("Call: createSession(".$projectId.", ".$vispApp.")", "debug");
         $response = $this->_fetchGitlabProjectById($projectId);
         $project = $response['body'];
         
@@ -73,7 +73,7 @@ class SessionManagerInterface {
             'form_params' => [
                 'gitlabUser' => json_encode($_SESSION['gitlabUser']),
                 'project' => $project,
-                'hsApp' => $hsApp,
+                'vispApp' => $vispApp,
                 'appSession' => "",
                 'personalAccessToken' => $this->app->getPersonalAccessToken()->body,
                 'volumes' => json_encode($volumes)
@@ -92,8 +92,8 @@ class SessionManagerInterface {
      * Function: fetchSession
      * Creates a container for a new session bases on the specified project. Or returns the currenly active session if it exists.
      */
-    function fetchSession($projectId, $hsApp = "rstudio") {
-        $this->app->addLog("Call: fetchSession(".$projectId.", ".$hsApp.")", "debug");
+    function fetchSession($projectId, $vispApp = "rstudio") {
+        $this->app->addLog("Call: fetchSession(".$projectId.", ".$vispApp.")", "debug");
         $response = $this->_fetchGitlabProjectById($projectId);
         $project = $response['body'];
         
@@ -103,9 +103,9 @@ class SessionManagerInterface {
             return false;
         }
 
-        $hsAppSessionId = "";
-        if(array_key_exists($hsApp.'Session', $_COOKIE)) {
-            $hsAppSessionId = $_COOKIE[$hsApp.'Session'];
+        $vispAppSessionId = "";
+        if(array_key_exists($vispApp.'Session', $_COOKIE)) {
+            $vispAppSessionId = $_COOKIE[$vispApp.'Session'];
         }
 
         $sessionManagerApiRequest = $this->sessionManagerApiEndpoint."/session/user";
@@ -114,8 +114,8 @@ class SessionManagerInterface {
             'form_params' => [
                 'gitlabUser' => json_encode($_SESSION['gitlabUser']),
                 'project' => $project,
-                'hsApp' => $hsApp,
-                'appSession' => $hsAppSessionId,
+                'vispApp' => $vispApp,
+                'appSession' => $vispAppSessionId,
                 'personalAccessToken' => $this->app->getPersonalAccessToken()->body
             ]
         ];

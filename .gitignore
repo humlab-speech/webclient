@@ -5,5 +5,4 @@ dist
 vendor
 composer.phar
 installer.php
-composer.json
-composer.lock
+

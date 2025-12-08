@@ -37,7 +37,7 @@ class Application {
     function restMatchPath($path, $template) {
         $regexp = $template;
         $varMatches = null;
-        preg_match_all("/:[a-z0-9_]*/", $regexp, $varMatches);
+        preg_match_all("/:[a-zA-Z0-9_]*/", $regexp, $varMatches);
 
         if(count($varMatches) > 0) {
             $varMatches = $varMatches[0];
@@ -46,11 +46,15 @@ class Application {
             }
         }
 
-        $regexp = "/".str_replace("/", "\/", $regexp)."/";
-        $regexp = preg_replace("/(:[a-z0-9_]*)/", "([a-zA-Z0-9_\\.]*)", $regexp);
+        $regexp = "/".str_replace("/", "\/", $regexp);
+        // Updated regex to match more characters including hyphens, percent-encoded chars, spaces, but NOT forward slashes
+        // Forward slashes are path delimiters and should NOT be matched within a parameter
+        $regexp = preg_replace("/(:[a-zA-Z0-9_]*)/", "([^\/]+)", $regexp);
+        $regexp = $regexp . "$/"; // Anchor to end of string
 
         $matches = null;
         $match = preg_match($regexp, $path, $matches);
+        
         if($match) {
             $varMap = [];
             foreach($varMatches as $key => $vm) {
@@ -66,7 +70,7 @@ class Application {
 
     function route() {
         $apiResponse = false;
-        $reqPath = $_SERVER['REQUEST_URI'];
+        $reqPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         //log the request
         $this->addLog("Request: ".$reqPath, "debug");
@@ -114,7 +118,7 @@ class Application {
             $cursor = $collection->findOne(['phpSessionId' => session_id()]);
             if($cursor == null) { //empty result / not found
                 $this->addLog("Session not found in database", "error");
-                $ar = new ApiResponse(401, "Session not found in database");
+                $ar = new ApiResponse(401, "Session ".session_id()." not found in database");
                 echo $ar->toJSON();
                 exit();
             }
@@ -151,6 +155,17 @@ class Application {
 
             if($apiResponse !== false) {
                 return $apiResponse->toJSON();
+            }
+
+            $matchResult = $this->restMatchPath($reqPath, "/api/v1/file/download/:octraTaskId");
+            if($matchResult['matched']) {
+                $projectId = $_COOKIE['projectId'];
+                if($this->userHasProjectAuthorization($projectId)) {
+                    $apiResponse = $this->getFileDownload($matchResult['varMap']);
+                }
+                else {
+                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
+                }
             }
         }
 
@@ -288,6 +303,166 @@ class Application {
         }
     }
 
+    function getFileDownload($varMap) {
+        
+        try {
+            // Extract octraTaskId from URL
+            $octraTaskId = urldecode($varMap['octraTaskId']);
+            
+            // Determine if requesting annotation file or audio file
+            $requestAnnotation = false;
+            if (substr($octraTaskId, -11) === '_annot.json') {
+                $requestAnnotation = true;
+                $octraTaskId = substr($octraTaskId, 0, -11);
+            } else if (substr($octraTaskId, -4) === '.wav') {
+                $octraTaskId = substr($octraTaskId, 0, -4);
+            }
+            
+            $this->addLog("File download request for octraTaskId: $octraTaskId (annotation: " . ($requestAnnotation ? 'yes' : 'no') . ")", "info");
+
+            // Look up the task in MongoDB
+            $database = $this->getMongoDb();
+            $collection = $database->selectCollection('octravirtualtasks');
+            $task = $collection->findOne(['id' => $octraTaskId]);
+
+            if ($task == null) {
+                $this->addLog("Octra task not found: $octraTaskId", "error");
+                return new ApiResponse(404, array('message' => 'Task not found.'));
+            }
+
+            // Convert MongoDB document to array
+            $taskData = json_decode(json_encode(iterator_to_array($task)), TRUE);
+            
+            $projectId = $taskData['projectId'];
+            $sessionId = $taskData['sessionId'];
+            $bundleName = $taskData['bundleName'];
+            
+            $this->addLog("Task found - projectId: $projectId, sessionId: $sessionId, bundleName: $bundleName", "debug");
+
+            // Construct the file path
+            // The bundleName is the audio file name (e.g., 'prompt_1.wav')
+            // We need to find the session and bundle directories
+            $baseDir = '/repositories';
+            
+            // The file structure is: /repositories/{projectId}/Data/VISP_emuDB/{session_name}_ses/{bundle_name}_bndl/{file}.wav
+            // We need to search for the session directory that matches sessionId and contains the bundle
+            $projectPath = "{$baseDir}/{$projectId}/Data/VISP_emuDB";
+            
+            if (!is_dir($projectPath)) {
+                $this->addLog("Project EmuDB directory not found: $projectPath", "error");
+                return new ApiResponse(404, array('message' => 'Project data not found.'));
+            }
+
+            // Find the session directory
+            $sessionFound = false;
+            $fullPath = null;
+            
+            $sessions = glob($projectPath . "/*_ses");
+            foreach ($sessions as $sessionDir) {
+                // Check if this session contains a bundle with the bundleName
+                $bundles = glob($sessionDir . "/*_bndl");
+                foreach ($bundles as $bundleDir) {
+                    $audioFile = $bundleDir . "/" . $bundleName;
+                    if (file_exists($audioFile)) {
+                        // If requesting annotation file, look for the _annot.json file
+                        if ($requestAnnotation) {
+                            // Extract base name without .wav extension
+                            $baseFileName = pathinfo($bundleName, PATHINFO_FILENAME);
+                            $annotFile = $bundleDir . "/" . $baseFileName . "_annot.json";
+                            
+                            if (file_exists($annotFile)) {
+                                $fullPath = $annotFile;
+                                $sessionFound = true;
+                                break 2;
+                            } else {
+                                $this->addLog("Annotation file not found: $annotFile", "error");
+                                return new ApiResponse(404, array('message' => 'Annotation file not found.'));
+                            }
+                        } else {
+                            $fullPath = $audioFile;
+                            $sessionFound = true;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if (!$sessionFound || $fullPath === null) {
+                $fileType = $requestAnnotation ? 'Annotation' : 'Audio';
+                $this->addLog("$fileType file not found for bundle: $bundleName in project $projectId", "error");
+                return new ApiResponse(404, array('message' => "$fileType file not found."));
+            }
+
+            $this->addLog("Attempting to access file: $fullPath", "debug");
+
+            // Security: Prevent directory traversal attacks
+            $realPath = realpath($fullPath);
+
+            $this->addLog("Real path: " . ($realPath ? $realPath : "FALSE"), "debug");
+
+            if ($realPath === false || strpos($realPath, $baseDir) !== 0) {
+                $this->addLog("Invalid file path attempted: $fullPath (realpath validation failed)", "error");
+                return new ApiResponse(403, array('message' => 'Invalid file path.'));
+            }
+
+            // Check if file exists
+            if (!file_exists($realPath) || !is_file($realPath)) {
+                $this->addLog("File not found: $realPath", "error");
+                return new ApiResponse(404, array('message' => 'File not found.'));
+            }
+
+            // Get file info
+            $fileSize = filesize($realPath);
+            $mimeType = mime_content_type($realPath);
+
+            $this->addLog("Serving file: $realPath (size: $fileSize, type: $mimeType)", "info");
+
+            // Determine the filename to send to the client
+            $downloadFilename = $requestAnnotation ? basename($realPath) : basename($bundleName);
+
+            // Set appropriate headers for file download
+            header('Content-Type: ' . $mimeType);
+            header('Content-Length: ' . $fileSize);
+            header('Content-Disposition: inline; filename="' . $downloadFilename . '"');
+            header('Accept-Ranges: bytes');
+            header('Cache-Control: public, max-age=3600');
+
+            // Handle range requests for large files (useful for audio/video streaming)
+            if (isset($_SERVER['HTTP_RANGE'])) {
+                $range = $_SERVER['HTTP_RANGE'];
+                if (preg_match('/bytes=(\d+)-(\d*)/', $range, $rangeMatches)) {
+                    $start = intval($rangeMatches[1]);
+                    $end = !empty($rangeMatches[2]) ? intval($rangeMatches[2]) : $fileSize - 1;
+
+                    if ($start > $end || $start >= $fileSize) {
+                        http_response_code(416);
+                        header('Content-Range: bytes */' . $fileSize);
+                        $this->addLog("Invalid range request: $range", "error");
+                        die('Requested range not satisfiable');
+                    }
+
+                    http_response_code(206);
+                    header('Content-Range: bytes ' . $start . '-' . $end . '/' . $fileSize);
+                    header('Content-Length: ' . ($end - $start + 1));
+
+                    $file = fopen($realPath, 'rb');
+                    fseek($file, $start);
+                    echo fread($file, $end - $start + 1);
+                    fclose($file);
+                    exit;
+                }
+            }
+
+            // Output the file
+            readfile($realPath);
+            exit;
+        } catch (Exception $e) {
+            $this->addLog("Exception in getFileDownload: " . $e->getMessage(), "error");
+            $this->addLog("Stack trace: " . $e->getTraceAsString(), "error");
+            return new ApiResponse(500, array('message' => 'Internal server error: ' . $e->getMessage()));
+        }
+    }
+    
     function getProjectById($projectId) {
         //fetch project from mongodb
         $database = $this->getMongoDb();
@@ -518,22 +693,49 @@ class Application {
     }
     
     function userHasProjectAuthorization($projectId) {
-        global $gitlabAddress, $gitlabRootAccessToken;
+        // Check if username is in session
+        if(empty($_SESSION['username'])) {
+            $this->addLog("No username in session", "error");
+            return false;
+        }
     
-        $arProjects = $this->getGitlabUserProjects();
-        $projects = $arProjects->body;
-    
-        $foundProject = false;
-        foreach($projects as $key => $project) {
-            if($project->id == $projectId) {
-                $foundProject = true;
+        $this->addLog("Checking authorization for projectId: $projectId (type: ".gettype($projectId)."), username: ".$_SESSION['username'], "debug");
+        
+        // Get the project from MongoDB
+        $database = $this->getMongoDb();
+        $collection = $database->selectCollection('projects');
+        
+        // Try to find project - log what we're searching for
+        $this->addLog("Searching for project with id: '$projectId'", "debug");
+        $project = $collection->findOne(['id' => $projectId]);
+        
+        // Convert MongoDB document to array
+        $projectData = json_decode(json_encode(iterator_to_array($project)), TRUE);
+        $this->addLog("Found project: ".print_r(['id' => $projectData['id'] ?? 'no-id', 'members' => count($projectData['members'] ?? [])], true), "debug");
+        
+        // Check if user is in project members
+        $foundUser = false;
+        if(!empty($projectData['members'])) {
+            $memberUsernames = [];
+            foreach($projectData['members'] as $member) {
+                $memberUsernames[] = $member['username'] ?? 'no-username';
+                if(isset($member['username']) && $member['username'] == $_SESSION['username']) {
+                    $foundUser = true;
+                    break;
+                }
             }
+            $this->addLog("Project members: ".print_r($memberUsernames, true), "debug");
+        } else {
+            $this->addLog("Project has no members array", "debug");
         }
-        if(!$foundProject) {
-            $this->addLog("User attempted to access unauthorized project.", "warn");
-            $this->addLog(print_r($_SESSION['gitlabUser'], true), "debug");
+        
+        if(!$foundUser) {
+            $this->addLog("User ".$_SESSION['username']." attempted to access unauthorized project: $projectId", "warn");
+        } else {
+            $this->addLog("Authorization check passed for user ".$_SESSION['username']." on project $projectId", "debug");
         }
-        return $foundProject;
+        
+        return $foundUser;
     }
 
     function handleUpload() {
