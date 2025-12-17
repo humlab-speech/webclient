@@ -135,6 +135,9 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
     //create the mongodb entry
     addLog("Creating new user ".$_SESSION['username']." in database", "info");
     
+    // For test users, automatically grant access. For real users, access must be granted via access list.
+    $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
+    
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
       'lastName' => $_SESSION['lastName'],
@@ -143,7 +146,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       'eppn' => $_SESSION['eppn'],
       'username' => $_SESSION['username'],
       'phpSessionId' => $sid,
-      'loginAllowed' => false,
+      'loginAllowed' => $loginAllowed,
       'privileges' => [
         'createInviteCodes' => false,
       ]
