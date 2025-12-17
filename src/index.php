@@ -133,6 +133,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   $cursor = $collection->findOne(['username' => $_SESSION['username']]);
   if($cursor == null) { //empty result / not found
     //create the mongodb entry
+    addLog("Creating new user ".$_SESSION['username']." in database", "info");
     
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
@@ -151,6 +152,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   }
   else if($cursor != null) {
     //update the mongodb user object with the current phpsessid
+    addLog("Found existing user ".$_SESSION['username']." in database. Updating session.", "info");
     $collection->updateOne(
       ['username' => $_SESSION['username']],
       ['$set' => ['phpSessionId' => $sid]]

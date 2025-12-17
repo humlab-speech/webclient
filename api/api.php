@@ -82,7 +82,6 @@ class Application {
             //This might seem strange since there's no apparent authentication, but the authentication is implicit since the session-manager
             //must pass the correct PHPSESSID via a cookie header in order for the $_SESSION to be filled with the correct values
             //otherwise a new empty session will be returned
-            //$this->addLog(print_r($_SESSION, true));
 
             if(!empty($_GET['projectId'])) {
                 //if projectId is set, we also need to check that this user has access to that project
@@ -157,9 +156,28 @@ class Application {
                 return $apiResponse->toJSON();
             }
 
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/file/download/:octraTaskId");
+            $matchResult = $this->restMatchPath($reqPath, "/api/v1/file/download/:octraTaskIdFile");
             if($matchResult['matched']) {
-                $projectId = $_COOKIE['projectId'];
+
+                //we handle exactly two types of files here that are both named after the octraTaskId, and they end with either .wav or _annot.json
+                //so to get the octraTaskId we need to strip those suffixes
+                $octraTaskId = "";
+                $fileType = "";
+                if(substr($matchResult['varMap']['octraTaskIdFile'], -4) === '.wav') {
+                    $octraTaskId = substr($matchResult['varMap']['octraTaskIdFile'], 0, -4);
+                }
+                else if(substr($matchResult['varMap']['octraTaskIdFile'], -11) === '_annot.json') {
+                    $octraTaskId = substr($matchResult['varMap']['octraTaskIdFile'], 0, -11);
+                }
+                else {
+                    return new ApiResponse(400, array('message' => 'Invalid file request.'));
+                }
+
+                $taskData = $this->getOctraTask($octraTaskId);
+                if(!$taskData) {
+                    return new ApiResponse(404, array('message' => 'Octra task not found.'));
+                }
+                $projectId = $taskData['projectId'];
                 if($this->userHasProjectAuthorization($projectId)) {
                     $apiResponse = $this->getFileDownload($matchResult['varMap']);
                 }
@@ -303,11 +321,32 @@ class Application {
         }
     }
 
+    function getOctraTask($octraTaskId) {
+        // Look up the task in MongoDB
+        $database = $this->getMongoDb();
+        $collection = $database->selectCollection('octravirtualtasks');
+        $task = $collection->findOne(['id' => $octraTaskId]);
+
+        if ($task == null) {
+            $this->addLog("Octra task not found: $octraTaskId", "error");
+            return false;
+        }
+
+        // Convert MongoDB document to array
+        $taskData = json_decode(json_encode(iterator_to_array($task)), TRUE);
+        
+        $projectId = $taskData['projectId'];
+        $sessionId = $taskData['sessionId'];
+        $bundleName = $taskData['bundleName'];
+
+        return $taskData;
+    }
+
     function getFileDownload($varMap) {
         
         try {
             // Extract octraTaskId from URL
-            $octraTaskId = urldecode($varMap['octraTaskId']);
+            $octraTaskId = urldecode($varMap['octraTaskIdFile']);
             
             // Determine if requesting annotation file or audio file
             $requestAnnotation = false;
@@ -321,17 +360,7 @@ class Application {
             $this->addLog("File download request for octraTaskId: $octraTaskId (annotation: " . ($requestAnnotation ? 'yes' : 'no') . ")", "info");
 
             // Look up the task in MongoDB
-            $database = $this->getMongoDb();
-            $collection = $database->selectCollection('octravirtualtasks');
-            $task = $collection->findOne(['id' => $octraTaskId]);
-
-            if ($task == null) {
-                $this->addLog("Octra task not found: $octraTaskId", "error");
-                return new ApiResponse(404, array('message' => 'Task not found.'));
-            }
-
-            // Convert MongoDB document to array
-            $taskData = json_decode(json_encode(iterator_to_array($task)), TRUE);
+            $taskData = $this->getOctraTask($octraTaskId);
             
             $projectId = $taskData['projectId'];
             $sessionId = $taskData['sessionId'];
