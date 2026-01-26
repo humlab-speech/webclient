@@ -25,9 +25,6 @@ export class ProjectManagerComponent implements OnInit {
   }
 
   ngOnInit():void {
-
-
-
     /*
     window.addEventListener('show-spr-scripts-dialog', () => {
       this.dashboard.modalActive = true;

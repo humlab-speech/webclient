@@ -91,6 +91,19 @@ export class AppctrlComponent implements OnInit {
   }
 
   selectAppOptions() {
+    //perform pre-flight checks here. E.g. we need to see if this project contains any bundles / audio files at all
+    let foundFiles = false;
+    this.project.sessions.forEach((session) => {
+      if(session.files.length > 0) {
+        foundFiles = true;
+      }
+    });
+
+    if(!foundFiles) {
+      this.notifier.notify("warning", "No audio files in project.");
+      return;
+    }
+
     //launch popup with app options
     this.modalService.showModal("octra-select-bundle-dialog", this.project);
   }
