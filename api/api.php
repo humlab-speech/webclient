@@ -1003,12 +1003,33 @@ class Application {
 
     function createDirectory($targetDir) {
         if(!is_dir($targetDir)) {
+            // Check parent directory permissions
+            $parentDir = dirname($targetDir);
+            if (!is_dir($parentDir)) {
+                $this->addLog("Parent directory does not exist: ".$parentDir, "debug");
+            } elseif (!is_writable($parentDir)) {
+                $this->addLog("Parent directory is not writable: ".$parentDir, "error");
+                $this->addLog("Parent directory permissions: ".substr(sprintf('%o', fileperms($parentDir)), -4), "error");
+            }
+            
             $oldUmask = umask(0);
-            $mkdirResult = mkdir($targetDir, 0700, true);
+            // Use 0777 to allow any user to create subdirectories (needed when dirs created by root but accessed by www-data)
+            $mkdirResult = @mkdir($targetDir, 0777, true);
             umask($oldUmask);
+            
             if(!$mkdirResult) {
                 $processUser = posix_getpwuid(posix_geteuid());
+                $lastError = error_get_last();
                 $this->addLog("Failed creating upload destination! : ".$targetDir." As user: ".$processUser['name'], "error");
+                if ($lastError) {
+                    $this->addLog("mkdir error: ".$lastError['message'], "error");
+                }
+                // Log parent directory info for debugging
+                if (is_dir($parentDir)) {
+                    $this->addLog("Parent dir exists: ".$parentDir." with permissions: ".substr(sprintf('%o', fileperms($parentDir)), -4), "debug");
+                }
+            } else {
+                $this->addLog("Successfully created directory: ".$targetDir, "debug");
             }
             return $mkdirResult;
         }
