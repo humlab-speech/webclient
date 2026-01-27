@@ -1,8 +1,0 @@
-{
-    "require": {
-        "guzzlehttp/guzzle": "^7.0",
-        "cboden/ratchet": "^0.4",
-        "ext-mongodb": "*",
-        "mongodb/mongodb": "^2.1"
-    }
-}

@@ -5,7 +5,7 @@
  * Requires a valid PHP session with loginAllowed set to true
  */
 
-require 'api/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 use MongoDB\Client;
 
 // Set session cookie parameters (same as index.php)

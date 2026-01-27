@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/SessionManagerInterface.class.php';
 require_once __DIR__ . '/ApiResponse.class.php';
 
