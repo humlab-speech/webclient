@@ -1,1 +1,1 @@
-FROM httpd:2.4.48
+FROM docker.io/library/httpd:2.4.48
