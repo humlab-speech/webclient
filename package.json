@@ -16,7 +16,7 @@
     "devbuild": "ng build --output-path dist --watch",
     "visp-dev": "npm run php:vendor && ng build --configuration=visp.dev --output-path dist --watch",
     "datalab-dev": "ng build --configuration=datalab.dev --output-path dist --watch",
-    "php:vendor": "cd api && composer install --no-interaction --prefer-dist"
+    "php:vendor": "composer install --no-interaction --prefer-dist"
   },
   "private": true,
   "dependencies": {
