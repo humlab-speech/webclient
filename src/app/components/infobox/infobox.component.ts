@@ -29,7 +29,7 @@ export class InfoboxComponent implements OnInit {
     this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes("emu-webapp");
 
     this.userService.fetchSession().subscribe((userSession) => {
-      if(userSession.eppn) {
+      if(userSession && userSession.eppn) {
         this.userIsLoggedIn = true;
       }
     });

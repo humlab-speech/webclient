@@ -188,10 +188,14 @@ export class UserService {
 
   fetchSession():Observable<UserSession> {
     let phpSessId = this.getCookie("PHPSESSID");
+    console.log('fetchSession: looking up phpSessId:', phpSessId);
     return new Observable<UserSession>((observer) => {
       this.systemService.sendCommandToBackend({cmd: "getSession", data: {
         phpSessId: phpSessId
       }}).then((response:WebSocketMessage) => {
+        if(!response.data || !response.data.eppn) {
+          console.warn('fetchSession: session-manager returned no session for phpSessId:', phpSessId, '— response:', response.data);
+        }
         this.setSession(<UserSession>response.data);
         observer.next(<UserSession>response.data);
         observer.complete();
