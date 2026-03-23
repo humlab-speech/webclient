@@ -75,7 +75,7 @@ if($shibHeadersFound) {
 
 $autoCreate = false;
 
-if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
+if(!empty(getenv("TEST_USER_LOGIN_KEY")) && isset($_GET['login']) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
   if(isset($_GET['user'])) {
     if($_GET['user'] == "test2") {
       addLog("Starting session for testuser2@example.com", "info");
@@ -124,46 +124,52 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
 
 addLog("Started session ".$sid."", "info");
 
-if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
-  addLog("Looking up user ".$_SESSION['username']." in database", "info");
+if(!empty($_SESSION['username'])) {
   $mongoPass = getenv("MONGO_ROOT_PASSWORD");
   $client = new Client("mongodb://root:".$mongoPass."@mongo");
   $database = $client->selectDatabase('visp');
   $collection = $database->selectCollection('users');
-  $cursor = $collection->findOne(['username' => $_SESSION['username']]);
-  if($cursor == null) { //empty result / not found
-    //create the mongodb entry
-    addLog("Creating new user ".$_SESSION['username']." in database", "info");
-    
-    // For test users, automatically grant access. For real users, access must be granted via access list.
-    $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
-    
-    $collection->insertOne([
-      'firstName' => $_SESSION['firstName'],
-      'lastName' => $_SESSION['lastName'],
-      'fullName' => $_SESSION['fullName'],
-      'email' => $_SESSION['email'],
-      'eppn' => $_SESSION['eppn'],
-      'username' => $_SESSION['username'],
-      'phpSessionId' => $sid,
-      'loginAllowed' => $loginAllowed,
-      'privileges' => [
-        'createInviteCodes' => false,
-      ]
-    ]);
-    
-  }
-  else if($cursor != null) {
-    //update the mongodb user object with the current phpsessid
-    addLog("Found existing user ".$_SESSION['username']." in database. Updating session.", "info");
-    $collection->updateOne(
-      ['username' => $_SESSION['username']],
-      ['$set' => ['phpSessionId' => $sid]]
-    );
 
-    $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
-    $_SESSION['id'] = $user['id'];
+  if(empty($_SESSION['id'])) {
+    // First load after login: look up or create user and set $_SESSION['id']
+    addLog("Looking up user ".$_SESSION['username']." in database", "info");
+    $cursor = $collection->findOne(['username' => $_SESSION['username']]);
+    if($cursor == null) { //empty result / not found
+      //create the mongodb entry
+      addLog("Creating new user ".$_SESSION['username']." in database", "info");
+      
+      // For test users, automatically grant access. For real users, access must be granted via access list.
+      $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
+      
+      $collection->insertOne([
+        'firstName' => $_SESSION['firstName'],
+        'lastName' => $_SESSION['lastName'],
+        'fullName' => $_SESSION['fullName'],
+        'email' => $_SESSION['email'],
+        'eppn' => $_SESSION['eppn'],
+        'username' => $_SESSION['username'],
+        'phpSessionId' => $sid,
+        'loginAllowed' => $loginAllowed,
+        'privileges' => [
+          'createInviteCodes' => false,
+        ]
+      ]);
+      
+    }
+    else if($cursor != null) {
+      $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
+      $_SESSION['id'] = $user['id'];
+    }
   }
+
+  // Always update phpSessionId on every page load so session-manager can always look up the current session.
+  // This ensures that after a session-manager restart (or any other event that clears its state),
+  // the next page load re-syncs the current PHP session ID into MongoDB.
+  addLog("Updating phpSessionId for user ".$_SESSION['username']." in database", "info");
+  $collection->updateOne(
+    ['username' => $_SESSION['username']],
+    ['$set' => ['phpSessionId' => $sid]]
+  );
 }
 
 //addLog(print_r($_SESSION, true), "debug");
