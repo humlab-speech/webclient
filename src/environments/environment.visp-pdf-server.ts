@@ -5,8 +5,6 @@ export const environment = {
     EMUDB_INTEGRATION: true,
     ENABLED_APPLICATIONS: ["rstudio", "jupyter", "emu-webapp", "octra", "script"],
     BASE_DOMAIN: "visp.pdf-server.humlab.umu.se",
-    GITLAB_API_ENDPOINT: "https://gitlab.visp.pdf-server.humlab.umu.se/api/v4",
-    GITLAB_PERSONAL_ACCESS_TOKEN: null,
     ACCESS_LIST_ENABLED: false,
     PROTOCOL: "https",
     production: true

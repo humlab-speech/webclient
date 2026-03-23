@@ -9,8 +9,6 @@ export const environment = {
     EMUDB_INTEGRATION: true,
     ENABLED_APPLICATIONS: ["rstudio", "jupyter", "emu-webapp", "octra", "script"],
     BASE_DOMAIN: "visp.local",
-    GITLAB_API_ENDPOINT: "gitlab.visp.local/api/v4",
-    GITLAB_PERSONAL_ACCESS_TOKEN: null,
     ACCESS_LIST_ENABLED: true,
     PROTOCOL: "https",
     production: false

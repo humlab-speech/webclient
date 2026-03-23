@@ -5,8 +5,6 @@ export const environment = {
     EMUDB_INTEGRATION: false,
     ENABLED_APPLICATIONS: ["rstudio", "jupyter", "vscode", "octra", "labjs"],
     BASE_DOMAIN: "datalab.humlab.umu.se",
-    GITLAB_API_ENDPOINT: "https://gitlab.datalab.humlab.umu.se/api/v4",
-    GITLAB_PERSONAL_ACCESS_TOKEN: null,
     ACCESS_LIST_ENABLED: false,
     PROTOCOL: "https",
     production: true

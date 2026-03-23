@@ -5,7 +5,6 @@ import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
 import { SystemService } from './system.service';
-import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { NotifierService } from 'angular-notifier';
 import { nanoid } from 'nanoid';
@@ -299,7 +298,7 @@ export class ProjectService {
   }
 
   async getSession(projectId) {
-    return this.http.get<ApiResponse>(window.location.protocol+'//'+environment.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
+    return this.http.get<ApiResponse>(window.location.protocol+'//'+window.location.hostname+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
       console.log(response);
       return response;
     });

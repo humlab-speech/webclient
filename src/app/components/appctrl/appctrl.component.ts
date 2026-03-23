@@ -6,7 +6,6 @@ import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { ProjectService } from 'src/app/services/project.service';
-import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
@@ -194,7 +193,7 @@ export class AppctrlComponent implements OnInit {
         this.showLoadingIndicator = true;
         
         let cookieParams = " SameSite=None; Secure";
-        if(environment.PROTOCOL == "http") {
+        if(window.location.protocol == "http:") {
           cookieParams = "";
         }
         Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
@@ -227,7 +226,7 @@ export class AppctrlComponent implements OnInit {
         this.showLoadingIndicator = true;
         
         let cookieParams = " SameSite=None; Secure";
-        if(environment.PROTOCOL == "http") {
+        if(window.location.protocol == "http:") {
           cookieParams = "";
         }
         console.log("Setting SessionAccessCode cookie");
