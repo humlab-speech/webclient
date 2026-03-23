@@ -3,6 +3,14 @@
         <h3>
             {{ project.name }}
             <img *ngIf="deleteProjectInProgress" src="../../../assets/loading-indicator.svg">
+            <span class="health-badge" *ngIf="project.healthStatus">
+                <span class="audio-count-badge" [title]="'Audio files in this project'">
+                    <i class="fa fa-file-audio-o"></i> {{ project.healthStatus.audioFileCount }}
+                </span>
+                <span *ngIf="!project.healthStatus.hasEmuDbConfig" class="warning-badge" title="Missing EmuDB configuration">
+                    <i class="fa fa-warning"></i>
+                </span>
+            </span>
         </h3>
 
         <div class="project-menu" (mouseover)="showProjectMenu(true)" (mouseout)="showProjectMenu(false, true)">

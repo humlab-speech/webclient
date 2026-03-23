@@ -49,6 +49,35 @@ h4 {
     margin-left: 0.5em;
 }
 
+.health-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-left: 1em;
+    font-size: 0.85em;
+}
+
+.audio-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    padding: 0.25em 0.5em;
+    background-color: #e8f4f8;
+    border-radius: 0.25em;
+    color: #2c5a7a;
+    font-weight: 500;
+}
+
+.warning-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.35em;
+    background-color: #fff3cd;
+    border-radius: 0.25em;
+    color: #856404;
+    font-weight: bold;
+}
+
 .project-menu {
     position:relative;
     width: 1rem;
