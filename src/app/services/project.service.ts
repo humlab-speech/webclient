@@ -466,29 +466,47 @@ export class ProjectService {
         progressPercentage: 0
       });
 
-      this.systemService.wsSubject.subscribe((data:any) => {
-        if(data.type == "cmd-result" && data.cmd == "saveProject") {
-          let progress = this.parseProgress(data.progress);
-          if(progress.currentStep == progress.totalSteps) {
-            if(!data.result) {
-              this.notifierService.notify("error", data.message);
+      const wsSub = this.systemService.wsSubject.subscribe({
+        next: (data:any) => {
+          if(data.type == "cmd-result" && data.cmd == "saveProject") {
+            let progress = this.parseProgress(data.progress);
+            if(progress.currentStep == progress.totalSteps) {
+              wsSub.unsubscribe();
+              if(!data.result) {
+                const errMsg = data.message || 'Project creation failed on the server.';
+                console.error('[saveProject] Server reported failure:', errMsg);
+                this.notifierService.notify("error", errMsg);
+                subscriber.next({
+                  msg: errMsg,
+                  progressPercentage: 100,
+                  error: true
+                });
+                subscriber.complete();
+                return;
+              }
+              subscriber.next({
+                msg: "Project saved",
+                progressPercentage: 100
+              });
+
+              //send out an event signaling that the project has been saved
+              window.dispatchEvent(new CustomEvent('projectSaved'));
+
+              subscriber.complete();
             }
-            subscriber.next({
-              msg: "Project saved",
-              progressPercentage: 100
-            });
-
-            //send out an event signaling that the project has been saved
-            window.dispatchEvent(new CustomEvent('projectSaved'));
-
-            subscriber.complete();
+            else {
+              subscriber.next({
+                msg: data.message,
+                progressPercentage: Math.round(progress.currentStep / progress.totalSteps * 100)
+              });
+            }
           }
-          else {
-            subscriber.next({
-              msg: data.message,
-              progressPercentage: Math.round(progress.currentStep / progress.totalSteps * 100)
-            });
-          }
+        },
+        error: (err) => {
+          console.error('[saveProject] WebSocket error during project save:', err);
+          this.notifierService.notify('error', 'Lost connection to server while saving project. Check browser console for details.');
+          subscriber.next({ msg: 'Connection error', progressPercentage: 100, error: true });
+          subscriber.complete();
         }
       });
 

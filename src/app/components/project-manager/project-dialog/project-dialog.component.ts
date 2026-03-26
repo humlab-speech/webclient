@@ -276,6 +276,12 @@ export class ProjectDialogComponent implements OnInit {
       this.setTaskProgressPercentage(data.progressPercentage, "submitBtn", data.msg);
 
       if(data.progressPercentage == 100) {
+        if(data.error) {
+          // Server reported a failure — stop the spinner/loading state but don't close the dialog
+          console.error('[project-dialog] Project save failed:', data.msg);
+          this.setLoadingStatus(false);
+          return;
+        }
         this.projectService.fetchProjects(true).subscribe(msg => {
           this.setLoadingStatus(false);
           this.closeCreateProjectDialog();
