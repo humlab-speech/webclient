@@ -8,9 +8,19 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\ClientException;
 use MongoDB\Client;
 
-$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
-//if we are running on visp.local set cookie secure to false
-$secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
+// Set cookie domain based on HTTP_HOST so cookies work across subdomains
+// (e.g. BASE_DOMAIN, emu-webapp.BASE_DOMAIN, octra.BASE_DOMAIN)
+// For IP addresses, use false (no subdomain sharing possible)
+$host = $_SERVER['HTTP_HOST'];
+if(filter_var($host, FILTER_VALIDATE_IP)) {
+    $domain = false;  // IP address — no subdomain sharing
+    $secure = false;
+} else {
+    // Strip any port number, then prefix with dot for subdomain sharing
+    $domainPart = preg_replace('/:\d+$/', '', $host);
+    $domain = "." . $domainPart;
+    $secure = ($host !== 'visp.local');  // HTTPS everywhere except local dev
+}
 $httpOnly = false;
 
 session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
@@ -1024,8 +1034,15 @@ class Application {
             if (!is_dir($parentDir)) {
                 $this->addLog("Parent directory does not exist: ".$parentDir, "debug");
             } elseif (!is_writable($parentDir)) {
-                $this->addLog("Parent directory is not writable: ".$parentDir, "error");
-                $this->addLog("Parent directory permissions: ".substr(sprintf('%o', fileperms($parentDir)), -4), "error");
+                $parentPerms = substr(sprintf('%o', fileperms($parentDir)), -4);
+                $parentOwner = fileowner($parentDir);
+                $processUser = posix_getpwuid(posix_geteuid());
+                $this->addLog(
+                    "Parent directory not writable: ".$parentDir.
+                    " (perms=".$parentPerms.", owner_uid=".$parentOwner.
+                    ", running as ".$processUser['name']." uid=".posix_geteuid().")",
+                    "error"
+                );
             }
             
             $oldUmask = umask(0);
