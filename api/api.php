@@ -418,8 +418,24 @@ class Application {
 
             if (!$sessionFound || $fullPath === null) {
                 $fileType = $requestAnnotation ? 'Annotation' : 'Audio';
+                // Log detailed diagnostic info so we can see exactly what's on disk
+                $sessionDirs = glob($projectPath . "/*_ses");
+                $sessionList = array_map('basename', $sessionDirs ?: []);
+                $bundleDirsList = [];
+                foreach ($sessionDirs ?: [] as $sd) {
+                    $bndls = glob($sd . "/*_bndl");
+                    $bundleDirsList[basename($sd)] = array_map('basename', $bndls ?: []);
+                }
                 $this->addLog("$fileType file not found for bundle: $bundleName in project $projectId", "error");
-                return new ApiResponse(404, array('message' => "$fileType file not found."));
+                $this->addLog("  Search path: $projectPath", "error");
+                $this->addLog("  Session dirs found: " . (empty($sessionList) ? "NONE" : implode(", ", $sessionList)), "error");
+                foreach ($bundleDirsList as $ses => $bndls) {
+                    $this->addLog("  Bundles in $ses: " . (empty($bndls) ? "NONE" : implode(", ", $bndls)), "error");
+                }
+                return new ApiResponse(404, array(
+                    'message' => "$fileType file not found.",
+                    'detail' => "Bundle '$bundleName' not found on disk in project $projectId. Sessions: " . (empty($sessionList) ? "none" : implode(", ", $sessionList)) . ". Bundle dirs: " . (empty($bundleDirsList) ? "none" : json_encode($bundleDirsList))
+                ));
             }
 
             $this->addLog("Attempting to access file: $fullPath", "debug");
