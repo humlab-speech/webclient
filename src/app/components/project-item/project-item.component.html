@@ -10,6 +10,12 @@
                 <span *ngIf="!project.healthStatus.hasEmuDbConfig" class="warning-badge" title="Missing EmuDB configuration">
                     <i class="fa fa-warning"></i>
                 </span>
+                <span *ngIf="project.healthStatus.issues && project.healthStatus.issues.length > 0"
+                      class="warning-badge issues-warning"
+                      (click)="showCleanupConfirmation()"
+                      [title]="'Click to clean up orphaned data. Issues: ' + project.healthStatus.issues.join('; ')">
+                    <i class="fa fa-exclamation-triangle"></i> {{ project.healthStatus.issues.length }}
+                </span>
             </span>
         </h3>
 

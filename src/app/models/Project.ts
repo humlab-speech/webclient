@@ -17,6 +17,8 @@ export class Project {
     healthStatus?: {
         hasEmuDbConfig: boolean;
         audioFileCount: number;
+        mongoSessionCount: number;
+        emuDbSessionCount: number;
         issues: string[];
     };
 }

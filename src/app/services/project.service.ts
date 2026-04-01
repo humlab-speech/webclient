@@ -719,4 +719,19 @@ export class ProjectService {
     });
   }
 
+  cleanupOrphanedSessions(projectId: string) {
+    return new Observable((observer) => {
+      let messageToBackend = {
+        cmd: "cleanupOrphanedSessions",
+        data: {
+          projectId: projectId
+        }
+      };
+      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg: WebSocketMessage) => {
+        observer.next(wsMsg);
+        observer.complete();
+      });
+    });
+  }
+
 }
