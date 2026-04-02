@@ -211,7 +211,7 @@ export class ProjectItemComponent implements OnInit {
   showCleanupConfirmation() {
     // Show orphaned session names and file count mismatch details
     const details = this.project.healthStatus.issues.join('\n\n');
-    const message = `This project has orphaned data on disk:\n\n${details}\n\nWould you like to clean up the orphaned EmuDB session directories?\n\nWarning: This will permanently delete the stale directories.`;
+    const message = `This project has consistency issues:\n\n${details}\n\nWould you like to clean up?\n\n• Orphaned directories on disk will be deleted\n• Ghost sessions in the database (missing files) will be marked as deleted\n\nThis cannot be undone.`;
     
     if (window.confirm(message)) {
       this.cleanupOrphanedSessions();
@@ -224,13 +224,17 @@ export class ProjectItemComponent implements OnInit {
       (msg: any) => {
         const result = msg.data || msg;
         if (result.success) {
+          const actions = [];
           if (result.removed && result.removed.length > 0) {
-            this.notifierService.notify(
-              "success",
-              `Cleaned up ${result.removed.length} orphaned session(s): ${result.removed.join(', ')}`
-            );
+            actions.push(`Removed ${result.removed.length} orphaned dir(s): ${result.removed.join(', ')}`);
+          }
+          if (result.purged && result.purged.length > 0) {
+            actions.push(`Marked ${result.purged.length} ghost session(s) as deleted: ${result.purged.join(', ')}`);
+          }
+          if (actions.length > 0) {
+            this.notifierService.notify("success", actions.join('. '));
           } else {
-            this.notifierService.notify("info", "No orphaned sessions found to clean up");
+            this.notifierService.notify("info", "No issues found to clean up");
           }
           // Refresh project list to update health status
           this.projectService.fetchProjects(true).subscribe();
