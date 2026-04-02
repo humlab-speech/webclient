@@ -46,6 +46,9 @@ export class TranscribeDialogComponent implements OnInit {
   private intervalId: any;
   public transcriptionQueueItemsLoaded: boolean = false;
 
+  // Stores the settings snapshot from the server for each bundle (keyed by "session/bundle")
+  queuedSettings: { [key: string]: any } = {};
+
   constructor(private fb: FormBuilder, private modalService: ModalService, private projectService: ProjectService, private systemService: SystemService, private notifierService: NotifierService) {
     
     //make this.languages into an array of objects with id and name based on the availableLanguages
@@ -113,6 +116,26 @@ export class TranscribeDialogComponent implements OnInit {
             if (languageControl && !languageControl.touched) {
               languageControl.patchValue(queueItem.language);
             }
+
+            // Patch back model and diarize so dropdowns reflect what was actually queued
+            const modelControl = bundle.get('model');
+            if (modelControl && !modelControl.touched && queueItem.model) {
+              modelControl.patchValue(queueItem.model);
+            }
+            const diarizeControl = bundle.get('diarize');
+            if (diarizeControl && !diarizeControl.touched && queueItem.diarize !== undefined) {
+              diarizeControl.patchValue(queueItem.diarize);
+            }
+
+            // Store the full settings snapshot for the tooltip
+            const key = queueItem.session + '/' + queueItem.bundle;
+            this.queuedSettings[key] = {
+              model: queueItem.model,
+              language: queueItem.language,
+              diarize: queueItem.diarize,
+              advancedOptions: queueItem.advancedOptions || {},
+              error: queueItem.error || null,
+            };
           }
         });
 
@@ -164,6 +187,41 @@ export class TranscribeDialogComponent implements OnInit {
     if (!this.advancedOptions.vad) {
       this.advancedOptions.vadOnset = 0.5;
     }
+  }
+
+  getModelLabel(modelId: string): string {
+    const m = this.models.find(m => m.id === modelId);
+    return m ? m.name : modelId || 'Unknown';
+  }
+
+  getSettingsSummary(bundle: any): string {
+    const key = bundle.value.sessionName + '/' + bundle.value.name;
+    const s = this.queuedSettings[key];
+    if (!s) return 'No settings recorded';
+
+    const lines: string[] = [];
+    lines.push('Model: ' + this.getModelLabel(s.model));
+    lines.push('Language: ' + (s.language || 'Auto'));
+    lines.push('Diarize: ' + (s.diarize ? 'Yes' : 'No'));
+
+    const adv = s.advancedOptions;
+    if (adv && Object.keys(adv).length > 0) {
+      lines.push('Beam Size: ' + (adv.beamSize ?? 5));
+      lines.push('Repetition Penalty: ' + (adv.repetitionPenalty ?? 1.3));
+      lines.push('VAD: ' + (adv.vad ? 'Enabled (onset ' + (adv.vadOnset ?? 0.3) + ')' : 'Disabled'));
+      if (adv.conditionOnPreviousText) {
+        lines.push('Condition on Previous Text: Yes');
+      }
+    }
+
+    if (s.error) {
+      // Truncate very long errors (e.g. stack traces) to keep the tooltip readable
+      const errMsg = s.error.length > 200 ? s.error.substring(0, 200) + '…' : s.error;
+      lines.push('');
+      lines.push('⚠ Error: ' + errMsg);
+    }
+
+    return lines.join('\n');
   }
 
   // Add a bundle to the transcription queue

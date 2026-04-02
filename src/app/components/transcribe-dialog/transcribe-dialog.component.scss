@@ -90,6 +90,31 @@ select.language-select {
   cursor: pointer;
 }
 
+// Settings info icon (tooltip trigger)
+.settings-info-icon {
+  color: #6c757d;
+  cursor: help;
+  margin-left: 0.4em;
+  font-size: 0.95em;
+
+  &:hover {
+    color: #495057;
+  }
+}
+
+.error-info-icon {
+  color: #dc3545;
+
+  &:hover {
+    color: #a71d2a;
+  }
+}
+
+.transcription-error {
+  color: #dc3545;
+  font-weight: 600;
+}
+
 // Advanced options collapsible section
 .advanced-options-section {
   margin-bottom: 1em;

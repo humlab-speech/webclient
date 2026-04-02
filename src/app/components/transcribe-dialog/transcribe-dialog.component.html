@@ -165,9 +165,20 @@
                     <span>Cancel</span>
                   </button>
 
+                  <i *ngIf="bundle.value.status == 'Queued' || bundle.value.status == 'Running'"
+                    class="fa fa-info-circle settings-info-icon"
+                    aria-hidden="true"
+                    [matTooltip]="getSettingsSummary(bundle)"
+                    matTooltipClass="settings-tooltip"></i>
+
                 </td>
                 <td>
                   <div *ngIf="bundle.value.status == 'Complete'" class="download-container">
+
+                    <i class="fa fa-info-circle settings-info-icon"
+                      aria-hidden="true"
+                      [matTooltip]="getSettingsSummary(bundle)"
+                      matTooltipClass="settings-tooltip"></i>
 
                     <select formControlName="selectedFileType" class="transcription-select">
                       <option value="srt">SRT subtitle file</option>
@@ -180,7 +191,16 @@
                       </div>
                     </button>
                   </div>
-                  <div *ngIf="bundle.value.status != 'Complete'">
+                  <div *ngIf="bundle.value.status == 'Error'">
+                    <div class="transcription-status transcription-error">
+                      Error
+                      <i class="fa fa-info-circle settings-info-icon error-info-icon"
+                        aria-hidden="true"
+                        [matTooltip]="getSettingsSummary(bundle)"
+                        matTooltipClass="settings-tooltip"></i>
+                    </div>
+                  </div>
+                  <div *ngIf="bundle.value.status != 'Complete' && bundle.value.status != 'Error'">
                     <div class="transcription-status">
                       {{ bundle.value.status ? bundle.value.status : 'Not transcribed' }}
                       <div *ngIf="bundle.value.status == 'Running'" class="loading-spinner">
