@@ -12,7 +12,7 @@ import { SigninCtrlComponent } from './components/signin-ctrl/signin-ctrl.compon
 import { ProjectManagerComponent } from './components/project-manager/project-manager.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ProjectItemComponent } from './components/project-item/project-item.component';
 import { AppctrlComponent } from './components/appctrl/appctrl.component';
 import { NgxDropzoneModule } from 'ngx-dropzone';
@@ -96,6 +96,7 @@ import { OctraSelectBundleDialogComponent } from './components/octra-select-bund
     HttpClientModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    FormsModule,
     NgxDropzoneModule,
     MatInputModule,
     MatSelectModule,

@@ -33,6 +33,16 @@ export class TranscribeDialogComponent implements OnInit {
     name: 'KB Whisper',
   }];
 
+  showAdvancedOptions = false;
+  beamSizes = [5, 6, 7, 8, 9, 10];
+  advancedOptions = {
+    beamSize: 5,
+    repetitionPenalty: 1.3,
+    vad: false,
+    vadOnset: 0.3,
+    conditionOnPreviousText: false,
+  };
+
   private intervalId: any;
   public transcriptionQueueItemsLoaded: boolean = false;
 
@@ -124,6 +134,7 @@ export class TranscribeDialogComponent implements OnInit {
             name: [file.name, Validators.required],
             language: [session.language || 'Automatic Detection', Validators.required], // Default to session language or auto
             model: ['whisper', Validators.required], // Default model
+            diarize: [false],
             status: "",
             oldStatus: "",
             selectedFileType: ['srt'],
@@ -148,6 +159,13 @@ export class TranscribeDialogComponent implements OnInit {
     console.log(`Model updated for bundle ${bundle.value.name}: ${selected}`);
   }
 
+  onVadChanged(): void {
+    // Reset VAD onset to default when toggling
+    if (!this.advancedOptions.vad) {
+      this.advancedOptions.vadOnset = 0.5;
+    }
+  }
+
   // Add a bundle to the transcription queue
   addToTranscriptionQueue(bundle: any): void {
     console.log('Adding bundle to transcription queue:', bundle);
@@ -160,6 +178,14 @@ export class TranscribeDialogComponent implements OnInit {
         bundle: bundle.value.name,
         language: bundle.value.language,
         model: bundle.value.model,
+        diarize: bundle.value.diarize,
+        advancedOptions: {
+          beamSize: this.advancedOptions.beamSize,
+          repetitionPenalty: this.advancedOptions.repetitionPenalty,
+          vad: this.advancedOptions.vad,
+          vadOnset: this.advancedOptions.vadOnset,
+          conditionOnPreviousText: this.advancedOptions.conditionOnPreviousText,
+        },
       }
     }).then((msg:WebSocketMessage) => {
       if(!msg.result) {

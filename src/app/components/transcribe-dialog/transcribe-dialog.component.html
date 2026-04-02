@@ -15,6 +15,58 @@
         This process will take some time and you will be emailed when the transcription is complete, at which point you can return to this dialog to download the transcription files.
       </div>
 
+      <div class="dialog-info-box">
+        <i class="fa fa-info-circle" aria-hidden="true"></i>
+        <strong>Model selection:</strong> <em>KB Whisper</em> is a dedicated Swedish model with superior quality for Swedish audio. <em>Whisper</em> is the standard multilingual model that supports all languages including automatic language detection. Switching between models may add a few seconds to the first transcription while the model loads.
+      </div>
+
+      <div class="advanced-options-section">
+        <div class="advanced-options-toggle" (click)="showAdvancedOptions = !showAdvancedOptions">
+          <i class="fa" [ngClass]="showAdvancedOptions ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
+          Advanced Options
+        </div>
+        <div *ngIf="showAdvancedOptions" class="advanced-options-panel">
+          <div class="advanced-options-grid">
+            <div class="option-group">
+              <label>Beam Size
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Number of beams for beam search decoding. Higher values may improve accuracy but increase processing time. Default: 5."></i>
+              </label>
+              <select [(ngModel)]="advancedOptions.beamSize" [ngModelOptions]="{standalone: true}" class="advanced-select">
+                <option *ngFor="let bs of beamSizes" [ngValue]="bs">{{ bs }}</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <label>Repetition Penalty
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Penalizes repeated tokens. Values above 1.0 reduce repetition. Default: 1.3."></i>
+              </label>
+              <input type="number" [(ngModel)]="advancedOptions.repetitionPenalty" [ngModelOptions]="{standalone: true}" min="1.0" max="2.0" step="0.1" class="advanced-input">
+            </div>
+            <div class="option-group">
+              <label>VAD (Voice Activity Detection)
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Pre-filters silence before transcription. Enable when audio has long silences. Default: disabled."></i>
+              </label>
+              <select [(ngModel)]="advancedOptions.vad" [ngModelOptions]="{standalone: true}" class="advanced-select" (change)="onVadChanged()">
+                <option [ngValue]="true">Enabled</option>
+                <option [ngValue]="false">Disabled</option>
+              </select>
+            </div>
+            <div class="option-group" *ngIf="advancedOptions.vad">
+              <label>VAD Sensitivity
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="How aggressively VAD detects speech onset. Lower values are more sensitive (detect more speech). Default: 0.5."></i>
+              </label>
+              <input type="number" [(ngModel)]="advancedOptions.vadOnset" [ngModelOptions]="{standalone: true}" min="0.0" max="1.0" step="0.1" class="advanced-input">
+            </div>
+            <div class="option-group">
+              <label>
+                <input type="checkbox" [(ngModel)]="advancedOptions.conditionOnPreviousText" [ngModelOptions]="{standalone: true}">
+                Condition on Previous Text
+                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Use the previous segment's output as context for the next. Can improve consistency but may propagate errors. Default: off."></i>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="!transcriptionQueueItemsLoaded" class="loading-spinner">
         <img src="../../../assets/loading-indicator-4-dark.svg">
       </div>
@@ -34,12 +86,15 @@
                 </th>
                 <th>
                     Model
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="The Whisper model to be used for transcription. If you are transcribing Swedish then 'KB Whisper' is probably going to be the better option in most cases. For everything else you are probably better off using the regular Whisper model."></i>
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Choose which Whisper model to use. 'KB Whisper' is a Swedish-specific model with superior quality for Swedish audio. 'Whisper' is the standard multilingual model that supports all languages and automatic language detection."></i>
                 </th>
                 <th>
-                <th>
                     Language
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="If you know which language is being spoken in this audio file, you can help the auto-transcription process by designating the language used. Otherwise it will try to determine the language automatically."></i>
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Select the spoken language to help transcription accuracy, or use 'Auto' for automatic detection (multilingual model only)."></i>
+                </th>
+                <th>
+                    Diarize
+                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Speaker diarization identifies who is speaking when. Enable this if your audio contains multiple speakers and you want them labelled in the transcript."></i>
                 </th>
                 <th>
                     Actions
@@ -52,7 +107,7 @@
               </tr>
             </thead>
             <tbody formArrayName="bundles">
-              <tr *ngIf="bundles.controls.length == 0"><td colspan="5">There are no files in this project.</td></tr>
+              <tr *ngIf="bundles.controls.length == 0"><td colspan="7">There are no files in this project.</td></tr>
               <tr *ngFor="let bundle of bundles.controls; let i = index" [formGroupName]="i">
                 <td>{{ bundle.value.sessionName }}</td>
                 <td>{{ bundle.value.name }}</td>
@@ -77,6 +132,9 @@
                       {{ lang.name }}
                     </option>
                   </select>
+                </td>
+                <td class="diarize-cell">
+                  <input type="checkbox" formControlName="diarize" class="diarize-checkbox">
                 </td>
                 <td>
 
