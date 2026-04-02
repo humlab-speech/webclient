@@ -221,9 +221,10 @@ export class ProjectItemComponent implements OnInit {
   cleanupOrphanedSessions() {
     const projectId: string = String(this.project.id);
     this.projectService.cleanupOrphanedSessions(projectId).subscribe(
-      (result: any) => {
+      (msg: any) => {
+        const result = msg.data || msg;
         if (result.success) {
-          if (result.removed.length > 0) {
+          if (result.removed && result.removed.length > 0) {
             this.notifierService.notify(
               "success",
               `Cleaned up ${result.removed.length} orphaned session(s): ${result.removed.join(', ')}`
@@ -234,7 +235,7 @@ export class ProjectItemComponent implements OnInit {
           // Refresh project list to update health status
           this.projectService.fetchProjects(true).subscribe();
         } else {
-          const errorMsg = result.errors.join('; ');
+          const errorMsg = (result.errors && result.errors.length > 0) ? result.errors.join('; ') : 'Unknown error';
           this.notifierService.notify("error", `Cleanup failed: ${errorMsg}`);
         }
       },
