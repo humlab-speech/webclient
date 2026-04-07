@@ -202,7 +202,7 @@ export class TranscribeDialogComponent implements OnInit {
     const lines: string[] = [];
     lines.push('Model: ' + this.getModelLabel(s.model));
     lines.push('Language: ' + (s.language || 'Auto'));
-    lines.push('Diarize: ' + (s.diarize ? 'Yes' : 'No'));
+    lines.push('Separate speakers: ' + (s.diarize ? 'Yes' : 'No'));
 
     const adv = s.advancedOptions;
     if (adv && Object.keys(adv).length > 0) {
