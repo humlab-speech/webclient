@@ -380,11 +380,9 @@ class Application {
 
             // Construct the file path
             // The bundleName is the audio file name (e.g., 'prompt_1.wav')
-            // We need to find the session and bundle directories
             $baseDir = '/repositories';
             
             // The file structure is: /repositories/{projectId}/Data/VISP_emuDB/{session_name}_ses/{bundle_name}_bndl/{file}.wav
-            // We need to search for the session directory that matches sessionId and contains the bundle
             $projectPath = "{$baseDir}/{$projectId}/Data/VISP_emuDB";
             
             if (!is_dir($projectPath)) {
@@ -392,35 +390,87 @@ class Application {
                 return new ApiResponse(404, array('message' => 'Project data not found.'));
             }
 
-            // Find the session directory
+            // Look up the session name from the project document using the sessionId
+            // This ensures we find the correct session even when multiple sessions
+            // contain bundles with the same audio filename
+            $sessionName = null;
+            $database = $this->getMongoDb();
+            $projectCollection = $database->selectCollection('projects');
+            $projectDoc = $projectCollection->findOne(['id' => $projectId]);
+            if ($projectDoc) {
+                $projectData = json_decode(json_encode(iterator_to_array($projectDoc)), TRUE);
+                if (isset($projectData['sessions'])) {
+                    foreach ($projectData['sessions'] as $sess) {
+                        if (isset($sess['id']) && $sess['id'] === $sessionId) {
+                            $sessionName = $sess['name'];
+                            break;
+                        }
+                    }
+                }
+            }
+
             $sessionFound = false;
             $fullPath = null;
-            
-            $sessions = glob($projectPath . "/*_ses");
-            foreach ($sessions as $sessionDir) {
-                // Check if this session contains a bundle with the bundleName
-                $bundles = glob($sessionDir . "/*_bndl");
-                foreach ($bundles as $bundleDir) {
-                    $audioFile = $bundleDir . "/" . $bundleName;
-                    if (file_exists($audioFile)) {
-                        // If requesting annotation file, look for the _annot.json file
-                        if ($requestAnnotation) {
-                            // Extract base name without .wav extension
-                            $baseFileName = pathinfo($bundleName, PATHINFO_FILENAME);
-                            $annotFile = $bundleDir . "/" . $baseFileName . "_annot.json";
-                            
-                            if (file_exists($annotFile)) {
-                                $fullPath = $annotFile;
+            $baseFileName = pathinfo($bundleName, PATHINFO_FILENAME);
+            $bundlePathName = $baseFileName . "_bndl";
+
+            if ($sessionName !== null) {
+                // Direct lookup: use the exact session directory from MongoDB
+                $sessionDir = $projectPath . "/" . $sessionName . "_ses";
+                $bundleDir = $sessionDir . "/" . $bundlePathName;
+                $audioFile = $bundleDir . "/" . $bundleName;
+
+                $this->addLog("Direct session lookup: $sessionName (sessionId: $sessionId)", "debug");
+
+                if (file_exists($audioFile)) {
+                    if ($requestAnnotation) {
+                        $annotFile = $bundleDir . "/" . $baseFileName . "_annot.json";
+                        if (file_exists($annotFile)) {
+                            $fullPath = $annotFile;
+                            $sessionFound = true;
+                        } else {
+                            $this->addLog("Annotation file not found: $annotFile", "error");
+                            return new ApiResponse(404, array('message' => 'Annotation file not found.'));
+                        }
+                    } else {
+                        $fullPath = $audioFile;
+                        $sessionFound = true;
+                    }
+                } else {
+                    $this->addLog("Audio file not found at expected path: $audioFile", "warning");
+                }
+            }
+
+            // Fallback: search all sessions (handles edge cases where session name
+            // changed or MongoDB is out of sync with disk)
+            if (!$sessionFound) {
+                if ($sessionName !== null) {
+                    $this->addLog("Direct lookup failed for session '$sessionName', falling back to full search", "warning");
+                } else {
+                    $this->addLog("Session ID '$sessionId' not found in project, falling back to full search", "warning");
+                }
+
+                $sessions = glob($projectPath . "/*_ses");
+                foreach ($sessions as $sessionDir) {
+                    $bundles = glob($sessionDir . "/*_bndl");
+                    foreach ($bundles as $bundleDir) {
+                        $audioFile = $bundleDir . "/" . $bundleName;
+                        if (file_exists($audioFile)) {
+                            if ($requestAnnotation) {
+                                $annotFile = $bundleDir . "/" . $baseFileName . "_annot.json";
+                                if (file_exists($annotFile)) {
+                                    $fullPath = $annotFile;
+                                    $sessionFound = true;
+                                    break 2;
+                                } else {
+                                    $this->addLog("Annotation file not found: $annotFile", "error");
+                                    return new ApiResponse(404, array('message' => 'Annotation file not found.'));
+                                }
+                            } else {
+                                $fullPath = $audioFile;
                                 $sessionFound = true;
                                 break 2;
-                            } else {
-                                $this->addLog("Annotation file not found: $annotFile", "error");
-                                return new ApiResponse(404, array('message' => 'Annotation file not found.'));
                             }
-                        } else {
-                            $fullPath = $audioFile;
-                            $sessionFound = true;
-                            break 2;
                         }
                     }
                 }
@@ -428,7 +478,6 @@ class Application {
 
             if (!$sessionFound || $fullPath === null) {
                 $fileType = $requestAnnotation ? 'Annotation' : 'Audio';
-                // Log detailed diagnostic info so we can see exactly what's on disk
                 $sessionDirs = glob($projectPath . "/*_ses");
                 $sessionList = array_map('basename', $sessionDirs ?: []);
                 $bundleDirsList = [];
@@ -436,7 +485,7 @@ class Application {
                     $bndls = glob($sd . "/*_bndl");
                     $bundleDirsList[basename($sd)] = array_map('basename', $bndls ?: []);
                 }
-                $this->addLog("$fileType file not found for bundle: $bundleName in project $projectId", "error");
+                $this->addLog("$fileType file not found for bundle: $bundleName in project $projectId (session: $sessionName)", "error");
                 $this->addLog("  Search path: $projectPath", "error");
                 $this->addLog("  Session dirs found: " . (empty($sessionList) ? "NONE" : implode(", ", $sessionList)), "error");
                 foreach ($bundleDirsList as $ses => $bndls) {
@@ -444,7 +493,7 @@ class Application {
                 }
                 return new ApiResponse(404, array(
                     'message' => "$fileType file not found.",
-                    'detail' => "Bundle '$bundleName' not found on disk in project $projectId. Sessions: " . (empty($sessionList) ? "none" : implode(", ", $sessionList)) . ". Bundle dirs: " . (empty($bundleDirsList) ? "none" : json_encode($bundleDirsList))
+                    'detail' => "Bundle '$bundleName' not found on disk in project $projectId. Session: " . ($sessionName ?: $sessionId) . ". Sessions on disk: " . (empty($sessionList) ? "none" : implode(", ", $sessionList)) . ". Bundle dirs: " . (empty($bundleDirsList) ? "none" : json_encode($bundleDirsList))
                 ));
             }
 
