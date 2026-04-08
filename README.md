@@ -1,27 +1,31 @@
-# WebclientNg
+# VISP Webclient
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.0.5.
+Angular SPA for the Visible Speech platform. Served as static files by the
+Apache container.
 
-## Development server
+## Building
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Builds run inside a Node.js container — no local `node`/`npm` required:
 
-## Code scaffolding
+```bash
+# From the deployment repository root:
+./visp.py build webclient
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Output goes to `dist/` which is bind-mounted into Apache (dev mode) or baked
+into the Apache image (prod mode).
 
-## Build
+## Architecture
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+- **Source:** `src/` — Angular TypeScript + HTML templates
+- **PHP API:** `api/api.php` — REST API served by Apache (not part of the
+  Angular build; bind-mounted separately in dev mode)
+- **Entry point:** `src/index.php` — server-rendered by Apache's PHP module,
+  injects Shibboleth session variables into `window.visp`
 
-## Running unit tests
+## Related
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+- [visible-speech-deployment](https://github.com/humlab-speech/visible-speech-deployment) —
+  orchestration, quadlets, build system
+- [session-manager](https://github.com/humlab-speech/session-manager) —
+  WebSocket backend for container management
