@@ -205,6 +205,7 @@ if(!empty($_SESSION['username'])) {
       shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
     };
   </script>
+  <script src="/matomo-tracker.js" defer></script>
 </head>
 <body>
   <app-root></app-root>
