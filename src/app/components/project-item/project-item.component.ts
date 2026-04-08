@@ -208,21 +208,71 @@ export class ProjectItemComponent implements OnInit {
     }
   }
 
+  /**
+   * Classify health issues into fixable (by cleanupOrphanedSessions) vs informational.
+   * Fixable: orphaned session dirs on disk, ghost sessions in MongoDB.
+   * Informational: file count mismatch, orphaned bundles, missing config.
+   */
+  private classifyIssues(issues: string[]): { fixable: string[]; informational: string[] } {
+    const fixable: string[] = [];
+    const informational: string[] = [];
+    for (const issue of issues) {
+      if (issue.includes('orphaned EmuDB session') || issue.includes('missing from disk')) {
+        fixable.push(issue);
+      } else {
+        informational.push(issue);
+      }
+    }
+    return { fixable, informational };
+  }
+
   showCleanupConfirmation() {
-    // Show orphaned session names and file count mismatch details
-    const details = this.project.healthStatus.issues.join('\n\n');
-    const message = `This project has consistency issues:\n\n${details}\n\nWould you like to clean up?\n\n• Orphaned directories on disk will be deleted\n• Ghost sessions in the database (missing files) will be marked as deleted\n\nThis cannot be undone.`;
-    
-    if (window.confirm(message)) {
-      this.cleanupOrphanedSessions();
+    const issues = this.project.healthStatus.issues;
+    const { fixable, informational } = this.classifyIssues(issues);
+
+    let message = `Project "${this.project.name}" has consistency issues:\n\n`;
+
+    if (fixable.length > 0) {
+      message += `Fixable by cleanup:\n${fixable.map(i => '  • ' + i).join('\n')}\n\n`;
+      message += 'Cleanup will:\n'
+        + '  • Delete orphaned directories on disk\n'
+        + '  • Mark ghost sessions in the database as deleted\n\n'
+        + 'This cannot be undone.\n';
+    }
+
+    if (informational.length > 0) {
+      message += `\nNot fixable from the browser:\n${informational.map(i => '  • ' + i).join('\n')}\n\n`;
+      message += 'These issues require server-side repair. Contact an administrator.\n';
+    }
+
+    if (fixable.length > 0) {
+      message += '\nProceed with cleanup?';
+      if (window.confirm(message)) {
+        console.log(`[VISP] Starting cleanup for project '${this.project.name}'`);
+        console.log(`[VISP] Fixable issues:`, fixable);
+        if (informational.length > 0) {
+          console.log(`[VISP] Informational (not fixable by cleanup):`, informational);
+        }
+        this.cleanupOrphanedSessions();
+      }
+    } else {
+      // No fixable issues — show info-only dialog
+      message += '\nNo issues can be fixed from the browser.';
+      window.alert(message);
+      console.log(`[VISP] Health issues for '${this.project.name}' (all informational):`, informational);
     }
   }
 
   cleanupOrphanedSessions() {
     const projectId: string = String(this.project.id);
+    const projectName: string = this.project.name;
+    console.log(`[VISP] Sending cleanup command for project '${projectName}'...`);
+
     this.projectService.cleanupOrphanedSessions(projectId).subscribe(
       (msg: any) => {
+        console.log(`[VISP] Cleanup response for '${projectName}':`, msg);
         const result = msg.data || msg;
+
         if (result.success) {
           const actions = [];
           if (result.removed && result.removed.length > 0) {
@@ -232,20 +282,27 @@ export class ProjectItemComponent implements OnInit {
             actions.push(`Marked ${result.purged.length} ghost session(s) as deleted: ${result.purged.join(', ')}`);
           }
           if (actions.length > 0) {
+            console.log(`[VISP] Cleanup succeeded for '${projectName}':`, actions);
             this.notifierService.notify("success", actions.join('. '));
           } else {
-            this.notifierService.notify("info", "No issues found to clean up");
+            console.warn(`[VISP] Cleanup for '${projectName}' completed but no changes were made.`);
+            this.notifierService.notify("info",
+              "No session-level issues to fix. Remaining issues may require server-side repair.");
           }
           // Refresh project list to update health status
           this.projectService.fetchProjects(true).subscribe();
         } else {
           const errorMsg = (result.errors && result.errors.length > 0) ? result.errors.join('; ') : 'Unknown error';
+          console.error(`[VISP] Cleanup failed for '${projectName}':`, result.errors);
           this.notifierService.notify("error", `Cleanup failed: ${errorMsg}`);
         }
       },
       (error) => {
-        this.notifierService.notify("error", "Failed to cleanup orphaned sessions");
-        console.error("Cleanup error:", error);
+        console.error(`[VISP] Cleanup error for '${projectName}':`, error);
+        console.error(`[VISP] Hint: The cleanup command may not be supported by this version. ` +
+          `Try rebuilding session-manager.`);
+        this.notifierService.notify("error",
+          "Cleanup failed — check browser console for details");
       }
     );
   }
