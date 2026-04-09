@@ -8,9 +8,10 @@ import { Router } from '@angular/router';
 import Cookies from 'js-cookie';
 
 @Component({
-  selector: 'app-octra-select-bundle-dialog',
-  templateUrl: './octra-select-bundle-dialog.component.html',
-  styleUrl: './octra-select-bundle-dialog.component.scss'
+    selector: 'app-octra-select-bundle-dialog',
+    templateUrl: './octra-select-bundle-dialog.component.html',
+    styleUrl: './octra-select-bundle-dialog.component.scss',
+    standalone: false
 })
 
 export class OctraSelectBundleDialogComponent implements OnInit {

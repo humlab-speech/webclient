@@ -10,9 +10,10 @@ import { NotifierService } from 'angular-notifier';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
-  selector: 'app-project-item',
-  templateUrl: './project-item.component.html',
-  styleUrls: ['./project-item.component.scss']
+    selector: 'app-project-item',
+    templateUrl: './project-item.component.html',
+    styleUrls: ['./project-item.component.scss'],
+    standalone: false
 })
 export class ProjectItemComponent implements OnInit {
   

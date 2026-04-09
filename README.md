@@ -1,7 +1,34 @@
 # VISP Webclient
 
-Angular SPA for the Visible Speech platform. Served as static files by the
-Apache container.
+Angular SPA for the **Visible Speech (VISP)** platform — an academic
+speech-annotation and transcription tool. This is the browser-facing UI
+that researchers use to manage projects, upload audio, launch analysis
+tools, and queue transcriptions.
+
+### What it does
+
+- Authenticate via Shibboleth (federated academic SSO)
+- Create / edit / delete speech-recording projects
+- Upload audio files (drag-and-drop)
+- Launch embedded tools in iframes (RStudio, Jupyter, EMU-webApp, Octra,
+  Speech Recorder)
+- Queue speech-to-text transcription via WhisperX
+- Manage project members, bundle assignments, and invite codes
+
+Communication is **WebSocket-first** — a single persistent connection to
+session-manager handles most data operations. Only file uploads and a
+session check use HTTP.
+
+## Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Angular 20 (TypeScript) |
+| UI components | Angular Material 20, ngx-datatable |
+| Build system | esbuild via `@angular/build:application` |
+| Styling | SCSS + Angular Material theme |
+| Guided tours | shepherd.js |
+| Speech recorder | speechrecorderng (Angular-native) |
 
 ## Building
 

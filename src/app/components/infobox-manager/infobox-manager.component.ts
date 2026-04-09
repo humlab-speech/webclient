@@ -4,9 +4,10 @@ import { Infobox } from "../../models/Infobox";
 import { environment } from 'src/environments/environment';
 
 @Component({
-  selector: 'app-infobox-manager',
-  templateUrl: './infobox-manager.component.html',
-  styleUrls: ['./infobox-manager.component.scss']
+    selector: 'app-infobox-manager',
+    templateUrl: './infobox-manager.component.html',
+    styleUrls: ['./infobox-manager.component.scss'],
+    standalone: false
 })
 export class InfoboxManagerComponent implements OnInit {
 

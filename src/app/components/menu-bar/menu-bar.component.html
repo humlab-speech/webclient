@@ -1,19 +1,23 @@
 <div id="menu-bar">
-    <div id="back-button-container" *ngIf="showBackToDashboardButton">
-        <div id="visp-back-button" (click)="backButtonClicked()">
-            <div id="visp-back-button-arrow">&#8678;</div>
-            <p>Back to dashboard</p>
-        </div>
+  @if (showBackToDashboardButton) {
+    <div id="back-button-container">
+      <div id="visp-back-button" (click)="backButtonClicked()">
+        <div id="visp-back-button-arrow">&#8678;</div>
+        <p>Back to dashboard</p>
+      </div>
     </div>
-    
-    <div id="system-logo-container">
-        <img src="{{ logoImagePath }}">
-    </div>
+  }
 
-    <div id="umu-logo-container">
-        <img src="/assets/umu-logo-left-neg-EN.png">
-    </div>
+  <div id="system-logo-container">
+    <img src="{{ logoImagePath }}">
+  </div>
 
-    <app-help-ctrl *ngIf="containerSessionViewActive" class="link-button"></app-help-ctrl>
-    <app-user></app-user>
+  <div id="umu-logo-container">
+    <img src="/assets/umu-logo-left-neg-EN.png">
+  </div>
+
+  @if (containerSessionViewActive) {
+    <app-help-ctrl class="link-button"></app-help-ctrl>
+  }
+  <app-user></app-user>
 </div>

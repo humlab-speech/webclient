@@ -4,9 +4,10 @@ import { Project } from "../../models/Project";
 import { ManageProjectMembersFormComponent } from '../forms/manage-project-members-form/manage-project-members-form.component';
 
 @Component({
-  selector: 'app-manage-project-members-dialog',
-  templateUrl: './manage-project-members-dialog.component.html',
-  styleUrls: ['./manage-project-members-dialog.component.scss']
+    selector: 'app-manage-project-members-dialog',
+    templateUrl: './manage-project-members-dialog.component.html',
+    styleUrls: ['./manage-project-members-dialog.component.scss'],
+    standalone: false
 })
 export class ManageProjectMembersDialogComponent implements OnInit {
   @ViewChild(ManageProjectMembersFormComponent, { static: true }) public manageProjectMembersFormComponent: ManageProjectMembersFormComponent;

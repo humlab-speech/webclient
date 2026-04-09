@@ -12,9 +12,10 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
-  selector: 'app-appctrl',
-  templateUrl: './appctrl.component.html',
-  styleUrls: ['./appctrl.component.scss']
+    selector: 'app-appctrl',
+    templateUrl: './appctrl.component.html',
+    styleUrls: ['./appctrl.component.scss'],
+    standalone: false
 })
 export class AppctrlComponent implements OnInit {
 

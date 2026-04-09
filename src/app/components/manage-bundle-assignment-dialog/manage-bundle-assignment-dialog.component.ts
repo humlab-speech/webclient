@@ -4,9 +4,10 @@ import { Project } from "../../models/Project";
 import { ManageBundleAssignmentFormComponent } from '../forms/manage-bundle-assignment-form/manage-bundle-assignment-form.component';
 
 @Component({
-  selector: 'app-manage-bundle-assignment-dialog',
-  templateUrl: './manage-bundle-assignment-dialog.component.html',
-  styleUrls: ['./manage-bundle-assignment-dialog.component.scss']
+    selector: 'app-manage-bundle-assignment-dialog',
+    templateUrl: './manage-bundle-assignment-dialog.component.html',
+    styleUrls: ['./manage-bundle-assignment-dialog.component.scss'],
+    standalone: false
 })
 export class ManageBundleAssignmentDialogComponent implements OnInit {
   @ViewChild(ManageBundleAssignmentFormComponent, { static: true }) public manageBundleAssignmentFormComponent: ManageBundleAssignmentFormComponent;

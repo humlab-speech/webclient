@@ -4,9 +4,10 @@ import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
-  selector: 'app-container-session-render',
-  templateUrl: './container-session-render.component.html',
-  styleUrls: ['./container-session-render.component.scss']
+    selector: 'app-container-session-render',
+    templateUrl: './container-session-render.component.html',
+    styleUrls: ['./container-session-render.component.scss'],
+    standalone: false
 })
 export class ContainerSessionRenderComponent implements OnInit {
   public token:string = "";

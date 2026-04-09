@@ -5,9 +5,10 @@ import { ShepherdService } from '../../services/shepherd.service';
 import { UserService } from '../../services/user.service'; // Import UserService
 
 @Component({
-  selector: 'app-infobox',
-  templateUrl: './infobox.component.html',
-  styleUrls: ['./infobox.component.scss']
+    selector: 'app-infobox',
+    templateUrl: './infobox.component.html',
+    styleUrls: ['./infobox.component.scss'],
+    standalone: false
 })
 export class InfoboxComponent implements OnInit {
   

@@ -5,9 +5,10 @@ import { SystemService } from 'src/app/services/system.service';
 import { ShepherdService } from 'src/app/services/shepherd.service';
 
 @Component({
-  selector: 'app-menu-bar',
-  templateUrl: './menu-bar.component.html',
-  styleUrls: ['./menu-bar.component.scss']
+    selector: 'app-menu-bar',
+    templateUrl: './menu-bar.component.html',
+    styleUrls: ['./menu-bar.component.scss'],
+    standalone: false
 })
 export class MenuBarComponent implements OnInit {
 

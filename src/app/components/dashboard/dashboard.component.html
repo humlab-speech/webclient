@@ -1,36 +1,46 @@
 <div id="dashboard">
-    <div id="main-content">
-        <div id="signed-out-content-container" *ngIf="!userIsAuthenticated && userAuthenticationCheckPerformed">
-            <div id="about-container">
-                <h2>About</h2>
-                Visible Speech is a collection of research tools for speech analysis.
-                If you wish to have access to the system, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
-            </div>
-            <app-signin-ctrl></app-signin-ctrl>
+  <div id="main-content">
+    @if (!userIsAuthenticated && userAuthenticationCheckPerformed) {
+      <div id="signed-out-content-container">
+        <div id="about-container">
+          <h2>About</h2>
+          Visible Speech is a collection of research tools for speech analysis.
+          If you wish to have access to the system, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
         </div>
-        
-        <app-project-manager *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized" [dashboard]="this"></app-project-manager>
+        <app-signin-ctrl></app-signin-ctrl>
+      </div>
+    }
 
-        <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
+    @if (userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized) {
+      <app-project-manager [dashboard]="this"></app-project-manager>
+    }
 
-        <app-help-dialog *ngIf="(modalActive && modalName=='help-dialog')"></app-help-dialog>
+    @if ((modalActive && modalName=='invite-codes-dialog')) {
+      <app-invite-codes-dialog></app-invite-codes-dialog>
+    }
 
-        <app-octra-select-bundle-dialog *ngIf="(modalActive && modalName=='octra-select-bundle-dialog')" [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
-        
-        <div id="userFailedAccessListCheckContainer" *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized">
-            
-            <h2>Missing access grant</h2>
+    @if ((modalActive && modalName=='help-dialog')) {
+      <app-help-dialog></app-help-dialog>
+    }
 
-            <p>You have successfully authenticated yourself as {{ userFullName }}, but you still lack the authorization to use this system.
-            This is normally provided via invite codes, if you have such a code, please enter it below.</p>
-            <app-invite-code-entry></app-invite-code-entry>
-            <p>If you do not have an invite code and you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.</p>
-        </div>
+    @if ((modalActive && modalName=='octra-select-bundle-dialog')) {
+      <app-octra-select-bundle-dialog [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
+    }
 
-    </div>
-    
-    <div id="sidebar">
-        <app-infobox-manager></app-infobox-manager>
-    </div>
+    @if (userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized) {
+      <div id="userFailedAccessListCheckContainer">
+        <h2>Missing access grant</h2>
+        <p>You have successfully authenticated yourself as {{ userFullName }}, but you still lack the authorization to use this system.
+        This is normally provided via invite codes, if you have such a code, please enter it below.</p>
+        <app-invite-code-entry></app-invite-code-entry>
+        <p>If you do not have an invite code and you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.</p>
+      </div>
+    }
+
+  </div>
+
+  <div id="sidebar">
+    <app-infobox-manager></app-infobox-manager>
+  </div>
 
 </div>

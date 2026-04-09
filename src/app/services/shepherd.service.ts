@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import ShepherdBase from 'shepherd.js';
+import Shepherd from 'shepherd.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShepherdService {
 
-  private tour: ShepherdBase.Tour;
+  private tour: InstanceType<typeof Shepherd.Tour>;
 
   constructor() { 
   }
@@ -31,7 +31,7 @@ export class ShepherdService {
       }, 500);
     });
 
-    this.tour = new ShepherdBase.Tour({
+    this.tour = new Shepherd.Tour({
       defaultStepOptions: {
         classes: 'shepherd-theme-arrows',
         scrollTo: false,

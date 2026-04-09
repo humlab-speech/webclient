@@ -1,32 +1,36 @@
 <div class="form">
-    
 
-    <h3>
-        Documentation
-        <i class="fa fa-question-circle tooltip-zone-dark"
-        aria-hidden="true"
-        matTooltip="Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server."
-        ></i>
-    </h3>
-    <!--
-    <popper-content #docsPopper>
-        <h4>Documentation</h4>
-        <p class="help-text">
-            Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server.
-        </p>
-    </popper-content>
-    -->
-    <ngx-dropzone [expandable]="true" (change)="onUpload($event)">
-        <ngx-dropzone-label>Drop any documents you might have here, such as your data management plan and ethics approval.</ngx-dropzone-label>
-        <ngx-dropzone-preview *ngFor="let f of docFiles.value" [removable]="true" (removed)="onRemove(f)">
-            <ngx-dropzone-label>
-                <i class="fa fa-file-o" aria-hidden="true"></i>
-                &nbsp;{{ f.name }}
-                <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
-            </ngx-dropzone-label>
-        </ngx-dropzone-preview>
-    </ngx-dropzone>
 
-    
+  <h3>
+    Documentation
+    <i class="fa fa-question-circle tooltip-zone-dark"
+      aria-hidden="true"
+      matTooltip="Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server."
+    ></i>
+  </h3>
+  <!--
+  <popper-content #docsPopper>
+    <h4>Documentation</h4>
+    <p class="help-text">
+      Upload your project documents (e.g., ethical approval, data management plan, project application). The documents are stored in the Documents folder on your project server.
+    </p>
+  </popper-content>
+  -->
+  <ngx-dropzone [expandable]="true" (change)="onUpload($event)">
+    <ngx-dropzone-label>Drop any documents you might have here, such as your data management plan and ethics approval.</ngx-dropzone-label>
+    @for (f of docFiles.value; track f) {
+      <ngx-dropzone-preview [removable]="true" (removed)="onRemove(f)">
+        <ngx-dropzone-label>
+          <i class="fa fa-file-o" aria-hidden="true"></i>
+          &nbsp;{{ f.name }}
+          @if (f.uploadComplete == false) {
+            <img class="loading-indicator" src="assets/loading-indicator.svg">
+          }
+        </ngx-dropzone-label>
+      </ngx-dropzone-preview>
+    }
+  </ngx-dropzone>
+
+
 
 </div>

@@ -32,21 +32,22 @@ export interface EmudbFormValues {
 }
 
 @Component({
-  selector: 'app-sessions-form',
-  templateUrl: './sessions-form.component.html', //used to be emudb-form.component.html
-  styleUrls: ['./sessions-form.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SessionsFormComponent),
-      multi: true
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => SessionsFormComponent),
-      multi: true
-    }
-  ]
+    selector: 'app-sessions-form',
+    templateUrl: './sessions-form.component.html', //used to be emudb-form.component.html
+    styleUrls: ['./sessions-form.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => SessionsFormComponent),
+            multi: true
+        },
+        {
+            provide: NG_VALIDATORS,
+            useExisting: forwardRef(() => SessionsFormComponent),
+            multi: true
+        }
+    ],
+    standalone: false
 })
 
 export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {

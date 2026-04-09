@@ -1,42 +1,52 @@
 <fieldset>
-    <div class="button-status-wrapper">
+  <div class="button-status-wrapper">
 
-        <div *ngIf="vispApp.name == 'octra'">
-            <button [disabled]="showLoadingIndicator" class="app-btn" (click)="selectAppOptions()">
-                <div class="app-btn-icon-box">
-                    <img [src]="appIconPath">
-                </div>
-                <div>{{ btnTitle }}</div>
-            </button>
-        </div>
+    @if (vispApp.name == 'octra') {
+      <div>
+        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="selectAppOptions()">
+          <div class="app-btn-icon-box">
+            <img [src]="appIconPath">
+          </div>
+          <div>{{ btnTitle }}</div>
+        </button>
+      </div>
+    }
 
-        <div *ngIf="vispApp.name != 'octra'">
-            <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
-                <div class="app-btn-icon-box">
-                    <img [src]="appIconPath">
-                </div>
-                <div>{{ btnTitle }}</div>
-            </button>
-        </div>
+    @if (vispApp.name != 'octra') {
+      <div>
+        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
+          <div class="app-btn-icon-box">
+            <img [src]="appIconPath">
+          </div>
+          <div>{{ btnTitle }}</div>
+        </button>
+      </div>
+    }
 
-        
 
-        <div *ngIf="statusMsg.length > 0" class="status-msg-container app-btn-row-container">
-           <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-light.svg">
-           {{ statusMsg }}
-        </div>
 
-        <div *ngIf="hasRunningSessions" class="session-controls-container app-btn-row-container">
-            <!--
-            <button [disabled]="showLoadingIndicator" (click)="save()" *ngIf="showSaveButton">
-                <i class="fa fa-floppy-o" aria-hidden="true"></i>
-            </button>
-            -->
-            <button [disabled]="showLoadingIndicator" (click)="close()">
-                <i class="fa fa-times-circle" aria-hidden="true"></i>
-            </button>
-        </div>
+    @if (statusMsg.length > 0) {
+      <div class="status-msg-container app-btn-row-container">
+        @if (showLoadingIndicator) {
+          <img src="../../../assets/loading-indicator-4-light.svg">
+        }
+        {{ statusMsg }}
+      </div>
+    }
 
-    </div>
-    
+    @if (hasRunningSessions) {
+      <div class="session-controls-container app-btn-row-container">
+        <!--
+        <button [disabled]="showLoadingIndicator" (click)="save()" *ngIf="showSaveButton">
+          <i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+        -->
+        <button [disabled]="showLoadingIndicator" (click)="close()">
+          <i class="fa fa-times-circle" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+
+  </div>
+
 </fieldset>

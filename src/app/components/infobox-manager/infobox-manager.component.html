@@ -1,3 +1,7 @@
-<div class="info-box-container" *ngIf="!userIsSignedIn">
-    <app-infobox *ngFor="let infobox of infoboxes" [infobox]="infobox"></app-infobox>
-</div>
+@if (!userIsSignedIn) {
+  <div class="info-box-container">
+    @for (infobox of infoboxes; track infobox) {
+      <app-infobox [infobox]="infobox"></app-infobox>
+    }
+  </div>
+}

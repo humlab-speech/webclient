@@ -1,38 +1,41 @@
 <div class="modal-bg">
-    <div class="form modal-dialog-container">
-      <div class="dialog-header">
-        <h2>
-            Transcriptions
-        </h2>
-        <div class="dialog-close-btn" (click)="closeDialog()">
-          <i class="fa fa-times" aria-hidden="true"></i>
-        </div>
+  <div class="form modal-dialog-container">
+    <div class="dialog-header">
+      <h2>
+        Transcriptions
+      </h2>
+      <div class="dialog-close-btn" (click)="closeDialog()">
+        <i class="fa fa-times" aria-hidden="true"></i>
       </div>
-  
-      <div class="dialog-description">
-        Here you can have your audio files automatically transcribed. 
-        Click on the 'Transcribe' button to queue your audio files for transcription. 
-        This process will take some time and you will be emailed when the transcription is complete, at which point you can return to this dialog to download the transcription files.
-      </div>
+    </div>
 
-      <div class="dialog-info-box">
-        <i class="fa fa-info-circle" aria-hidden="true"></i>
-        <strong>Model selection:</strong> <em>KB Whisper</em> is a dedicated Swedish model with superior quality for Swedish audio. <em>Whisper</em> is the standard multilingual model that supports all languages including automatic language detection. Switching between models may add a few seconds to the first transcription while the model loads.
-      </div>
+    <div class="dialog-description">
+      Here you can have your audio files automatically transcribed.
+      Click on the 'Transcribe' button to queue your audio files for transcription.
+      This process will take some time and you will be emailed when the transcription is complete, at which point you can return to this dialog to download the transcription files.
+    </div>
 
-      <div class="advanced-options-section">
-        <div class="advanced-options-toggle" (click)="showAdvancedOptions = !showAdvancedOptions">
-          <i class="fa" [ngClass]="showAdvancedOptions ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
-          Advanced Options
-        </div>
-        <div *ngIf="showAdvancedOptions" class="advanced-options-panel">
+    <div class="dialog-info-box">
+      <i class="fa fa-info-circle" aria-hidden="true"></i>
+      <strong>Model selection:</strong> <em>KB Whisper</em> is a dedicated Swedish model with superior quality for Swedish audio. <em>Whisper</em> is the standard multilingual model that supports all languages including automatic language detection. Switching between models may add a few seconds to the first transcription while the model loads.
+    </div>
+
+    <div class="advanced-options-section">
+      <div class="advanced-options-toggle" (click)="showAdvancedOptions = !showAdvancedOptions">
+        <i class="fa" [ngClass]="showAdvancedOptions ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
+        Advanced Options
+      </div>
+      @if (showAdvancedOptions) {
+        <div class="advanced-options-panel">
           <div class="advanced-options-grid">
             <div class="option-group">
               <label>Beam Size
                 <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Number of beams for beam search decoding. Higher values may improve accuracy but increase processing time. Default: 5."></i>
               </label>
               <select [(ngModel)]="advancedOptions.beamSize" [ngModelOptions]="{standalone: true}" class="advanced-select">
-                <option *ngFor="let bs of beamSizes" [ngValue]="bs">{{ bs }}</option>
+                @for (bs of beamSizes; track bs) {
+                  <option [ngValue]="bs">{{ bs }}</option>
+                }
               </select>
             </div>
             <div class="option-group">
@@ -50,12 +53,14 @@
                 <option [ngValue]="false">Disabled</option>
               </select>
             </div>
-            <div class="option-group" *ngIf="advancedOptions.vad">
-              <label>VAD Sensitivity
-                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="How aggressively VAD detects speech onset. Lower values are more sensitive (detect more speech). Default: 0.5."></i>
-              </label>
-              <input type="number" [(ngModel)]="advancedOptions.vadOnset" [ngModelOptions]="{standalone: true}" min="0.0" max="1.0" step="0.1" class="advanced-input">
-            </div>
+            @if (advancedOptions.vad) {
+              <div class="option-group">
+                <label>VAD Sensitivity
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="How aggressively VAD detects speech onset. Lower values are more sensitive (detect more speech). Default: 0.5."></i>
+                </label>
+                <input type="number" [(ngModel)]="advancedOptions.vadOnset" [ngModelOptions]="{standalone: true}" min="0.0" max="1.0" step="0.1" class="advanced-input">
+              </div>
+            }
             <div class="option-group">
               <label>
                 <input type="checkbox" [(ngModel)]="advancedOptions.conditionOnPreviousText" [ngModelOptions]="{standalone: true}">
@@ -65,154 +70,175 @@
             </div>
           </div>
         </div>
-      </div>
+      }
+    </div>
 
-      <div *ngIf="!transcriptionQueueItemsLoaded" class="loading-spinner">
+    @if (!transcriptionQueueItemsLoaded) {
+      <div class="loading-spinner">
         <img src="../../../assets/loading-indicator-4-dark.svg">
       </div>
+    }
 
-      <div *ngIf="transcriptionQueueItemsLoaded" class="dialog-content">
+    @if (transcriptionQueueItemsLoaded) {
+      <div class="dialog-content">
         <form [formGroup]="transcriptionForm">
           <table>
             <thead>
               <tr>
                 <th>
-                    Session
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'session' (normally a recording session) is a directory with some associated metadata."></i>
+                  Session
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'session' (normally a recording session) is a directory with some associated metadata."></i>
                 </th>
                 <th>
-                    Bundle
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'bundle' is an audio file bundled with some associated metadata."></i>
+                  Bundle
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="A 'bundle' is an audio file bundled with some associated metadata."></i>
                 </th>
                 <th>
-                    Model
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Choose which Whisper model to use. 'KB Whisper' is a Swedish-specific model with superior quality for Swedish audio. 'Whisper' is the standard multilingual model that supports all languages and automatic language detection."></i>
+                  Model
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Choose which Whisper model to use. 'KB Whisper' is a Swedish-specific model with superior quality for Swedish audio. 'Whisper' is the standard multilingual model that supports all languages and automatic language detection."></i>
                 </th>
                 <th>
-                    Language
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Select the spoken language to help transcription accuracy, or use 'Auto' for automatic detection (multilingual model only)."></i>
+                  Language
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Select the spoken language to help transcription accuracy, or use 'Auto' for automatic detection (multilingual model only)."></i>
                 </th>
                 <th>
-                    Separate speakers
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Identifies and labels different speakers in the audio (e.g. Speaker 1, Speaker 2). Enable this if your audio contains multiple speakers."></i>
+                  Separate speakers
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Identifies and labels different speakers in the audio (e.g. Speaker 1, Speaker 2). Enable this if your audio contains multiple speakers."></i>
                 </th>
                 <th>
-                    Actions
-                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Here you can queue your recordings for automatic transcription. VISP uses the Whisper model for automatically transcribing speech to text."></i>
+                  Actions
+                  <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Here you can queue your recordings for automatic transcription. VISP uses the Whisper model for automatically transcribing speech to text."></i>
                 </th>
                 <th>
                   Transcriptions
                   <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="You can download your finished transcription files here. They will also be available inside your project directory."></i>
-              </th>
+                </th>
               </tr>
             </thead>
             <tbody formArrayName="bundles">
-              <tr *ngIf="bundles.controls.length == 0"><td colspan="7">There are no files in this project.</td></tr>
-              <tr *ngFor="let bundle of bundles.controls; let i = index" [formGroupName]="i">
-                <td>{{ bundle.value.sessionName }}</td>
-                <td>{{ bundle.value.name }}</td>
-                <td>
-                  <select 
-                    formControlName="model" 
-                    class="model-select transcription-select" 
-                    [ngClass]="{'touched-control': bundle.get('model').touched}" 
-                    (change)="onModelSelected(i, $event)">
-                    <option *ngFor="let model of models" [value]="model.id">
-                      {{ model.name }}
-                    </option>
-                  </select>
-                </td>
-                <td>
-                  <select 
-                    formControlName="language" 
-                    class="language-select transcription-select" 
-                    [ngClass]="{'touched-control': bundle.get('language').touched}" 
-                    (change)="onLanguageSelected(i, $event)">
-                    <option *ngFor="let lang of languages" [value]="lang.id">
-                      {{ lang.name }}
-                    </option>
-                  </select>
-                </td>
-                <td class="diarize-cell">
-                  <input type="checkbox" formControlName="diarize" class="diarize-checkbox">
-                </td>
-                <td>
-
-                  <button *ngIf="bundle.value.status == ''" class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
-                    <div class="btn-icon-box">
-                      <i class="fa fa-plus" aria-hidden="true" matTooltip=""></i>
-                    </div>
-                    <span>Transcribe</span>
-                  </button>
-
-                  <button *ngIf="bundle.value.status == 'Complete' || bundle.value.status == 'Error'" class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
-                    <div class="btn-icon-box">
-                      <i class="fa fa-undo" aria-hidden="true" matTooltip=""></i>
-                    </div>
-                    <span>Redo</span>
-                  </button>
-
-                  <button *ngIf="bundle.value.status == 'Queued' || bundle.value.status == 'Running'" 
-                    class="btn transcribe-button" 
-                    type="button" 
-                    (click)="removeTranscriptionFromQueue(bundle)" 
-                    [ngClass]="{ 'disabled': bundle.value.status == 'Running' }"
-                    [disabled]="bundle.value.status == 'Running'"
-                    >
-                    <div class="btn-icon-box">
-                      <i class="fa fa-minus" aria-hidden="true" matTooltip=""></i>
-                    </div>
-                    <span>Cancel</span>
-                  </button>
-
-                  <i *ngIf="bundle.value.status == 'Queued' || bundle.value.status == 'Running'"
-                    class="fa fa-info-circle settings-info-icon"
-                    aria-hidden="true"
-                    [matTooltip]="getSettingsSummary(bundle)"
-                    matTooltipClass="settings-tooltip"></i>
-
-                </td>
-                <td>
-                  <div *ngIf="bundle.value.status == 'Complete'" class="download-container">
-
-                    <i class="fa fa-info-circle settings-info-icon"
-                      aria-hidden="true"
-                      [matTooltip]="getSettingsSummary(bundle)"
-                      matTooltipClass="settings-tooltip"></i>
-
-                    <select formControlName="selectedFileType" class="transcription-select">
-                      <option value="srt">SRT subtitle file</option>
-                      <option value="txt">Text file</option>
+              @if (bundles.controls.length == 0) {
+                <tr><td colspan="7">There are no files in this project.</td></tr>
+              }
+              @for (bundle of bundles.controls; track bundle; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td>{{ bundle.value.sessionName }}</td>
+                  <td>{{ bundle.value.name }}</td>
+                  <td>
+                    <select
+                      formControlName="model"
+                      class="model-select transcription-select"
+                      [ngClass]="{'touched-control': bundle.get('model').touched}"
+                      (change)="onModelSelected(i, $event)">
+                      @for (model of models; track model) {
+                        <option [value]="model.id">
+                          {{ model.name }}
+                        </option>
+                      }
                     </select>
-
-                    <button class="download-button-container" (click)="downloadTranscription(bundle)">
-                      <div class="btn-icon-box">
-                        <i class="fa fa-download" aria-hidden="true" matTooltip="Download transcription files."></i>
-                      </div>
-                    </button>
-                  </div>
-                  <div *ngIf="bundle.value.status == 'Error'">
-                    <div class="transcription-status transcription-error">
-                      Error
-                      <i class="fa fa-info-circle settings-info-icon error-info-icon"
+                  </td>
+                  <td>
+                    <select
+                      formControlName="language"
+                      class="language-select transcription-select"
+                      [ngClass]="{'touched-control': bundle.get('language').touched}"
+                      (change)="onLanguageSelected(i, $event)">
+                      @for (lang of languages; track lang) {
+                        <option [value]="lang.id">
+                          {{ lang.name }}
+                        </option>
+                      }
+                    </select>
+                  </td>
+                  <td class="diarize-cell">
+                    <input type="checkbox" formControlName="diarize" class="diarize-checkbox">
+                  </td>
+                  <td>
+                    @if (bundle.value.status == '') {
+                      <button class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
+                        <div class="btn-icon-box">
+                          <i class="fa fa-plus" aria-hidden="true" matTooltip=""></i>
+                        </div>
+                        <span>Transcribe</span>
+                      </button>
+                    }
+                    @if (bundle.value.status == 'Complete' || bundle.value.status == 'Error') {
+                      <button class="btn transcribe-button" type="button" (click)="addToTranscriptionQueue(bundle)" [ngClass]="{ 'disabled': bundle.value.status == 'Running' || bundle.value.status == 'Queued' }" [disabled]="bundle.value.status == 'Running' || bundle.value.status == 'Queued'">
+                        <div class="btn-icon-box">
+                          <i class="fa fa-undo" aria-hidden="true" matTooltip=""></i>
+                        </div>
+                        <span>Redo</span>
+                      </button>
+                    }
+                    @if (bundle.value.status == 'Queued' || bundle.value.status == 'Running') {
+                      <button
+                        class="btn transcribe-button"
+                        type="button"
+                        (click)="removeTranscriptionFromQueue(bundle)"
+                        [ngClass]="{ 'disabled': bundle.value.status == 'Running' }"
+                        [disabled]="bundle.value.status == 'Running'"
+                        >
+                        <div class="btn-icon-box">
+                          <i class="fa fa-minus" aria-hidden="true" matTooltip=""></i>
+                        </div>
+                        <span>Cancel</span>
+                      </button>
+                    }
+                    @if (bundle.value.status == 'Queued' || bundle.value.status == 'Running') {
+                      <i
+                        class="fa fa-info-circle settings-info-icon"
                         aria-hidden="true"
                         [matTooltip]="getSettingsSummary(bundle)"
+                      matTooltipClass="settings-tooltip"></i>
+                    }
+                  </td>
+                  <td>
+                    @if (bundle.value.status == 'Complete') {
+                      <div class="download-container">
+                        <i class="fa fa-info-circle settings-info-icon"
+                          aria-hidden="true"
+                          [matTooltip]="getSettingsSummary(bundle)"
                         matTooltipClass="settings-tooltip"></i>
-                    </div>
-                  </div>
-                  <div *ngIf="bundle.value.status != 'Complete' && bundle.value.status != 'Error'">
-                    <div class="transcription-status">
-                      {{ bundle.value.status ? bundle.value.status : 'Not transcribed' }}
-                      <div *ngIf="bundle.value.status == 'Running'" class="loading-spinner">
-                        <img src="../../../assets/loading-indicator-4-dark.svg">
+                        <select formControlName="selectedFileType" class="transcription-select">
+                          <option value="srt">SRT subtitle file</option>
+                          <option value="txt">Text file</option>
+                        </select>
+                        <button class="download-button-container" (click)="downloadTranscription(bundle)">
+                          <div class="btn-icon-box">
+                            <i class="fa fa-download" aria-hidden="true" matTooltip="Download transcription files."></i>
+                          </div>
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
+                    }
+                    @if (bundle.value.status == 'Error') {
+                      <div>
+                        <div class="transcription-status transcription-error">
+                          Error
+                          <i class="fa fa-info-circle settings-info-icon error-info-icon"
+                            aria-hidden="true"
+                            [matTooltip]="getSettingsSummary(bundle)"
+                          matTooltipClass="settings-tooltip"></i>
+                        </div>
+                      </div>
+                    }
+                    @if (bundle.value.status != 'Complete' && bundle.value.status != 'Error') {
+                      <div>
+                        <div class="transcription-status">
+                          {{ bundle.value.status ? bundle.value.status : 'Not transcribed' }}
+                          @if (bundle.value.status == 'Running') {
+                            <div class="loading-spinner">
+                              <img src="../../../assets/loading-indicator-4-dark.svg">
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </form>
       </div>
-    </div>
+    }
   </div>
+</div>

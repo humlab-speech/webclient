@@ -14,9 +14,10 @@ import { environment } from 'src/environments/environment';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
-  selector: 'app-project-dialog',
-  templateUrl: './project-dialog.component.html',
-  styleUrls: ['./project-dialog.component.scss']
+    selector: 'app-project-dialog',
+    templateUrl: './project-dialog.component.html',
+    styleUrls: ['./project-dialog.component.scss'],
+    standalone: false
 })
 export class ProjectDialogComponent implements OnInit {
   @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;

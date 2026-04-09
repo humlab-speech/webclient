@@ -1,14 +1,18 @@
 <div id="main-container">
   <app-menu-bar></app-menu-bar>
   <div id="content-container">
-    <notifier-container *ngIf="true">notifier</notifier-container>
+    @if (true) {
+      <notifier-container>notifier</notifier-container>
+    }
     <router-outlet></router-outlet>
   </div>
-  <div *ngIf="showModal" class="modal-bg">
-    <div class="modal-dialog-container">
-      <div class="dialog-header">
-        <h2>{{ modalTitle }}</h2>
-        <span class="dialog-close-btn" (click)="closeModal()"><i class="fa fa-times" aria-hidden="true"></i></span>
+  @if (showModal) {
+    <div class="modal-bg">
+      <div class="modal-dialog-container">
+        <div class="dialog-header">
+          <h2>{{ modalTitle }}</h2>
+          <span class="dialog-close-btn" (click)="closeModal()"><i class="fa fa-times" aria-hidden="true"></i></span>
+        </div>
       </div>
-  </div>
-</div>
+    </div>
+  }

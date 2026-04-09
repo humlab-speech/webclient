@@ -9,9 +9,10 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 import { NotifierService } from 'angular-notifier';
 
 @Component({
-  selector: 'app-transcribe-dialog',
-  templateUrl: './transcribe-dialog.component.html',
-  styleUrls: ['./transcribe-dialog.component.scss'],
+    selector: 'app-transcribe-dialog',
+    templateUrl: './transcribe-dialog.component.html',
+    styleUrls: ['./transcribe-dialog.component.scss'],
+    standalone: false
 })
 export class TranscribeDialogComponent implements OnInit {
 

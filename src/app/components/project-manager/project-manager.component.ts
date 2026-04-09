@@ -6,9 +6,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { ModalService } from "../../services/modal.service";
 
 @Component({
-  selector: 'app-project-manager',
-  templateUrl: './project-manager.component.html',
-  styleUrls: ['./project-manager.component.scss']
+    selector: 'app-project-manager',
+    templateUrl: './project-manager.component.html',
+    styleUrls: ['./project-manager.component.scss'],
+    standalone: false
 })
 export class ProjectManagerComponent implements OnInit {
 

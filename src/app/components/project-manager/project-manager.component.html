@@ -1,35 +1,61 @@
 <div id="project-manager-root">
-    <div class="project-manager-header">
-        <div class="project-manager-title-container">
-            <h2>Your Projects</h2>
-            <button *ngIf="showCreateProjectButton" id="create-project-btn" (click)="showProjectDialog()">
-                <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                Create new project
-            </button>
-        </div>
+  <div class="project-manager-header">
+    <div class="project-manager-title-container">
+      <h2>Your Projects</h2>
+      @if (showCreateProjectButton) {
+        <button id="create-project-btn" (click)="showProjectDialog()">
+          <i class="fa fa-plus-circle" aria-hidden="true"></i>
+          Create new project
+        </button>
+      }
     </div>
+  </div>
 
-    <ul>
-        <app-project-item *ngFor="let project of projects" [project]="project" [projectManager]="this"></app-project-item>
-    </ul>
+  <ul>
+    @for (project of projects; track project) {
+      <app-project-item [project]="project" [projectManager]="this"></app-project-item>
+    }
+  </ul>
 
-    <div *ngIf="!projectsLoaded">
-        <span class="projects-loading-indicator" *ngIf="!projectsLoaded">
-            <img src="../../../assets/loading-indicator.svg">
+  @if (!projectsLoaded) {
+    <div>
+      @if (!projectsLoaded) {
+        <span class="projects-loading-indicator">
+          <img src="../../../assets/loading-indicator.svg">
         </span>
-        Loading your projects...
+      }
+      Loading your projects...
     </div>
-    <div *ngIf="projectsLoaded && projects?.length == 0">
-        You have no projects
+  }
+  @if (projectsLoaded && projects?.length == 0) {
+    <div>
+      You have no projects
     </div>
+  }
 
-    <app-project-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='project-dialog')" [projectManager]="this"></app-project-dialog>
-    <app-script-app-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='script-dialog')"></app-script-app-dialog>
-    <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
-    <app-edit-emudb-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='emudb-dialog')" [projectManager]="this"></app-edit-emudb-dialog>
-    <app-manage-project-members-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-project-members-dialog')" [projectManager]="this"></app-manage-project-members-dialog>
-    <app-manage-bundle-assignment-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-bundle-assignment-dialog')" [projectManager]="this"></app-manage-bundle-assignment-dialog>
-    <app-manage-sessions-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-sessions-dialog')" [projectManager]="this"></app-manage-sessions-dialog>
-    <app-manage-spr-scripts-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='spr-scripts-dialog')" [projectManager]="this"></app-manage-spr-scripts-dialog>
-    <app-transcribe-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='transcribe-dialog')" [projectManager]="this"></app-transcribe-dialog>
+  @if ((dashboard.modalActive && dashboard.modalName=='project-dialog')) {
+    <app-project-dialog [projectManager]="this"></app-project-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='script-dialog')) {
+    <app-script-app-dialog></app-script-app-dialog>
+  }
+  <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
+  @if ((dashboard.modalActive && dashboard.modalName=='emudb-dialog')) {
+    <app-edit-emudb-dialog [projectManager]="this"></app-edit-emudb-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='manage-project-members-dialog')) {
+    <app-manage-project-members-dialog [projectManager]="this"></app-manage-project-members-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='manage-bundle-assignment-dialog')) {
+    <app-manage-bundle-assignment-dialog [projectManager]="this"></app-manage-bundle-assignment-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='manage-sessions-dialog')) {
+    <app-manage-sessions-dialog [projectManager]="this"></app-manage-sessions-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='spr-scripts-dialog')) {
+    <app-manage-spr-scripts-dialog [projectManager]="this"></app-manage-spr-scripts-dialog>
+  }
+  @if ((dashboard.modalActive && dashboard.modalName=='transcribe-dialog')) {
+    <app-transcribe-dialog [projectManager]="this"></app-transcribe-dialog>
+  }
 </div>

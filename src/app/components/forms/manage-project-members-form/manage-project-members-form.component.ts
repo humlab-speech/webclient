@@ -17,9 +17,10 @@ import { debounceTime, switchMap } from 'rxjs/operators';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
-  selector: 'app-manage-project-members-form',
-  templateUrl: './manage-project-members-form.component.html',
-  styleUrls: ['./manage-project-members-form.component.scss'],
+    selector: 'app-manage-project-members-form',
+    templateUrl: './manage-project-members-form.component.html',
+    styleUrls: ['./manage-project-members-form.component.scss'],
+    standalone: false
 })
 export class ManageProjectMembersFormComponent implements OnInit {
 

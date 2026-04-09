@@ -15,9 +15,10 @@ import { HttpClient } from '@angular/common/http';
 import { nanoid } from "nanoid";
 
 @Component({
-  selector: 'app-manage-sessions-dialog',
-  templateUrl: './manage-sessions-dialog.component.html',
-  styleUrls: ['./manage-sessions-dialog.component.scss']
+    selector: 'app-manage-sessions-dialog',
+    templateUrl: './manage-sessions-dialog.component.html',
+    styleUrls: ['./manage-sessions-dialog.component.scss'],
+    standalone: false
 })
 export class ManageSessionsDialogComponent implements OnInit {
 

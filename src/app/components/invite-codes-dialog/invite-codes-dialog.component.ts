@@ -5,9 +5,10 @@ import { ModalService } from '../../services/modal.service';
 import { ProjectService } from 'src/app/services/project.service';
 
 @Component({
-  selector: 'app-invite-codes-dialog',
-  templateUrl: './invite-codes-dialog.component.html',
-  styleUrls: ['./invite-codes-dialog.component.scss']
+    selector: 'app-invite-codes-dialog',
+    templateUrl: './invite-codes-dialog.component.html',
+    styleUrls: ['./invite-codes-dialog.component.scss'],
+    standalone: false
 })
 export class InviteCodesDialogComponent implements OnInit {
 
