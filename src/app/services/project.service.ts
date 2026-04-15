@@ -127,7 +127,11 @@ export class ProjectService {
                   }).then((wsMsg: WebSocketMessage) => {
                       if (wsMsg.message) {
                           this.notifierService.notify("error", wsMsg.message);
-                          sub.next([]);
+                          sub.next(this.projects || []);
+                          sub.complete();
+                      } else if (!wsMsg.data || !wsMsg.data.projects) {
+                          console.error("fetchProjects: unexpected response", wsMsg);
+                          sub.next(this.projects || []);
                           sub.complete();
                       } else {
                           this.projects = <Project[]>wsMsg.data.projects || [];
