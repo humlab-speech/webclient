@@ -314,9 +314,9 @@ export class ShepherdService {
 
     this.tour.addStep({
       text: `
-      These are your tools for working with your project. You can launch the EMU-WebApp, Jupyter notebook, or RStudio from here.
+      These are your tools for working with your project. You can launch the EMU-WebApp or Jupyter notebook from here.
       <br /><br />
-      Jupyter notebook and RStudio can be used in a similar way to run R code against the files in your project to perform various types of analyses using the EMU-R library.
+      Jupyter notebook can be used to run R or Python code against the files in your project to perform various types of analyses using the EMU-R library.
       <br /><br />
       The EMU-WebApp is where you can visualize, annotate and analyze your speech data.
       <br /><br />
@@ -468,7 +468,7 @@ export class ShepherdService {
     });
 
     this.tour.addStep({
-      text: `This is RStudio which can be used alternatively to Jupyter notebook in a similar way.`,
+      text: `This is Jupyter notebook which can be used to run R and Python code for analysis.`,
       attachTo: {
         element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(4) > app-appctrl',
       },

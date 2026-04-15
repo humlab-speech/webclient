@@ -123,10 +123,6 @@ export class AppctrlComponent implements OnInit {
     });
 
     switch(this.vispApp.name) {
-      case "rstudio":
-        this.launchContainerSession("rstudio");
-        this.systemService.setCurrentApplication("rstudio");
-      break;
       case "emu-webapp":
         this.launchEmuWebAppSession();
         this.systemService.setCurrentApplication("emu-webapp");

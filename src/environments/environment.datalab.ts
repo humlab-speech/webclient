@@ -3,7 +3,7 @@ export const environment = {
     LOGO_IMAGE_PATH: "/assets/datalab-logo.png",
     API_ENDPOINT: "https://datalab.humlab.umu.se",
     EMUDB_INTEGRATION: false,
-    ENABLED_APPLICATIONS: ["rstudio", "jupyter", "vscode", "octra", "labjs"],
+    ENABLED_APPLICATIONS: ["jupyter", "vscode", "octra", "labjs"],
     BASE_DOMAIN: "datalab.humlab.umu.se",
     ACCESS_LIST_ENABLED: false,
     PROTOCOL: "https",

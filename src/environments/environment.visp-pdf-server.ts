@@ -3,7 +3,7 @@ export const environment = {
     LOGO_IMAGE_PATH: "/assets/VISP-logo-white.png",
     API_ENDPOINT: "visp.pdf-server.humlab.umu.se",
     EMUDB_INTEGRATION: true,
-    ENABLED_APPLICATIONS: ["rstudio", "jupyter", "emu-webapp", "octra", "script"],
+    ENABLED_APPLICATIONS: ["jupyter", "emu-webapp", "octra", "script"],
     BASE_DOMAIN: "visp.pdf-server.humlab.umu.se",
     ACCESS_LIST_ENABLED: false,
     PROTOCOL: "https",

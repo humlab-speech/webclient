@@ -52,23 +52,6 @@ export class ProjectItemComponent implements OnInit {
     let projectMember = projects.find(project => project.id == this.project.id).members.find(member => member.eppn == sess.eppn);
 
     environment.ENABLED_APPLICATIONS.forEach((vispAppName) => {
-      if(vispAppName == "rstudio") {
-        let rstudioApp = new VispApp();
-        rstudioApp.name = "rstudio"; //This name needs to be the same as the (sub)-domain-name!
-        rstudioApp.title = "RStudio";
-        rstudioApp.icon = "app-icons/88x88-color/rstudio-icon.png";
-        rstudioApp.disabled = this.shouldAppBeDisabled(rstudioApp.name);
-
-        //If an jupyter container is running, disable launching rstudio to avoid git commit conflicts
-        this.project.liveAppSessions.forEach(session => {
-          if(session.type == "jupyter") {
-            rstudioApp.disabled = true;
-          }
-        });
-        if(projectMember.role == "admin" || projectMember.role == "analyzer") {
-          this.vispApplications.push(rstudioApp);
-        }
-      }
       if(vispAppName == "emu-webapp") {
         let emuWebApp = new VispApp();
         emuWebApp.name = "emu-webapp";
