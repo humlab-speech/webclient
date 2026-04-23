@@ -92,7 +92,7 @@ class SessionManagerInterface {
      * Function: fetchSession
      * Creates a container for a new session bases on the specified project. Or returns the currenly active session if it exists.
      */
-    function fetchSession($projectId, $vispApp = "rstudio") {
+    function fetchSession($projectId, $vispApp = "jupyter") {
         $this->app->addLog("Call: fetchSession(".$projectId.", ".$vispApp.")", "debug");
         $response = $this->_fetchGitlabProjectById($projectId);
         $project = $response['body'];

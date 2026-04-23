@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 use MongoDB\Client;
+use MongoDB\BSON\UTCDateTime;
 
 //$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
 $domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".visp.local";
@@ -19,6 +20,17 @@ function formatEppn($eppn) {
   $eppn = preg_replace("/@/", "_at_", $eppn);
   $eppn = preg_replace("/\./", "_dot_", $eppn);
   return $eppn;
+}
+
+function nowUtcDateTime() {
+  return new UTCDateTime((int) round(microtime(true) * 1000));
+}
+
+function utcDateTimeToUnixMs($value) {
+  if($value instanceof UTCDateTime) {
+    return ((int) $value->toDateTime()->format('U')) * 1000;
+  }
+  return null;
 }
 
 function addLog($msg, $level = "info") {
@@ -75,7 +87,7 @@ if($shibHeadersFound) {
 
 $autoCreate = false;
 
-if(!empty(getenv("TEST_USER_LOGIN_KEY")) && isset($_GET['login']) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
+if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_LOGIN_KEY")) {
   if(isset($_GET['user'])) {
     if($_GET['user'] == "test2") {
       addLog("Starting session for testuser2@example.com", "info");
@@ -124,52 +136,90 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && isset($_GET['login']) && $_GET['logi
 
 addLog("Started session ".$sid."", "info");
 
-if(!empty($_SESSION['username'])) {
+if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
+  addLog("Looking up user ".$_SESSION['username']." in database", "info");
   $mongoPass = getenv("MONGO_ROOT_PASSWORD");
   $client = new Client("mongodb://root:".$mongoPass."@mongo");
   $database = $client->selectDatabase('visp');
   $collection = $database->selectCollection('users');
-
-  if(empty($_SESSION['id'])) {
-    // First load after login: look up or create user and set $_SESSION['id']
-    addLog("Looking up user ".$_SESSION['username']." in database", "info");
-    $cursor = $collection->findOne(['username' => $_SESSION['username']]);
-    if($cursor == null) { //empty result / not found
-      //create the mongodb entry
-      addLog("Creating new user ".$_SESSION['username']." in database", "info");
-      
-      // For test users, automatically grant access. For real users, access must be granted via access list.
-      $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
-      
-      $collection->insertOne([
-        'firstName' => $_SESSION['firstName'],
-        'lastName' => $_SESSION['lastName'],
-        'fullName' => $_SESSION['fullName'],
-        'email' => $_SESSION['email'],
-        'eppn' => $_SESSION['eppn'],
-        'username' => $_SESSION['username'],
-        'phpSessionId' => $sid,
-        'loginAllowed' => $loginAllowed,
-        'privileges' => [
-          'createInviteCodes' => false,
-        ]
-      ]);
-      
-    }
-    else if($cursor != null) {
-      $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
-      $_SESSION['id'] = $user['id'];
-    }
+  $cursor = $collection->findOne(['username' => $_SESSION['username']]);
+  $nowMs = (int) round(microtime(true) * 1000);
+  $nowUtc = nowUtcDateTime();
+  if($cursor == null) { //empty result / not found
+    //create the mongodb entry
+    addLog("Creating new user ".$_SESSION['username']." in database", "info");
+    
+    // For test users, automatically grant access. For real users, access must be granted via access list.
+    $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
+    
+    $collection->insertOne([
+      'firstName' => $_SESSION['firstName'],
+      'lastName' => $_SESSION['lastName'],
+      'fullName' => $_SESSION['fullName'],
+      'email' => $_SESSION['email'],
+      'eppn' => $_SESSION['eppn'],
+      'username' => $_SESSION['username'],
+      'phpSessionId' => $sid,
+      'loginAllowed' => $loginAllowed,
+      'loginCount' => 1,
+      'lastLoginAt' => $nowUtc,
+      'previousLoginAt' => null,
+      'lastLoginSessionId' => $sid,
+      'lastLoginDurationSeconds' => null,
+      'privileges' => [
+        'createInviteCodes' => false,
+      ]
+    ]);
+    
   }
+  else if($cursor != null) {
+    //update the mongodb user object with the current phpsessid
+    addLog("Found existing user ".$_SESSION['username']." in database. Updating session.", "info");
+    $setData = [
+      'phpSessionId' => $sid
+    ];
+    $update = ['$set' => $setData];
+    $lastLoginSessionId = isset($cursor['lastLoginSessionId']) ? $cursor['lastLoginSessionId'] : null;
+    $hasLoginCount = isset($cursor['loginCount']) && is_numeric($cursor['loginCount']);
 
-  // Always update phpSessionId on every page load so session-manager can always look up the current session.
-  // This ensures that after a session-manager restart (or any other event that clears its state),
-  // the next page load re-syncs the current PHP session ID into MongoDB.
-  addLog("Updating phpSessionId for user ".$_SESSION['username']." in database", "info");
-  $collection->updateOne(
-    ['username' => $_SESSION['username']],
-    ['$set' => ['phpSessionId' => $sid]]
-  );
+    if(!$hasLoginCount) {
+      $setData['loginCount'] = ($lastLoginSessionId !== null && $lastLoginSessionId !== $sid) ? 2 : 1;
+    }
+
+    if($lastLoginSessionId !== $sid) {
+      $lastLoginAt = isset($cursor['lastLoginAt']) ? $cursor['lastLoginAt'] : null;
+      $lastLoginAtMs = utcDateTimeToUnixMs($lastLoginAt);
+
+      $setData['previousLoginAt'] = $lastLoginAt;
+      $setData['lastLoginAt'] = $nowUtc;
+      $setData['lastLoginSessionId'] = $sid;
+      $setData['lastLoginDurationSeconds'] = $lastLoginAtMs === null ? null : max(0, (int) floor(($nowMs - $lastLoginAtMs) / 1000));
+
+      if($hasLoginCount) {
+        $update['$inc'] = ['loginCount' => 1];
+      }
+    }
+    else {
+      if(!isset($cursor['lastLoginAt'])) {
+        $setData['lastLoginAt'] = $nowUtc;
+      }
+      if(!isset($cursor['lastLoginSessionId'])) {
+        $setData['lastLoginSessionId'] = $sid;
+      }
+      if(!isset($cursor['lastLoginDurationSeconds'])) {
+        $setData['lastLoginDurationSeconds'] = null;
+      }
+    }
+
+    $update['$set'] = $setData;
+    $collection->updateOne(
+      ['username' => $_SESSION['username']],
+      $update
+    );
+
+    $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
+    $_SESSION['id'] = $user['id'];
+  }
 }
 
 //addLog(print_r($_SESSION, true), "debug");
@@ -205,7 +255,6 @@ if(!empty($_SESSION['username'])) {
       shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
     };
   </script>
-  <script src="/vc.js" defer></script>
 </head>
 <body>
   <app-root></app-root>
