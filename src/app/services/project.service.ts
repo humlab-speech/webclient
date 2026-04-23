@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http'
-import { forkJoin, Observable, Subject } from 'rxjs';
+import { forkJoin, Observable, Subject, BehaviorSubject } from 'rxjs';
 import { Project } from "../models/Project";
 import { ApiResponse } from "../models/ApiResponse";
 import { UserService } from './user.service';
 import { SystemService } from './system.service';
+import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { NotifierService } from 'angular-notifier';
 import { nanoid } from 'nanoid';
@@ -28,11 +29,11 @@ export class ProjectService {
   public projectObs:Observable<Project[]>;
   public projects$:Subject<Project[]>;
   public projectsLoaded:boolean = false;
-  public loadingStatus$:Subject<string>;
+  public loadingStatus$:BehaviorSubject<string>;
 
   constructor(private http:HttpClient, private userService:UserService, private systemService:SystemService, private notifierService:NotifierService) {
     this.projects$ = new Subject<Project[]>();
-    this.loadingStatus$ = new Subject<string>();
+    this.loadingStatus$ = new BehaviorSubject<string>("idle");
   }
 
   fetchMembers(projectId) {
@@ -100,6 +101,8 @@ export class ProjectService {
 
   fetchProjects(forceNewFetch: boolean = false): Observable<Project[]> {
       return new Observable<Project[]>(sub => {
+          this.setLoadingStatus("fetchProjects:start");
+
           const attemptFetch = () => {
               // Check that the user is logged in
               let user = this.userService.getSession();
@@ -116,6 +119,7 @@ export class ProjectService {
 
               if (this.projectsLoaded && !forceNewFetch) {
                   console.log("Projects already loaded");
+                  this.setLoadingStatus("fetchProjects:done");
                   sub.next(this.projects);
                   sub.complete();
               } else {
@@ -127,11 +131,8 @@ export class ProjectService {
                   }).then((wsMsg: WebSocketMessage) => {
                       if (wsMsg.message) {
                           this.notifierService.notify("error", wsMsg.message);
-                          sub.next(this.projects || []);
-                          sub.complete();
-                      } else if (!wsMsg.data || !wsMsg.data.projects) {
-                          console.error("fetchProjects: unexpected response", wsMsg);
-                          sub.next(this.projects || []);
+                          this.setLoadingStatus("fetchProjects:error");
+                          sub.next([]);
                           sub.complete();
                       } else {
                           this.projects = <Project[]>wsMsg.data.projects || [];
@@ -140,15 +141,27 @@ export class ProjectService {
                               if (typeof p.sessions == "undefined") {
                                   p.sessions = [];
                               }
+                              if (typeof p.archived == "undefined") {
+                                  p.archived = false;
+                              }
+                          });
+
+                          this.projects.sort((a:Project, b:Project) => {
+                            if ((a.archived ? 1 : 0) !== (b.archived ? 1 : 0)) {
+                              return (a.archived ? 1 : 0) - (b.archived ? 1 : 0);
+                            }
+                            return (a.name || '').localeCompare(b.name || '');
                           });
 
                           this.projectsLoaded = true;
+                          this.setLoadingStatus("fetchProjects:done");
                           sub.next(this.projects);
                           this.projects$.next(this.projects);
                           sub.complete();
                       }
                   }).catch(err => {
                       console.error("Error fetching projects", err);
+                      this.setLoadingStatus("fetchProjects:error");
                       sub.error(err);
                   });
               }
@@ -302,7 +315,7 @@ export class ProjectService {
   }
 
   async getSession(projectId) {
-    return this.http.get<ApiResponse>(window.location.protocol+'//'+window.location.hostname+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
+    return this.http.get<ApiResponse>(window.location.protocol+'//'+environment.BASE_DOMAIN+'/api/v1/user/project/'+projectId+'/session').subscribe((response:any) => {
       console.log(response);
       return response;
     });
@@ -334,6 +347,28 @@ export class ProjectService {
       }));
     });
    }
+
+  setProjectArchived(project:Project, archived:boolean) {
+    return new Observable<any>(subscriber => {
+      this.systemService.sendCommandToBackend({
+        cmd: 'setProjectArchived',
+        data: {
+          projectId: project.id,
+          archived: archived
+        }
+      }).then((wsMsg:WebSocketMessage) => {
+        if(wsMsg?.result === false || wsMsg?.data?.result === false) {
+          const errMsg = wsMsg?.message || wsMsg?.data?.message || 'Failed to update project archive state';
+          this.notifierService.notify('error', errMsg);
+        }
+        subscriber.next(wsMsg);
+        subscriber.complete();
+      }).catch((error) => {
+        this.notifierService.notify('error', 'Failed to update project archive state');
+        subscriber.error(error);
+      });
+    });
+  }
 
    scanEmuDb(sessionAccessCode:string) {
     return new Observable<any>(subscriber => {
@@ -470,47 +505,29 @@ export class ProjectService {
         progressPercentage: 0
       });
 
-      const wsSub = this.systemService.wsSubject.subscribe({
-        next: (data:any) => {
-          if(data.type == "cmd-result" && data.cmd == "saveProject") {
-            let progress = this.parseProgress(data.progress);
-            if(progress.currentStep == progress.totalSteps) {
-              wsSub.unsubscribe();
-              if(!data.result) {
-                const errMsg = data.message || 'Project creation failed on the server.';
-                console.error('[saveProject] Server reported failure:', errMsg);
-                this.notifierService.notify("error", errMsg);
-                subscriber.next({
-                  msg: errMsg,
-                  progressPercentage: 100,
-                  error: true
-                });
-                subscriber.complete();
-                return;
-              }
-              subscriber.next({
-                msg: "Project saved",
-                progressPercentage: 100
-              });
-
-              //send out an event signaling that the project has been saved
-              window.dispatchEvent(new CustomEvent('projectSaved'));
-
-              subscriber.complete();
+      this.systemService.wsSubject.subscribe((data:any) => {
+        if(data.type == "cmd-result" && data.cmd == "saveProject") {
+          let progress = this.parseProgress(data.progress);
+          if(progress.currentStep == progress.totalSteps) {
+            if(!data.result) {
+              this.notifierService.notify("error", data.message);
             }
-            else {
-              subscriber.next({
-                msg: data.message,
-                progressPercentage: Math.round(progress.currentStep / progress.totalSteps * 100)
-              });
-            }
+            subscriber.next({
+              msg: "Project saved",
+              progressPercentage: 100
+            });
+
+            //send out an event signaling that the project has been saved
+            window.dispatchEvent(new CustomEvent('projectSaved'));
+
+            subscriber.complete();
           }
-        },
-        error: (err) => {
-          console.error('[saveProject] WebSocket error during project save:', err);
-          this.notifierService.notify('error', 'Lost connection to server while saving project. Check browser console for details.');
-          subscriber.next({ msg: 'Connection error', progressPercentage: 100, error: true });
-          subscriber.complete();
+          else {
+            subscriber.next({
+              msg: data.message,
+              progressPercentage: Math.round(progress.currentStep / progress.totalSteps * 100)
+            });
+          }
         }
       });
 
@@ -717,21 +734,6 @@ export class ProjectService {
         }
       };
       this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg:WebSocketMessage) => {
-        observer.next(wsMsg);
-        observer.complete();
-      });
-    });
-  }
-
-  cleanupOrphanedSessions(projectId: string) {
-    return new Observable((observer) => {
-      let messageToBackend = {
-        cmd: "cleanupOrphanedSessions",
-        data: {
-          projectId: projectId
-        }
-      };
-      this.systemService.sendCommandToBackend(messageToBackend).then((wsMsg: WebSocketMessage) => {
         observer.next(wsMsg);
         observer.complete();
       });

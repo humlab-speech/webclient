@@ -14,11 +14,4 @@ export class Project {
     liveAppSessions?:any;
     members?:any;
     membersInfo?:any;
-    healthStatus?: {
-        hasEmuDbConfig: boolean;
-        audioFileCount: number;
-        mongoSessionCount: number;
-        emuDbSessionCount: number;
-        issues: string[];
-    };
 }

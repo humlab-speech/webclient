@@ -7,15 +7,17 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SpeechrecorderngComponent, SpeechRecorderConfig, SpeechrecorderngModule } from 'speechrecorderng';
 import { ContainerSessionRenderComponent } from './components/container-session-render/container-session-render.component';
 import { AboutComponent } from './components/about/about.component';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'app', component: ContainerSessionRenderComponent },
-  { path: 'emu-webapp', component: ContainerSessionRenderComponent },
+  { path: 'arctic', component: ContainerSessionRenderComponent },
   { path: 'octra', component: ContainerSessionRenderComponent },
   { path: 'about', component: AboutComponent },
   { path: 'om', component: AboutComponent },
   { path: 'DS/Login', redirectTo: '/', pathMatch: 'full' },
+  { path: 'admin', component: AdminPanelComponent },
 ];
 
 const MY_APP_ROUTES: Routes = [

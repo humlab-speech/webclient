@@ -12,11 +12,13 @@ import { SigninCtrlComponent } from './components/signin-ctrl/signin-ctrl.compon
 import { ProjectManagerComponent } from './components/project-manager/project-manager.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ProjectItemComponent } from './components/project-item/project-item.component';
 import { AppctrlComponent } from './components/appctrl/appctrl.component';
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { UserService } from './services/user.service';
+import { OverlayContainer } from '@angular/cdk/overlay';
+import { HighZOverlayContainer } from './services/high-z-overlay-container.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,6 +55,8 @@ import { HelpDialogComponent } from './components/help-dialog/help-dialog.compon
 import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
 import { TranscribeDialogComponent } from './components/transcribe-dialog/transcribe-dialog.component';
 import { OctraSelectBundleDialogComponent } from './components/octra-select-bundle-dialog/octra-select-bundle-dialog.component';
+import { FrontpageComponent } from './components/frontpage/frontpage.component';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +91,9 @@ import { OctraSelectBundleDialogComponent } from './components/octra-select-bund
     HelpDialogComponent,
     HelpCtrlComponent,
     TranscribeDialogComponent,
-    OctraSelectBundleDialogComponent
+    OctraSelectBundleDialogComponent,
+    FrontpageComponent,
+    AdminPanelComponent
   ],
   imports: [
     CommonModule,
@@ -96,7 +102,6 @@ import { OctraSelectBundleDialogComponent } from './components/octra-select-bund
     HttpClientModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    FormsModule,
     NgxDropzoneModule,
     MatInputModule,
     MatSelectModule,
@@ -131,7 +136,8 @@ import { OctraSelectBundleDialogComponent } from './components/octra-select-bund
     })
   ],
   providers: [
-    UserService
+    UserService,
+    { provide: OverlayContainer, useClass: HighZOverlayContainer }
   ],
   bootstrap: [AppComponent]
 })

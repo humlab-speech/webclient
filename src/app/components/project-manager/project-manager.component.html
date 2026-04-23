@@ -1,61 +1,59 @@
 <div id="project-manager-root">
-  <div class="project-manager-header">
-    <div class="project-manager-title-container">
+  <div class="section-heading" id="tutorial-projects-heading">
+    <div>
+      <span class="eyebrow">Workspace</span>
       <h2>Your Projects</h2>
-      @if (showCreateProjectButton) {
-        <button id="create-project-btn" (click)="showProjectDialog()">
-          <i class="fa fa-plus-circle" aria-hidden="true"></i>
-          Create new project
-        </button>
-      }
+    </div>
+
+    <div class="section-actions">
+      <div class="active-count"><span>{{ activeProjectCount }}</span> active</div>
+      <button *ngIf="showCreateProjectButton" class="create-project-btn" (click)="showProjectDialog()">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        <span>New project</span>
+      </button>
     </div>
   </div>
 
-  <ul>
-    @for (project of projects; track project) {
-      <app-project-item [project]="project" [projectManager]="this"></app-project-item>
-    }
-  </ul>
+  <ng-container *ngIf="shouldShowLoadingState(); else loadedProjects">
+    <div class="project-manager-loading" aria-live="polite">
+      <div class="projects-loading-status">
+        <span class="projects-loading-indicator" aria-hidden="true"></span>
+        <span>{{ loadingStatusMsg }}</span>
+      </div>
 
-  @if (!projectsLoaded) {
-    <div>
-      @if (!projectsLoaded) {
-        <span class="projects-loading-indicator">
-          <img src="../../../assets/loading-indicator.svg">
-        </span>
-      }
-      Loading your projects...
-    </div>
-  }
-  @if (projectsLoaded && projects?.length == 0) {
-    <div>
-      You have no projects
-    </div>
-  }
+      <ul class="loading-steps">
+        <li *ngFor="let step of loadingSteps" [class.active]="isLoadingStepActive(step.id)" [class.completed]="isLoadingStepComplete(step.id)">
+          {{ step.label }}
+        </li>
+      </ul>
 
-  @if ((dashboard.modalActive && dashboard.modalName=='project-dialog')) {
-    <app-project-dialog [projectManager]="this"></app-project-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='script-dialog')) {
-    <app-script-app-dialog></app-script-app-dialog>
-  }
-  <!--<app-import-audio-form *ngIf="(dashboard.modalActive && dashboard.modalName=='import-audio-dialog')" [projectManager]="this"></app-import-audio-form>-->
-  @if ((dashboard.modalActive && dashboard.modalName=='emudb-dialog')) {
-    <app-edit-emudb-dialog [projectManager]="this"></app-edit-emudb-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='manage-project-members-dialog')) {
-    <app-manage-project-members-dialog [projectManager]="this"></app-manage-project-members-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='manage-bundle-assignment-dialog')) {
-    <app-manage-bundle-assignment-dialog [projectManager]="this"></app-manage-bundle-assignment-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='manage-sessions-dialog')) {
-    <app-manage-sessions-dialog [projectManager]="this"></app-manage-sessions-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='spr-scripts-dialog')) {
-    <app-manage-spr-scripts-dialog [projectManager]="this"></app-manage-spr-scripts-dialog>
-  }
-  @if ((dashboard.modalActive && dashboard.modalName=='transcribe-dialog')) {
-    <app-transcribe-dialog [projectManager]="this"></app-transcribe-dialog>
-  }
+      <ul class="ghost-project-list" aria-hidden="true">
+        <li class="ghost-project" *ngFor="let ghostCard of ghostProjectCards">
+          <div class="ghost-project-header ghost-shimmer"></div>
+          <div class="ghost-project-row ghost-shimmer"></div>
+          <div class="ghost-project-row ghost-shimmer"></div>
+          <div class="ghost-project-row ghost-shimmer short"></div>
+        </li>
+      </ul>
+    </div>
+  </ng-container>
+
+  <ng-template #loadedProjects>
+    <div class="project-list" *ngIf="projects?.length; else noProjects">
+      <app-project-item *ngFor="let project of sortedProjects" [project]="project" [projectManager]="this"></app-project-item>
+    </div>
+  </ng-template>
+
+  <ng-template #noProjects>
+    <div class="no-projects-msg" *ngIf="projectsLoaded && !forceProjectManagerLoading">You have no projects yet.</div>
+  </ng-template>
+
+  <app-project-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='project-dialog')" [projectManager]="this"></app-project-dialog>
+  <app-script-app-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='script-dialog')"></app-script-app-dialog>
+  <app-edit-emudb-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='emudb-dialog')" [projectManager]="this"></app-edit-emudb-dialog>
+  <app-manage-project-members-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-project-members-dialog')" [projectManager]="this"></app-manage-project-members-dialog>
+  <app-manage-bundle-assignment-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-bundle-assignment-dialog')" [projectManager]="this"></app-manage-bundle-assignment-dialog>
+  <app-manage-sessions-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='manage-sessions-dialog')" [projectManager]="this"></app-manage-sessions-dialog>
+  <app-manage-spr-scripts-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='spr-scripts-dialog')" [projectManager]="this"></app-manage-spr-scripts-dialog>
+  <app-transcribe-dialog *ngIf="(dashboard.modalActive && dashboard.modalName=='transcribe-dialog')" [projectManager]="this"></app-transcribe-dialog>
 </div>

@@ -1,174 +1,115 @@
-<li>
-  <div class="header">
-    <h3>
-      {{ project.name }}
-      @if (deleteProjectInProgress) {
-        <img src="../../../assets/loading-indicator.svg">
-      }
-      @if (project.healthStatus) {
-        <span class="health-badge">
-          <span class="audio-count-badge" [title]="'Audio files in this project'">
-            <i class="fa fa-file-audio-o"></i> {{ project.healthStatus.audioFileCount }}
-          </span>
-          @if (!project.healthStatus.hasEmuDbConfig) {
-            <span class="warning-badge" title="Missing EmuDB configuration">
-              <i class="fa fa-warning"></i>
-            </span>
-          }
-          @if (project.healthStatus.issues && project.healthStatus.issues.length > 0) {
-            <span
-              class="warning-badge issues-warning"
-              (click)="showCleanupConfirmation()"
-              [title]="'Consistency issues detected. Click for details. ' + project.healthStatus.issues.join('; ')">
-              <i class="fa fa-exclamation-triangle"></i> {{ project.healthStatus.issues.length }}
-            </span>
-          }
+<article class="project-card tutorial-project-card" [ngClass]="{'project-card--archived': isArchived}">
+  <div class="project-top">
+    <div>
+      <div class="project-label">Project</div>
+      <h3>
+        {{ project.name }}
+        <img *ngIf="deleteProjectInProgress || archiveProjectInProgress" src="../../../assets/loading-indicator.svg" alt="Updating project">
+      </h3>
+
+      <div class="project-meta">
+        <span *ngIf="isArchived" class="archived-pill">
+          <i class="fa fa-archive" aria-hidden="true"></i>
+          Archived (locked)
         </span>
-      }
-    </h3>
+        <span>
+          <i class="fa fa-users" aria-hidden="true"></i>
+          {{ getMemberCount() }} {{ getMemberLabel() }}
+        </span>
+        <span class="meta-divider">•</span>
+        <span>
+          <i class="fa fa-volume-up" aria-hidden="true"></i>
+          {{ getRecordingCount() }} recordings
+        </span>
+      </div>
+    </div>
 
     <div class="project-menu" (mouseover)="showProjectMenu(true)" (mouseout)="showProjectMenu(false, true)">
-      <i class="fa fa-bars" aria-hidden="true"></i>
-      @if (projectMenuVisible) {
-        <ul class="project-menu-dropdown">
-          <!--<li (click)="editEmuDb(this.project)"><i class="fa fa-edit" aria-hidden="true"></i> Add sessions</li>-->
-          <!--<li (click)="editProject(this.project)"><img class="button-icon" src="assets/gitlab-icon.png" /> Edit project</li>-->
-          <li (click)="deleteProject()"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete project</li>
-        </ul>
-      }
-    </div>
-  </div>
-  <div class="project-main-panel">
+      <button class="menu-button" aria-label="Project actions">
+        <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+      </button>
 
-    <div class="applications-container">
-      <h4>
-        Applications
-      </h4>
-
-      @for (vispApp of vispApplications; track vispApp) {
-        <div>
-          <app-appctrl [vispApp]="vispApp" [project]="project" [projectItem]="this"></app-appctrl>
-        </div>
-      }
-    </div>
-
-    @if (false) {
-      <div class="applications-container">
-        <h4>
-          Operations
-        </h4>
-        @for (op of projectOperations; track op) {
-          <div>
-            <button [disabled]="showLoadingIndicator" class="app-btn" (click)="op.callback()">
-              <div class="app-btn-icon-box">
-                <img [src]="appIconPath">
-              </div>
-              <div>{{ op.title }}</div>
-            </button>
-          </div>
-        }
-      </div>
-    }
-
-    <div class="gitlab-project-container">
-      <h4>Operations</h4>
-      <div class="gitlab-menu-container">
-        <ul>
-          <li>
-            <div (click)="transcribeDialog(this.project)">
-              <div class="list-button">
-                <i class="fa fa-file-text-o" aria-hidden="true"></i>
-                &nbsp;
-                Auto-transcribe
-              </div>
-            </div>
-          </li>
-          <li>
-            <div (click)="editEmuDb(this.project)">
-              <div class="list-button">
-                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
-                &nbsp;
-                Sessions
-              </div>
-            </div>
-          </li>
-          <li>
-            <div (click)="manageBundleLists(this.project)">
-              <div class="list-button">
-                <i class="fa fa-headphones" aria-hidden="true"></i>
-                &nbsp;
-                Assign annotation tasks
-              </div>
-            </div>
-          </li>
-          <li>
-            <div (click)="manageMembers(this.project)">
-              <div class="list-button">
-                <i class="fa fa-users" aria-hidden="true"></i>
-                &nbsp;
-                Members
-              </div>
-            </div>
-          </li>
-          <!--
-          <li>
-            <div (click)="sessionsDialog(this.project)">
-              <div class="list-button">
-                <i class="fa fa-microphone" aria-hidden="true"></i>
-                &nbsp;
-                Sessions !
-              </div>
-            </div>
-          </li>
-          -->
-
-          <li>
-            <div (click)="openSprScriptsDialog(this.project)">
-              <div class="list-button">
-                <i class="fa fa-microphone" aria-hidden="true"></i>
-                &nbsp;
-                Manage recording scripts
-              </div>
-            </div>
-          </li>
-          <!--
-          <li>
-            <a href="{{ projectMembersUrl }}" target="_blank">
-              <div class="list-button">
-                <img class="button-icon" src="assets/gitlab-icon.png" />
-                &nbsp;
-                Members
-              </div>
-            </a>
-          </li>
-
-          <li>
-            <a href="{{ project.web_url }}" target="_blank">
-              <div class="list-button">
-                <img class="button-icon" src="assets/gitlab-icon.png" />
-                &nbsp;
-                View data repository
-              </div>
-            </a>
-          </li>
-          -->
-        </ul>
-      </div>
-    </div>
-
-    <div class="project-members-list">
-      <h4>Members <a href="{{ project.web_url }}/-/project_members"><i class="fa fa-user-plus add-members-btn"></i></a></h4>
-      <ul>
-        @for (member of members; track member) {
-          <li>
-            <i class="fa fa-user" aria-hidden="true"></i>
-            &nbsp;
-            <a href="{{ member.web_url }}">{{ member.name }}</a>
-          </li>
-        }
+      <ul *ngIf="projectMenuVisible" class="project-menu-dropdown">
+        <li *ngIf="!isArchived" (click)="archiveProject()"><i class="fa fa-archive" aria-hidden="true"></i> Archive project</li>
+        <li *ngIf="isArchived" (click)="unarchiveProject()"><i class="fa fa-unlock" aria-hidden="true"></i> Unarchive project</li>
+        <li *ngIf="!isArchived" (click)="deleteProject()"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete project</li>
       </ul>
     </div>
-
   </div>
 
-</li>
+  <ng-container *ngIf="!isArchived; else archivedProjectBody">
+    <div class="project-body two-col">
+      <section class="app-column tutorial-project-applications">
+        <div class="subsection-head">
+          <div>
+            <h4>Applications</h4>
+            <p>Work with your material through different applications.</p>
+          </div>
+        </div>
+
+        <div class="tile-list application-list">
+          <app-appctrl *ngFor="let vispApp of vispApplications" [vispApp]="vispApp" [project]="project" [projectItem]="this"></app-appctrl>
+        </div>
+      </section>
+
+      <section class="ops-column tutorial-project-operations">
+        <div class="subsection-head">
+          <div>
+            <h4>Operations</h4>
+            <p>Manage workflow and project resources.</p>
+          </div>
+        </div>
+
+        <div class="tile-list">
+          <button class="tool-tile" (click)="transcribeDialog(this.project)">
+            <span class="tile-icon blue"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+            <span class="tile-copy">
+              <span class="tile-label">Auto-transcribe</span>
+              <span class="tile-subtitle">Powered by WhisperX</span>
+            </span>
+          </button>
+
+          <button class="tool-tile" (click)="editEmuDb(this.project)">
+            <span class="tile-icon blue"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span>
+            <span class="tile-copy">
+              <span class="tile-label">Recording sessions</span>
+              <span class="tile-subtitle">View and manage recorded audio files</span>
+            </span>
+          </button>
+
+          <button class="tool-tile" (click)="manageBundleLists(this.project)">
+            <span class="tile-icon blue"><i class="fa fa-headphones" aria-hidden="true"></i></span>
+            <span class="tile-copy">
+              <span class="tile-label">Assign annotation tasks</span>
+              <span class="tile-subtitle">Distribute bundles for annotation in Arctic</span>
+            </span>
+          </button>
+
+          <button class="tool-tile" (click)="manageMembers(this.project)">
+            <span class="tile-icon blue"><i class="fa fa-users" aria-hidden="true"></i></span>
+            <span class="tile-copy">
+              <span class="tile-label">Members</span>
+              <span class="tile-subtitle">Manage team members and roles</span>
+            </span>
+          </button>
+
+          <button class="tool-tile" (click)="openSprScriptsDialog(this.project)">
+            <span class="tile-icon blue"><i class="fa fa-microphone" aria-hidden="true"></i></span>
+            <span class="tile-copy">
+              <span class="tile-label">Manage recording scripts</span>
+              <span class="tile-subtitle">Create and edit speaker prompts</span>
+            </span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+
+  <ng-template #archivedProjectBody>
+    <div class="project-body archived-project-body">
+      <p>
+        This project is archived. It is locked for all changes and session launches until you unarchive it from the project menu.
+      </p>
+    </div>
+  </ng-template>
+</article>

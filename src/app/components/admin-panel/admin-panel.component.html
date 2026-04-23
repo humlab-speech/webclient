@@ -1,0 +1,187 @@
+<div id="admin-panel-root">
+
+  <div class="section-heading">
+    <div class="heading-left">
+      <span class="eyebrow">System</span>
+      <h2>Admin Panel</h2>
+    </div>
+    <div class="section-actions" *ngIf="!loading && !error">
+      <div class="active-count"><span>{{ activeProjectCount }}</span> active project<ng-container *ngIf="activeProjectCount !== 1">s</ng-container></div>
+      <button class="refresh-btn" (click)="fetchProjects(true, false)" title="Refresh">
+        <i class="fa fa-refresh" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Fetching projects&hellip;</span>
+  </div>
+
+  <div class="error-state" *ngIf="error && !loading">
+    <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+    <span>{{ error }}</span>
+    <button class="retry-btn" (click)="fetchProjects(true, false)">Retry</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
+    <table class="projects-table" *ngIf="projects.length; else noProjects">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Members &amp; Roles</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let project of projects">
+          <tr>
+            <td class="project-name-cell">{{ project.name }}</td>
+            <td>
+              <span class="status-badge" [class.archived]="project.archived">
+                {{ project.archived ? 'Archived' : 'Active' }}
+              </span>
+            </td>
+            <td class="date-cell">{{ project.created_at | date:'mediumDate' }}</td>
+            <td class="members-cell">
+              <ul class="members-list" *ngIf="project.members?.length; else noMembers">
+                <li *ngFor="let member of project.members" class="member-row">
+                  <span class="member-name">{{ member.fullName || member.username }}</span>
+                  <span class="member-role role-{{ member.role }}">{{ member.role }}</span>
+                </li>
+              </ul>
+              <ng-template #noMembers>
+                <span class="no-members">No members</span>
+              </ng-template>
+            </td>
+            <td class="actions-cell">
+              <div class="actions-stack">
+                <button class="action-btn"
+                        [disabled]="isArchivingProject(project.id) || isDeletingProject(project.id)"
+                        (click)="toggleProjectArchived(project)">
+                  <i class="fa" [ngClass]="project.archived ? 'fa-unlock' : 'fa-archive'" aria-hidden="true"></i>
+                  <span>{{ project.archived ? 'Unarchive' : 'Archive' }}</span>
+                </button>
+                <button class="action-btn"
+                        [class.action-btn-active]="isMembersEditorOpen(project)"
+                        [disabled]="isDeletingProject(project.id)"
+                        (click)="toggleMembersEditor(project)">
+                  <i class="fa fa-users" aria-hidden="true"></i>
+                  <span>{{ isMembersEditorOpen(project) ? 'Close Members' : 'Manage Members' }}</span>
+                </button>
+                <button class="action-btn action-btn-danger"
+                        [disabled]="isDeletingProject(project.id) || isArchivingProject(project.id)"
+                        (click)="deleteProject(project)">
+                  <i class="fa fa-trash" aria-hidden="true"></i>
+                  <span>Delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="row-error-container" *ngIf="projectActionErrorByProject[projectIdKey(project.id)]">
+            <td colspan="5">
+              <div class="row-error-msg">
+                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                <span>{{ projectActionErrorByProject[projectIdKey(project.id)] }}</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="member-editor-row" *ngIf="isMembersEditorOpen(project)">
+            <td colspan="5">
+              <div class="member-editor">
+                <div class="member-editor-header">
+                  <h3>Members for {{ project.name }}</h3>
+                  <p>Update roles, remove members, or add new members.</p>
+                </div>
+
+                <div class="member-search">
+                  <input
+                    type="text"
+                    [value]="memberSearchValueByProject[projectIdKey(project.id)] || ''"
+                    (input)="onMemberSearchInput(project, $event)"
+                    (keydown.enter)="searchUsers(project)"
+                    placeholder="Search by name, email, or username"
+                  />
+                  <button class="member-search-btn"
+                          [disabled]="isSearchingUsers(project.id) || isAddingMember(project.id)"
+                          (click)="searchUsers(project)">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <span>{{ isSearchingUsers(project.id) ? 'Searching...' : 'Search users' }}</span>
+                  </button>
+                </div>
+
+                <div class="member-search-error" *ngIf="memberSearchErrorByProject[projectIdKey(project.id)]">
+                  {{ memberSearchErrorByProject[projectIdKey(project.id)] }}
+                </div>
+
+                <ul class="member-search-results" *ngIf="memberSearchResultsByProject[projectIdKey(project.id)]?.length">
+                  <li *ngFor="let user of memberSearchResultsByProject[projectIdKey(project.id)]">
+                    <div class="search-user-meta">
+                      <span class="search-user-name">{{ displayUserName(user) }}</span>
+                      <span class="search-user-secondary">{{ displayUserSecondary(user) }}</span>
+                    </div>
+                    <button class="member-add-btn"
+                            [disabled]="isAddingMember(project.id)"
+                            (click)="addMemberToProject(project, user)">
+                      <i class="fa fa-plus" aria-hidden="true"></i>
+                      <span>{{ isAddingMember(project.id) ? 'Adding...' : 'Add' }}</span>
+                    </button>
+                  </li>
+                </ul>
+
+                <table class="member-editor-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Email</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="!project.members?.length">
+                      <td colspan="4" class="no-members-inline">No members assigned.</td>
+                    </tr>
+                    <tr *ngFor="let member of project.members">
+                      <td>
+                        <span class="member-name">{{ member.fullName || member.username }}</span>
+                        <span class="member-username">{{ member.username }}</span>
+                      </td>
+                      <td>
+                        <select class="member-role-select"
+                                [value]="member.role"
+                                [disabled]="isUpdatingMemberRole(project.id, member.username) || isRemovingMember(project.id, member.username)"
+                                (change)="updateMemberRole(project, member, $event)">
+                          <option *ngFor="let roleOption of roleOptions" [value]="roleOption">
+                            {{ roleOption }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>{{ member.email || '-' }}</td>
+                      <td>
+                        <button class="member-remove-btn"
+                                [disabled]="isRemovingMember(project.id, member.username) || isUpdatingMemberRole(project.id, member.username)"
+                                (click)="removeMemberFromProject(project, member)">
+                          <i class="fa fa-user-times" aria-hidden="true"></i>
+                          <span>{{ isRemovingMember(project.id, member.username) ? 'Removing...' : 'Remove' }}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+    <ng-template #noProjects>
+      <div class="no-projects-msg">No projects found in the system.</div>
+    </ng-template>
+  </ng-container>
+
+</div>
