@@ -11,10 +11,9 @@ import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
-    selector: 'app-edit-emudb-dialog',
-    templateUrl: './edit-emudb-dialog.component.html',
-    styleUrls: ['./edit-emudb-dialog.component.scss'],
-    standalone: false
+  selector: 'app-edit-emudb-dialog',
+  templateUrl: './edit-emudb-dialog.component.html',
+  styleUrls: ['./edit-emudb-dialog.component.scss'],
 })
 export class EditEmudbDialogComponent {
   @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;

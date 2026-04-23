@@ -1,140 +1,108 @@
 @import '../../../colors.scss';
 @import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
 
-fieldset {
-    border-style:dotted;
-    border-width: 0;
+.appctrl-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
 }
 
-button {
-    font-size: 1.0rem;
-    padding: 0.25rem;
-    border-style: solid;
-    border-width: 0px;
-    margin:0.5rem;
-    cursor:pointer;
+.tool-tile {
+  min-height: 58px;
+  border-radius: 15px;
+  border: 1px solid #f0e2d8;
+  background: #fbf5f2;
+  cursor: pointer;
+  color: #34527f;
+  padding: 0.7rem 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-align: left;
+  font-weight: 700;
+  width: 100%;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.app-btn {
-    display:flex;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: $comp3;
-    //background: $dog-ear-gradient;
-    color: $black;
-    min-width: 12em;
-    margin:0;
-    padding:0;
-    height: 2em;
+.tool-tile:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #e9d3c5;
+  box-shadow: 0 10px 22px rgba(39, 62, 95, 0.08);
 }
 
-.app-btn-icon-box {
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    background-color: $primary;
-    height:1.5em;
-    width:1.5em;
-    margin:0;
-    padding:0.25em;
-    margin-right: 0.5em;
+.tile-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 }
 
-.app-btn-icon-box img {
+.tile-icon.orange {
+  background: linear-gradient(180deg, #ee9258 0%, #e68147 100%);
 }
 
-.app-btn:hover {
-    background-color: lighten($comp2, 10%);
+.tile-icon img {
+  width: 18px;
+  height: 18px;
 }
 
-.application-panel-container {
-    display:flex;
-    margin-bottom: 2rem;
+.tile-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.session-controls-container {
-    background-color: $lightgrey;
-    padding-left: 0em !important;
-    padding-right: 0em !important;
+.tile-label {
+  color: #34527f;
+  font-weight: 700;
 }
 
-.session-controls-container button {
-    margin:0;
-    padding:0;
-    background-color: $secondary-dark;
-    color: $white;
-    height: 2em;
-    width: 2em;
+.tile-subtitle {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #7a8faa;
+  margin-top: 0.05rem;
 }
 
-.session-controls-container button:hover {
-    background-color: lighten($secondary, 10%);
+.tile-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: #5f7190;
 }
 
-.status-msg-container {
-    background: $primary;
-    color: $white !important;
+.tile-status img {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
-.status-msg-container img {
-    height: 0.8rem;
-    margin-right:0.5rem;
+.running {
+  border-color: #e6c7b2;
 }
 
-.app-btn-row-container {
-    display:flex;
-    height: 2em;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding:0;
-    color: $white;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+.disabled-btn,
+.tool-tile:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 
-.disabled-btn {
-    background-color: $lightgrey !important;
-    color: $border !important;
+.session-close-button {
+  width: 58px;
+  min-height: 58px;
+  border: 1px solid #d8dfe8;
+  border-radius: 15px;
+  background: #f8f9fc;
+  cursor: pointer;
+  color: #27497e;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 }
 
-button img {
-    height: 1rem;
-    width: 1rem;
-    margin:0;
-    padding:0;
-}
-
-button i {
-    height: 1rem;
-    width: 1rem;
-    margin:0;
-    padding:0;
-}
-
-.applications-container {
-    display:block;
-}
-
-.applications-container fieldset {
-    margin-bottom: 0.25em;
-    padding:0.5rem;
-    border: 1px solid $border-light;
-    width: 100%;
-    border-radius: 0.25em;
-}
-
-.button-status-wrapper {
-    display:flex;
-    height: 2rem;
-}
-
-.buttonDisabled {
-    background: #ccc;
-    cursor: default;
-}
-
-.buttonDisabled:hover {
-    background: #ccc;
-    cursor: default;
+.session-close-button:hover:not(:disabled) {
+  background: #edf2f8;
 }

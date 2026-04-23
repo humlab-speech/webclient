@@ -1,23 +1,57 @@
-<div id="menu-bar">
-  @if (showBackToDashboardButton) {
-    <div id="back-button-container">
-      <div id="visp-back-button" (click)="backButtonClicked()">
-        <div id="visp-back-button-arrow">&#8678;</div>
-        <p>Back to dashboard</p>
+<header id="menu-bar">
+  <div class="menu-left">
+    <div class="brand-block">
+      <img class="brand-logo" src="/assets/VISP-logo2-black-transparent.png" alt="VISP logo"
+           [class.brand-logo--clickable]="showBackToDashboardButton"
+           (click)="showBackToDashboardButton && backButtonClicked()">
+    </div>
+
+    <button *ngIf="showBackToDashboardButton" id="visp-back-button" (click)="backButtonClicked()" aria-label="Back to dashboard">
+      <span class="back-arrow">&#8678;</span>
+      <span>Back to dashboard</span>
+    </button>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="icon-button" aria-label="Search">
+      <svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="6.5"/></svg>
+    </button>
+
+    <div class="notification-wrapper" (click)="$event.stopPropagation()">
+      <button class="icon-button notification-button" aria-label="Notifications" (click)="toggleNotificationsPanel($event)">
+        <svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+        <span *ngIf="unreadNotificationCount > 0" class="notification-dot"></span>
+      </button>
+
+      <div class="notifications-panel" *ngIf="isNotificationsPanelOpen" role="dialog" aria-label="Notifications panel">
+        <div class="notifications-panel__header">
+          <h3>Notifications</h3>
+          <button class="notifications-panel__clear-button" *ngIf="notifications.length > 0" (click)="clearNotifications()">
+            Clear
+          </button>
+        </div>
+
+        <ul class="notifications-panel__list" *ngIf="notifications.length > 0; else noNotificationsTemplate">
+          <li class="notifications-panel__item" *ngFor="let notification of notifications; trackBy: trackByNotificationId">
+            <div class="notifications-panel__item-type" [ngClass]="'notifications-panel__item-type--' + notification.type">
+              {{ notification.type }}
+            </div>
+            <p>{{ notification.message }}</p>
+            <time>{{ notification.createdAt | date:'HH:mm:ss' }}</time>
+          </li>
+        </ul>
+
+        <ng-template #noNotificationsTemplate>
+          <p class="notifications-panel__empty">No notifications yet.</p>
+        </ng-template>
+
+        <button class="notifications-panel__close-button" (click)="closeNotificationsPanel($event)">
+          Close
+        </button>
       </div>
     </div>
-  }
 
-  <div id="system-logo-container">
-    <img src="{{ logoImagePath }}">
+    <app-help-ctrl *ngIf="containerSessionViewActive"></app-help-ctrl>
+    <app-user></app-user>
   </div>
-
-  <div id="umu-logo-container">
-    <img src="/assets/umu-logo-left-neg-EN.png">
-  </div>
-
-  @if (containerSessionViewActive) {
-    <app-help-ctrl class="link-button"></app-help-ctrl>
-  }
-  <app-user></app-user>
-</div>
+</header>

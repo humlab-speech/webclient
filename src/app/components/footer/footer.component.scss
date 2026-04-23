@@ -2,34 +2,27 @@
 
 #footer-container {
     display:flex;
-    /* This is now specified in app-footer rule in the base css
-    grid-column: center;
-    grid-row: lower-panel;
-    */
-    background: $secondary;
-    color: #fff;
-    font-size: 1.0rem;
-    /*
-    height:3rem;
-    font-size: 1.5vh;
-    padding: 1vh;
-    */
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+    width: 100%;
+    height: 100%;
+    background: $comp4;
+    color: $primary;
+    border-top: 1px solid $border-light;
+    padding: 0;
     margin:0px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
 }
 
-#footer-container span {
-    padding:0;
-    margin:0;
+.footer-umu-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
-#footer-container a {
-    color: $white;
-    padding:0;
-    margin:0;
+.footer-umu-logo img {
+    height: 2.6rem;
+    width: auto;
+    object-fit: contain;
 }

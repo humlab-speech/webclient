@@ -1,0 +1,104 @@
+@import '../../../colors.scss';
+@import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
+
+:host {
+  display: block;
+}
+
+.assignment-dialog-backdrop {
+  backdrop-filter: blur(1.5px);
+}
+
+.assignment-dialog-container {
+  width: min(1020px, calc(100vw - 2rem));
+  min-width: 0;
+  max-height: calc(100vh - 2rem);
+  margin: 0;
+  padding: 0;
+  border-radius: 26px;
+  border: 1px solid #d8dfe8;
+  box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
+  overflow: hidden auto;
+  background: #ffffff !important;
+}
+
+.assignment-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 1.45rem 1.5rem;
+  background: linear-gradient(135deg, #243e6a 0%, #284a80 70%, #2f548d 100%);
+  color: #fff;
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.dialog-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.assignment-dialog-header h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.9rem);
+  letter-spacing: -0.03em;
+  color: #fff8f2;
+  text-decoration: none;
+}
+
+.assignment-dialog-header p {
+  margin: 0.5rem 0 0;
+  color: rgba(246, 248, 253, 0.82);
+  line-height: 1.4;
+  font-size: 0.94rem;
+}
+
+.assignment-dialog-close-btn {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  margin-left: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.assignment-dialog-close-btn:hover {
+  border-color: rgba(255, 255, 255, 0.38);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.assignment-dialog-content {
+  padding: 1.35rem 1.5rem 1.5rem;
+  background: #f8fafd;
+}
+
+@media (max-width: 900px) {
+  .assignment-dialog-container {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+
+  .assignment-dialog-header,
+  .assignment-dialog-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .assignment-dialog-header p {
+    font-size: 0.88rem;
+  }
+}

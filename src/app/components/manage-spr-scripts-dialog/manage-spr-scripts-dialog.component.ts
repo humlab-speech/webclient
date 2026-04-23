@@ -17,10 +17,9 @@ import { HttpClient } from '@angular/common/http';
 import { nanoid } from "nanoid";
 
 @Component({
-    selector: 'app-manage-spr-scripts-dialog',
-    templateUrl: './manage-spr-scripts-dialog.component.html',
-    styleUrls: ['./manage-spr-scripts-dialog.component.scss'],
-    standalone: false
+  selector: 'app-manage-spr-scripts-dialog',
+  templateUrl: './manage-spr-scripts-dialog.component.html',
+  styleUrls: ['./manage-spr-scripts-dialog.component.scss']
 })
 export class ManageSprScriptsDialogComponent implements OnInit {
 

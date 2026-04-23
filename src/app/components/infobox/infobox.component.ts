@@ -1,43 +1,35 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Infobox } from "../../models/Infobox";
+import { Infobox } from '../../models/Infobox';
 import { environment } from 'src/environments/environment';
 import { ShepherdService } from '../../services/shepherd.service';
-import { UserService } from '../../services/user.service'; // Import UserService
+import { UserService } from '../../services/user.service';
 
 @Component({
-    selector: 'app-infobox',
-    templateUrl: './infobox.component.html',
-    styleUrls: ['./infobox.component.scss'],
-    standalone: false
+  selector: 'app-infobox',
+  templateUrl: './infobox.component.html',
+  styleUrls: ['./infobox.component.scss']
 })
 export class InfoboxComponent implements OnInit {
-  
+
   @Input() infobox: Infobox;
-  baseDomain:string = window.location.hostname;
-  octraEnabled:boolean = false;
-  labjsEnabled:boolean = false;
   emuWebAppEnabled:boolean = false;
   userIsLoggedIn:boolean = false;
 
   constructor(
     private shepherdService: ShepherdService,
-    private userService: UserService // Inject UserService
+    private userService: UserService
   ) { }
 
   ngOnInit(): void {
-    this.octraEnabled = environment.ENABLED_APPLICATIONS.includes("octra");
-    this.labjsEnabled = environment.ENABLED_APPLICATIONS.includes("labjs");
-    this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes("emu-webapp");
+    this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes('arctic');
+    this.userIsLoggedIn = !!this.userService.getSession()?.eppn;
 
-    this.userService.fetchSession().subscribe((userSession) => {
-      if(userSession && userSession.eppn) {
-        this.userIsLoggedIn = true;
-      }
+    this.userService.sessionObs.subscribe((userSession) => {
+      this.userIsLoggedIn = !!userSession?.eppn;
     });
   }
 
   tutorial() {
-    console.log("Tutorial starting");
     this.shepherdService.startTour();
   }
 }

@@ -4,10 +4,9 @@ import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
-    selector: 'app-container-session-render',
-    templateUrl: './container-session-render.component.html',
-    styleUrls: ['./container-session-render.component.scss'],
-    standalone: false
+  selector: 'app-container-session-render',
+  templateUrl: './container-session-render.component.html',
+  styleUrls: ['./container-session-render.component.scss']
 })
 export class ContainerSessionRenderComponent implements OnInit {
   public token:string = "";
@@ -39,8 +38,8 @@ export class ContainerSessionRenderComponent implements OnInit {
       case "/app":
         iframe.setAttribute("src", window.location.protocol+"//app."+window.location.hostname+"?token="+this.token);
         break;
-      case "/emu-webapp":
-        let emuWebAppUrl = window.location.protocol+"//emu-webapp."+window.location.hostname+window.location.search;
+      case "/arctic":
+        let emuWebAppUrl = window.location.protocol+"//arctic."+window.location.hostname+window.location.search;
         iframe.setAttribute("src", emuWebAppUrl);
         break;
       case "/octra":

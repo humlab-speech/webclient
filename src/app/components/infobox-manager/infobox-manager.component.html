@@ -1,7 +1,8 @@
-@if (!userIsSignedIn) {
-  <div class="info-box-container">
-    @for (infobox of infoboxes; track infobox) {
-      <app-infobox [infobox]="infobox"></app-infobox>
-    }
+<section class="sidebar-block">
+  <div class="sidebar-heading">
+    <span class="accent-line"></span>
+    <h3>Get Started</h3>
   </div>
-}
+
+  <app-infobox *ngFor="let infobox of infoboxes" [infobox]="infobox"></app-infobox>
+</section>

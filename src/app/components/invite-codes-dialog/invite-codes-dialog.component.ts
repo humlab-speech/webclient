@@ -3,12 +3,12 @@ import { UserService } from 'src/app/services/user.service';
 import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { ModalService } from '../../services/modal.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { NotifierService } from 'angular-notifier';
 
 @Component({
-    selector: 'app-invite-codes-dialog',
-    templateUrl: './invite-codes-dialog.component.html',
-    styleUrls: ['./invite-codes-dialog.component.scss'],
-    standalone: false
+  selector: 'app-invite-codes-dialog',
+  templateUrl: './invite-codes-dialog.component.html',
+  styleUrls: ['./invite-codes-dialog.component.scss']
 })
 export class InviteCodesDialogComponent implements OnInit {
 
@@ -16,7 +16,13 @@ export class InviteCodesDialogComponent implements OnInit {
   showLoadingIndicator:boolean = true;
   codeUrl:string = window.location.origin + '/invitecode/';
 
-  constructor(private fb: FormBuilder, private userService:UserService, private modalService: ModalService, private projectService:ProjectService) { }
+  constructor(
+    private fb: FormBuilder,
+    private userService:UserService,
+    private modalService: ModalService,
+    private projectService:ProjectService,
+    private notifierService: NotifierService
+  ) { }
 
   ngOnInit(): void {
     this.buildForm();
@@ -114,9 +120,10 @@ export class InviteCodesDialogComponent implements OnInit {
     if (navigator.clipboard && window.isSecureContext) {
       // use the Clipboard API if available and secure
       navigator.clipboard.writeText(code).then(() => {
-        console.log('Invite code copied to clipboard');
+        this.notifierService.notify('info', 'Invite code copied to clipboard.');
       }).catch(err => {
         console.error('Could not copy text: ', err);
+        this.notifierService.notify('error', 'Failed to copy invite code to clipboard.');
       });
     } else {
       // fallback for insecure context or unsupported browsers
@@ -125,9 +132,13 @@ export class InviteCodesDialogComponent implements OnInit {
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
-      document.execCommand('copy');
+      const copySuccessful = document.execCommand('copy');
       document.body.removeChild(textArea);
-      console.log('Fallback: Invite code copied to clipboard');
+      if (copySuccessful) {
+        this.notifierService.notify('info', 'Invite code copied to clipboard.');
+      } else {
+        this.notifierService.notify('error', 'Failed to copy invite code to clipboard.');
+      }
     }
   }
 

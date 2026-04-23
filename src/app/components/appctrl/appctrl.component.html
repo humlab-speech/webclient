@@ -1,52 +1,26 @@
-<fieldset>
-  <div class="button-status-wrapper">
+<div class="appctrl-row">
+  <button
+    [disabled]="showLoadingIndicator || vispApp.disabled"
+    class="tool-tile app-tone"
+    [class.disabled-btn]="vispApp.disabled"
+    [class.running]="hasRunningSessions"
+    (click)="vispApp.name === 'octra' ? selectAppOptions() : launchProjectInApp()">
 
-    @if (vispApp.name == 'octra') {
-      <div>
-        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="selectAppOptions()">
-          <div class="app-btn-icon-box">
-            <img [src]="appIconPath">
-          </div>
-          <div>{{ btnTitle }}</div>
-        </button>
-      </div>
-    }
+    <span class="tile-icon orange">
+      <img [src]="appIconPath" [alt]="vispApp.title + ' icon'">
+    </span>
 
-    @if (vispApp.name != 'octra') {
-      <div>
-        <button [disabled]="showLoadingIndicator" class="app-btn" (click)="launchProjectInApp()">
-          <div class="app-btn-icon-box">
-            <img [src]="appIconPath">
-          </div>
-          <div>{{ btnTitle }}</div>
-        </button>
-      </div>
-    }
-
-
-
-    @if (statusMsg.length > 0) {
-      <div class="status-msg-container app-btn-row-container">
-        @if (showLoadingIndicator) {
-          <img src="../../../assets/loading-indicator-4-light.svg">
-        }
+    <span class="tile-copy">
+      <span class="tile-label">{{ btnTitle }}</span>
+      <span *ngIf="vispApp.subtitle" class="tile-subtitle">{{ vispApp.subtitle }}</span>
+      <span *ngIf="statusMsg.length > 0" class="tile-status">
+        <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-light.svg" alt="Loading">
         {{ statusMsg }}
-      </div>
-    }
+      </span>
+    </span>
+  </button>
 
-    @if (hasRunningSessions) {
-      <div class="session-controls-container app-btn-row-container">
-        <!--
-        <button [disabled]="showLoadingIndicator" (click)="save()" *ngIf="showSaveButton">
-          <i class="fa fa-floppy-o" aria-hidden="true"></i>
-        </button>
-        -->
-        <button [disabled]="showLoadingIndicator" (click)="close()">
-          <i class="fa fa-times-circle" aria-hidden="true"></i>
-        </button>
-      </div>
-    }
-
-  </div>
-
-</fieldset>
+  <button class="session-close-button" *ngIf="hasRunningSessions" [disabled]="showLoadingIndicator" (click)="close()" aria-label="Close running session">
+    <i class="fa fa-times-circle" aria-hidden="true"></i>
+  </button>
+</div>

@@ -6,16 +6,16 @@ import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { SystemService } from 'src/app/services/system.service';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
-    selector: 'app-appctrl',
-    templateUrl: './appctrl.component.html',
-    styleUrls: ['./appctrl.component.scss'],
-    standalone: false
+  selector: 'app-appctrl',
+  templateUrl: './appctrl.component.html',
+  styleUrls: ['./appctrl.component.scss']
 })
 export class AppctrlComponent implements OnInit {
 
@@ -67,9 +67,9 @@ export class AppctrlComponent implements OnInit {
 
   preFlightChecks() {
     let failures = [];
-    if(this.vispApp.name == "emu-webapp") {
+    if(this.vispApp.name == "arctic") {
       let foundFiles = false;
-      //check that this project contains at least one session with files in it, otherwise emu-webapp should not be launchable
+      //check that this project contains at least one session with files in it, otherwise arctic should not be launchable
       this.project.sessions.forEach((session) => {
         if(session.files.length > 0) {
           foundFiles = true;
@@ -91,19 +91,6 @@ export class AppctrlComponent implements OnInit {
   }
 
   selectAppOptions() {
-    //perform pre-flight checks here. E.g. we need to see if this project contains any bundles / audio files at all
-    let foundFiles = false;
-    this.project.sessions.forEach((session) => {
-      if(session.files.length > 0) {
-        foundFiles = true;
-      }
-    });
-
-    if(!foundFiles) {
-      this.notifier.notify("warning", "No audio files in project.");
-      return;
-    }
-
     //launch popup with app options
     this.modalService.showModal("octra-select-bundle-dialog", this.project);
   }
@@ -123,9 +110,9 @@ export class AppctrlComponent implements OnInit {
     });
 
     switch(this.vispApp.name) {
-      case "emu-webapp":
+      case "arctic":
         this.launchEmuWebAppSession();
-        this.systemService.setCurrentApplication("emu-webapp");
+        this.systemService.setCurrentApplication("arctic");
       break;
       case "octra":
         this.launchOctraSession();
@@ -190,7 +177,7 @@ export class AppctrlComponent implements OnInit {
         this.showLoadingIndicator = true;
         
         let cookieParams = " SameSite=None; Secure";
-        if(window.location.protocol == "http:") {
+        if(environment.PROTOCOL == "http") {
           cookieParams = "";
         }
         Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
@@ -223,7 +210,7 @@ export class AppctrlComponent implements OnInit {
         this.showLoadingIndicator = true;
         
         let cookieParams = " SameSite=None; Secure";
-        if(window.location.protocol == "http:") {
+        if(environment.PROTOCOL == "http") {
           cookieParams = "";
         }
         console.log("Setting SessionAccessCode cookie");
@@ -245,9 +232,9 @@ export class AppctrlComponent implements OnInit {
     //set projectId cookie
     Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
-    this.router.navigate(['/emu-webapp'], { queryParams: {
+    this.router.navigate(['/arctic'], { queryParams: {
       autoConnect: true,
-      serverUrl: "wss://emu-webapp."+window.location.hostname
+      serverUrl: "wss://arctic."+window.location.hostname
     }});
   }
 

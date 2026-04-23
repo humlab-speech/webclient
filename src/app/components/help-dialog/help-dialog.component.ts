@@ -4,10 +4,9 @@ import ShepherdBase from 'shepherd.js';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
-    selector: 'app-help-dialog',
-    templateUrl: './help-dialog.component.html',
-    styleUrls: ['./help-dialog.component.scss'],
-    standalone: false
+  selector: 'app-help-dialog',
+  templateUrl: './help-dialog.component.html',
+  styleUrls: ['./help-dialog.component.scss']
 })
 export class HelpDialogComponent implements OnInit {
 

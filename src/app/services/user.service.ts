@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
-import { Observable, Subject, from } from 'rxjs';
+import { Observable, Subject, from, BehaviorSubject } from 'rxjs';
 import { UserSession } from "../models/UserSession";
 import { ApiResponse } from "../models/ApiResponse";
 import { environment } from 'src/environments/environment';
@@ -14,6 +14,7 @@ import { WebSocketMessage } from '../models/WebSocketMessage';
 export class UserService {
 
   public eventEmitter: EventEmitter<any> = new EventEmitter<any>();
+  public bootstrapLoadingStatus$: BehaviorSubject<string> = new BehaviorSubject<string>("idle");
 
   userIsSignedIn:boolean = false;
   getSessionUrl:string = '/api/v1/session';
@@ -27,6 +28,7 @@ export class UserService {
   
   constructor(private http:HttpClient, private systemService:SystemService) {
     this.sessionObs = new Subject();
+
     this.authenticateUser().then((result:boolean) => {
       if(result) {
         this.authorizeUser();
@@ -56,23 +58,30 @@ export class UserService {
   }
 
   async authenticateUser():Promise<boolean> {
+    this.bootstrapLoadingStatus$.next("authenticateUser:start");
+
     try {
       const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: (window as any).visp });
       if (response.data.msg === "Authenticated") {
         this.setUserAuthenticationStatus(true);
+        this.bootstrapLoadingStatus$.next("authenticateUser:done");
         return true;
       } else {
         this.setUserAuthenticationStatus(false);
+        this.bootstrapLoadingStatus$.next("authenticateUser:error");
         return false;
       }
     } catch (error) {
       // Handle error if necessary
       this.setUserAuthenticationStatus(false);
+      this.bootstrapLoadingStatus$.next("authenticateUser:error");
       return false;  // or rethrow the error depending on your needs
     }
   }
 
   async authorizeUser() {
+    this.bootstrapLoadingStatus$.next("authorizeUser:start");
+
     this.systemService.sendCommandToBackend({cmd: "authorizeUser", data: {}}).then((response:WebSocketMessage) => {
       if(response.data.msg == "Authorized") {
         this.setAuthorizationStatus(true);
@@ -80,6 +89,10 @@ export class UserService {
       else {
         this.setAuthorizationStatus(false);
       }
+
+      this.bootstrapLoadingStatus$.next("authorizeUser:done");
+    }).catch((error) => {
+      this.bootstrapLoadingStatus$.next("authorizeUser:error");
     });
   }
 
@@ -188,17 +201,19 @@ export class UserService {
 
   fetchSession():Observable<UserSession> {
     let phpSessId = this.getCookie("PHPSESSID");
-    console.log('fetchSession: looking up phpSessId:', phpSessId);
+    this.bootstrapLoadingStatus$.next("getSession:start");
+
     return new Observable<UserSession>((observer) => {
       this.systemService.sendCommandToBackend({cmd: "getSession", data: {
         phpSessId: phpSessId
       }}).then((response:WebSocketMessage) => {
-        if(!response.data || !response.data.eppn) {
-          console.warn('fetchSession: session-manager returned no session for phpSessId:', phpSessId, '— response:', response.data);
-        }
         this.setSession(<UserSession>response.data);
+        this.bootstrapLoadingStatus$.next("getSession:done");
         observer.next(<UserSession>response.data);
         observer.complete();
+      }).catch((error) => {
+        this.bootstrapLoadingStatus$.next("getSession:error");
+        observer.error(error);
       });
     });
   }

@@ -17,22 +17,21 @@ import {
 } from '@angular/forms';
 
 @Component({
-    selector: 'app-documentation-form',
-    templateUrl: './documentation-form.component.html',
-    styleUrls: ['./documentation-form.component.scss'],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => DocumentationFormComponent),
-            multi: true
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => DocumentationFormComponent),
-            multi: true
-        }
-    ],
-    standalone: false
+  selector: 'app-documentation-form',
+  templateUrl: './documentation-form.component.html',
+  styleUrls: ['./documentation-form.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => DocumentationFormComponent),
+      multi: true
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => DocumentationFormComponent),
+      multi: true
+    }
+  ]
 })
 
 

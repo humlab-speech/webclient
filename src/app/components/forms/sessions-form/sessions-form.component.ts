@@ -24,6 +24,7 @@ import { Observable, of } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 import { nanoid } from 'nanoid';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 export interface EmudbFormValues {
   sessions: [];
@@ -32,22 +33,21 @@ export interface EmudbFormValues {
 }
 
 @Component({
-    selector: 'app-sessions-form',
-    templateUrl: './sessions-form.component.html', //used to be emudb-form.component.html
-    styleUrls: ['./sessions-form.component.scss'],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => SessionsFormComponent),
-            multi: true
-        },
-        {
-            provide: NG_VALIDATORS,
-            useExisting: forwardRef(() => SessionsFormComponent),
-            multi: true
-        }
-    ],
-    standalone: false
+  selector: 'app-sessions-form',
+  templateUrl: './sessions-form.component.html', //used to be emudb-form.component.html
+  styleUrls: ['./sessions-form.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => SessionsFormComponent),
+      multi: true
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => SessionsFormComponent),
+      multi: true
+    }
+  ]
 })
 
 export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
@@ -99,6 +99,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     private projectService: ProjectService, 
     private fileUploadService: FileUploadService,
     private userService: UserService,
+    private clipboard: Clipboard,
     ) {
   }
   
@@ -320,10 +321,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     let files = [];
     if(session == null) {
       let sessionNumber = 1;
-      let defaultSessionName = "Session "+sessionNumber;
+      let defaultSessionName = "Recording session "+sessionNumber;
       while(this.sessions.controls.find(s => s.get('name').value == defaultSessionName)) {
         sessionNumber++;
-        defaultSessionName = "Session "+sessionNumber;
+        defaultSessionName = "Recording session "+sessionNumber;
       }
 
       session = {
@@ -532,8 +533,37 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     return "https://"+window.location.hostname+"/spr/session/"+sessionId;
   }
 
-  recordingLinkCopied() {
-    this.notifierService.notify("info", "Copied!");
+  copyRecordingLink(link: string): void {
+    const copySuccessful = this.copyToClipboard(link);
+    if (copySuccessful) {
+      this.notifierService.notify('info', 'Recording link copied to clipboard.');
+    } else {
+      this.notifierService.notify('error', 'Failed to copy recording link to clipboard.');
+    }
+  }
+
+  private copyToClipboard(text: string): boolean {
+    try {
+      if (this.clipboard.copy(text)) {
+        return true;
+      }
+    } catch (err) {
+      console.error('Could not copy text via Clipboard service: ', err);
+    }
+
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const copySuccessful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return copySuccessful;
+    } catch (err) {
+      console.error('Could not copy text via fallback: ', err);
+      return false;
+    }
   }
 
   toggleSessionCollapsed(sessionName) {

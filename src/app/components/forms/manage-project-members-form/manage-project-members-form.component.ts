@@ -17,10 +17,9 @@ import { debounceTime, switchMap } from 'rxjs/operators';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 
 @Component({
-    selector: 'app-manage-project-members-form',
-    templateUrl: './manage-project-members-form.component.html',
-    styleUrls: ['./manage-project-members-form.component.scss'],
-    standalone: false
+  selector: 'app-manage-project-members-form',
+  templateUrl: './manage-project-members-form.component.html',
+  styleUrls: ['./manage-project-members-form.component.scss'],
 })
 export class ManageProjectMembersFormComponent implements OnInit {
 
@@ -170,6 +169,11 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   updateRole(user) {
+    const userSession = this.userService.getSession();
+    const isCurrentUser = user.value.username === userSession?.username;
+    const currentProjectMember = this.project.members.find((member) => member.username === user.value.username);
+    const previousRole = currentProjectMember?.role ?? "member";
+
     //check that this user is not the last admin user on the project
     let numAdmins = 0;
     this.members.controls.forEach((member) => {
@@ -177,9 +181,25 @@ export class ManageProjectMembersFormComponent implements OnInit {
         numAdmins++;
       }
     });
-    if(numAdmins == 0 && user.value.role == "member") {
+    if(numAdmins == 0 && user.value.role != "admin") {
       this.notifierService.notify("error", "The project needs to have at least one admin user");
-      user.get('role').setValue("admin");
+      user.get('role').setValue(previousRole);
+      return;
+    }
+
+    const isSelfDemotedFromAdmin = isCurrentUser && previousRole === "admin" && user.value.role !== "admin";
+    if (isSelfDemotedFromAdmin) {
+      const confirmed = window.confirm(
+        "You are about to remove your own admin role. If you continue, you will no longer be able to change your role back unless another admin updates it for you. Continue?"
+      );
+
+      if (!confirmed) {
+        user.get('role').setValue(previousRole);
+        return;
+      }
+    }
+
+    if (previousRole === user.value.role) {
       return;
     }
 
@@ -191,10 +211,14 @@ export class ManageProjectMembersFormComponent implements OnInit {
     }).then((wsMsg:WebSocketMessage) => {
       if(wsMsg.progress == "end" && wsMsg.result) {
         this.notifierService.notify("info", "Updated role for "+user.value.fullName);
+        if (currentProjectMember) {
+          currentProjectMember.role = user.value.role;
+        }
         this.projectService.fetchProjects(true).subscribe((projects) => {});
       }
       else {
         this.notifierService.notify("error", "Failed to update role for "+user.value.fullName);
+        user.get('role').setValue(previousRole);
       }
     });
   }

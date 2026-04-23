@@ -1,13 +1,19 @@
-<div class="modal-bg">
-    <div class="form modal-dialog-container">
-        
-        <div class="dialog-header">
-            <h2>Members of project {{ this.project.name }}</h2>
-            <div class="dialog-close-btn" (click)="closeDialog()">
+<div class="modal-bg members-dialog-backdrop">
+    <div class="form modal-dialog-container members-dialog-container">
+
+        <div class="dialog-header members-dialog-header">
+            <div class="header-copy">
+                <span class="dialog-eyebrow">Workspace</span>
+                <h2>Members of project {{ this.project.name }}</h2>
+                <p>Manage who can access this project and which role each member has.</p>
+            </div>
+            <div class="dialog-close-btn members-dialog-close-btn" (click)="closeDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
             </div>
         </div>
-        
-        <app-manage-project-members-form [project]="project"></app-manage-project-members-form>
+
+        <div class="members-dialog-content">
+            <app-manage-project-members-form [project]="project"></app-manage-project-members-form>
+        </div>
     </div>
 </div>

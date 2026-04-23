@@ -2,6 +2,7 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { from, Observable, Observer, Subject } from 'rxjs';
 import { NotifierService } from 'angular-notifier';
+import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { nanoid } from 'nanoid';
 import { WebSocketMessage } from '../models/WebSocketMessage';
@@ -54,7 +55,7 @@ export class SystemService {
           }
           
           let cookieParams = " SameSite=None; Secure";
-          if(window.location.protocol == "http:") {
+          if(environment.PROTOCOL == "http") {
             cookieParams = "";
           }
           console.log("Setting SessionAccessCode cookie");
@@ -232,8 +233,7 @@ export class SystemService {
       if(window.location.protocol == "http:") {
         webSocketProto = "ws:";
       }
-      const wsUrl = webSocketProto+'//'+window.location.hostname;
-      console.log('Connecting to WebSocket backend:', wsUrl);
+      const wsUrl = webSocketProto+'//'+environment.BASE_DOMAIN;
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = (event) => {

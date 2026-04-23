@@ -83,3 +83,138 @@ h3 {
 pre {
     font-family: "Gothic A1", sans-serif; /* Customize font here */
 }
+
+:host {
+    --help-title: #1f3f6b;
+    --help-accent-start: #3278d9;
+    --help-accent-end: #2fb8c5;
+    --help-icon-bg: #edf4ff;
+    --help-icon-color: #2e5f9c;
+    --help-section-bg: #ffffff;
+    --help-section-border: #dfe5ee;
+    --help-feature-bg: #f7f9fc;
+    --help-feature-border: #e2e8f1;
+}
+
+.modal-dialog-container {
+    border: 1px solid #d9e3f0;
+    border-radius: 16px;
+}
+
+.dialog-content {
+    max-width: 100%;
+}
+
+.help-content {
+    color: #27426f;
+}
+
+.help-section {
+    background: var(--help-section-bg);
+    border: 1px solid var(--help-section-border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.9rem;
+}
+
+.help-feature-card {
+    background: var(--help-feature-bg);
+    border: 1px solid var(--help-feature-border);
+    border-radius: 12px;
+    padding: 0.95rem 1rem;
+    margin-top: 0.8rem;
+}
+
+.dialog-header h2 {
+    color: var(--help-title);
+    position: relative;
+    padding-bottom: 0.3rem;
+}
+
+.dialog-header h2::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 65%;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--help-accent-start), var(--help-accent-end));
+}
+
+.help-section-header,
+.help-feature-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+}
+
+.help-section-icon,
+.help-feature-card-header > i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    min-width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--help-icon-bg);
+    color: var(--help-icon-color);
+}
+
+.help-content h2,
+.help-content h3 {
+    margin: 0;
+    padding: 0 0 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--help-title);
+    line-height: 1.25;
+    font-weight: 700;
+    position: relative;
+    width: fit-content;
+}
+
+.help-content h2::after,
+.help-content h3::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--help-accent-start), var(--help-accent-end));
+}
+
+.help-feature-card-header h3 {
+    margin-top: 0;
+}
+
+.help-code-list > li > h3 {
+    margin-bottom: 0.65rem;
+}
+
+.help-tip {
+    border: 1px solid #d5e3f6;
+    border-radius: 12px;
+    background: #eef5ff;
+    color: #1f3f6b;
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+@media (max-width: 960px) {
+    .modal-dialog-container {
+        max-width: 94vw;
+        min-width: 0;
+    }
+
+    .help-section-header,
+    .help-feature-card-header {
+        align-items: flex-start;
+    }
+}

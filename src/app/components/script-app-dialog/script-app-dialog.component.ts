@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-    selector: 'app-script-app-dialog',
-    templateUrl: './script-app-dialog.component.html',
-    styleUrls: ['./script-app-dialog.component.scss'],
-    standalone: false
+  selector: 'app-script-app-dialog',
+  templateUrl: './script-app-dialog.component.html',
+  styleUrls: ['./script-app-dialog.component.scss']
 })
 export class ScriptAppDialogComponent implements OnInit {
 

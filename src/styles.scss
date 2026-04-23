@@ -1,6 +1,5 @@
 @use '@angular/material' as mat;
-@include mat.elevation-classes();
-@include mat.app-background();
+@include mat.core();
 
 $bright-navy-blue-palette: (
   50: #e3f2fd,
@@ -110,7 +109,7 @@ $bluesky-theme: mat.m2-define-light-theme((
 @import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap');
 */
-@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "../node_modules/normalize.css/normalize.css";
 @import './colors.scss';
 @import '../node_modules/ngx-popperjs/scss/theme-white.scss';
@@ -124,15 +123,14 @@ html, body { height: 100%; }
 body { 
     margin: 0;
     padding: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    font-family: 'Gothic A1', sans-serif;
+    background: #eef1f5;
+    color: #27426f;
+    font-family: 'Inter', "Helvetica Neue", sans-serif;
 }
 
 h1 {
-    font-family: 'Saira Semi Condensed', sans-serif;
-    font-family: 'Gothic A1', sans-serif;
-    text-decoration: underline;
-    text-decoration-color: $primary-light;
+    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    text-decoration: none;
 }
 
 h2.indented-headline {
@@ -142,17 +140,16 @@ h2.indented-headline {
 h4 {
     font-size: 1.4rem;
     font-weight: lighter;
-    text-decoration: underline;
-    text-decoration-color: $secondary-light;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    font-family: 'Gothic A1', sans-serif;
+    text-decoration: none;
+    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 h5 {
     font-size: 1.1rem;
     font-weight: lighter;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    font-family: 'Gothic A1', sans-serif;
+    font-family: 'Inter', "Helvetica Neue", sans-serif;
     margin-top:0.5em;
     margin-bottom:0.5em;
 }
@@ -179,15 +176,12 @@ button {
     outline: 0;
 }
 
-.mat-tooltip {
-    font-size: 1.0rem;
+button:not(:disabled) {
+    cursor: pointer;
 }
 
-.settings-tooltip .mat-tooltip {
-    white-space: pre-line;
-    max-width: 350px;
-    font-size: 0.85rem;
-    line-height: 1.4;
+.mat-tooltip {
+    font-size: 1.0rem;
 }
 
 popper-content h4 {
@@ -221,7 +215,7 @@ ngx-dropzone > ngx-dropzone-preview {
     width: 100vw;
     height: 100vh;
     background-color:rgba(0, 0, 0, 0.5);
-    z-index:1;
+    z-index:20000;
 }
 
 .modal-dialog-container {
@@ -231,6 +225,7 @@ ngx-dropzone > ngx-dropzone-preview {
     padding: 2rem;
     border-radius:4px;
     background-color: #fff !important;
+    color: $dark-font-color;
     box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.25);
     margin-top: 1em;
     margin-bottom: 1em;
@@ -264,7 +259,7 @@ ngx-dropzone > ngx-dropzone-preview {
 }
 
 .dialog-close-btn:hover {
-    background-color: $comp3;
+    background-color: $secondary-light;
     border: 1px solid #333;
     border-radius: 25%;
     cursor: pointer;
@@ -362,8 +357,8 @@ form label {
 .form button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    background-color: $comp3;
-    color: #000;
+    background-color: $secondary;
+    color: $white;
     border-width:0px;
 }
 
@@ -372,7 +367,7 @@ form input.ng-invalid {
 }
 
 .form button:hover {
-    //background-color:lighten($comp3, 10%);
+    background-color: $secondary-light;
     box-shadow: 0px 0px 10px #999; 
     cursor:pointer;
 }
@@ -433,6 +428,10 @@ form input.ng-invalid {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+.notifier__notification {
+    z-index: 25000;
+}
+
 .notifier__notification--default {
     background-color: #444;
     color: #fff;
@@ -477,20 +476,81 @@ form input.ng-invalid {
     cursor: pointer;
 }
 
-.shepherd-content {
-    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.25);
-}
-
-.tutorial-exit-btn {
-    background: map-get($crimson-palette, 900) !important;
-}
-
-.shepherd-content {
-    background: #fff;
+.shepherd-modal-overlay-container {
+    background-color: rgba(16, 32, 55, 0.52) !important;
 }
 
 .shepherd-element {
     background: transparent;
-    border-width: 0px !important;
+    border-width: 0 !important;
     box-shadow: none !important;
+}
+
+.shepherd-content {
+    border-radius: 18px;
+    border: 1px solid #d8dfe8;
+    background: #ffffff;
+    box-shadow: 0 22px 52px rgba(20, 42, 74, 0.25);
+    overflow: hidden;
+    font-family: 'Inter', "Helvetica Neue", sans-serif;
+}
+
+.shepherd-header {
+    background: linear-gradient(135deg, #243e6a 0%, #294b81 68%, #2f548d 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.shepherd-title {
+    color: #fff8f2;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.shepherd-cancel-icon {
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.shepherd-text {
+    color: #27426f;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.shepherd-text a {
+    color: #24497e;
+    font-weight: 600;
+}
+
+.shepherd-footer {
+    border-top: 1px solid #e4e9f0;
+    background: #f8fafd;
+}
+
+.shepherd-button {
+    min-height: 40px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 0 14px;
+    font-weight: 700;
+    background: #ed894f;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(237, 137, 79, 0.24);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.shepherd-button:hover {
+    background: #de7a40;
+    transform: translateY(-1px);
+}
+
+.shepherd-button.tutorial-exit-btn {
+    background: #eef2f8 !important;
+    color: #27426f !important;
+    border-color: #d3dce8;
+    box-shadow: none;
+}
+
+.shepherd-button.tutorial-exit-btn:hover {
+    background: #e4ebf4 !important;
+    transform: none;
 }

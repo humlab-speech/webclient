@@ -1,9 +1,26 @@
-@import "../../../colors.scss";
-.info-box-container {
-    display: flex;
-    justify-content: flex-start;
-    flex-direction:column;
-    background: $white;
-    height: 100%;
-    border-left: 1px $primary solid;
+.sidebar-block {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.05rem;
+}
+
+.accent-line {
+  width: 4px;
+  height: 32px;
+  border-radius: 999px;
+  background: #ed894f;
+}
+
+.sidebar-heading h3 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+  color: #1c3660;
+  text-decoration: none;
 }

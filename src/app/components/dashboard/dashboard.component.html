@@ -1,46 +1,62 @@
 <div id="dashboard">
-  <div id="main-content">
-    @if (!userIsAuthenticated && userAuthenticationCheckPerformed) {
-      <div id="signed-out-content-container">
-        <div id="about-container">
-          <h2>About</h2>
-          Visible Speech is a collection of research tools for speech analysis.
-          If you wish to have access to the system, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.<br /><br />Visible Speech is being developed by Umeå university.
+  <main id="main-content">
+    <ng-container *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized; else unauthenticatedState">
+      <section class="hero" [style.--hero-collapse]="heroCollapseProgress">
+        <div class="hero-badge">{{ greetingLine }}</div>
+        <h1>Your speech research,<br><span>secured and organized.</span></h1>
+        <p>
+          Manage projects, transcribe recordings, and collaborate with your team
+          in one modern workspace.
+        </p>
+        <div class="hero-actions">
+          <button id="tutorial-create-project-btn" class="btn btn-primary" (click)="createProject()" [disabled]="!canCreateProjects">
+            <span class="btn-plus">+</span>
+            <span>New project</span>
+          </button>
+          <button class="btn btn-secondary" (click)="openHelpDialog()">Browse tutorials</button>
         </div>
+      </section>
+
+      <section class="workspace-section">
+        <app-project-manager [dashboard]="this"></app-project-manager>
+      </section>
+    </ng-container>
+
+    <ng-template #unauthenticatedState>
+      <section class="hero hero-signed-out" [style.--hero-collapse]="heroCollapseProgress" *ngIf="!userIsAuthenticated && userAuthenticationCheckPerformed">
+        <div class="hero-badge">Welcome to VISP</div>
+        <h1>Research speech data,<br><span>with one shared platform.</span></h1>
+        <p>
+          Visible Speech is a collection of research tools for speech analysis.
+          If you need access to the system, contact us at
+          <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
+        </p>
         <app-signin-ctrl></app-signin-ctrl>
-      </div>
-    }
+      </section>
 
-    @if (userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized) {
-      <app-project-manager [dashboard]="this"></app-project-manager>
-    }
-
-    @if ((modalActive && modalName=='invite-codes-dialog')) {
-      <app-invite-codes-dialog></app-invite-codes-dialog>
-    }
-
-    @if ((modalActive && modalName=='help-dialog')) {
-      <app-help-dialog></app-help-dialog>
-    }
-
-    @if ((modalActive && modalName=='octra-select-bundle-dialog')) {
-      <app-octra-select-bundle-dialog [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
-    }
-
-    @if (userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized) {
-      <div id="userFailedAccessListCheckContainer">
+      <section id="userFailedAccessListCheckContainer" *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized">
         <h2>Missing access grant</h2>
-        <p>You have successfully authenticated yourself as {{ userFullName }}, but you still lack the authorization to use this system.
-        This is normally provided via invite codes, if you have such a code, please enter it below.</p>
+
+        <p>
+          You have successfully authenticated yourself as {{ userFullName }}, but you still lack the authorization to use this system.
+          This is normally provided via invite codes, if you have such a code, please enter it below.
+        </p>
+
         <app-invite-code-entry></app-invite-code-entry>
-        <p>If you do not have an invite code and you would like to be granted access, please get in touch with us at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.</p>
-      </div>
-    }
 
-  </div>
+        <p>
+          If you do not have an invite code and you would like to be granted access, please contact
+          <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
+        </p>
+      </section>
+    </ng-template>
 
-  <div id="sidebar">
+    <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
+    <app-help-dialog *ngIf="(modalActive && modalName=='help-dialog')"></app-help-dialog>
+    <app-octra-select-bundle-dialog *ngIf="(modalActive && modalName=='octra-select-bundle-dialog')" [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
+  </main>
+
+  <aside id="sidebar">
     <app-infobox-manager></app-infobox-manager>
-  </div>
-
+  </aside>
 </div>

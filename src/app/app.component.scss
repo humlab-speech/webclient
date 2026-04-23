@@ -1,29 +1,54 @@
 @import '../colors.scss';
 
 app-menu-bar {
-    grid-area: menu;
-}
-
-#content-container {
-    width: 100vw;
-    overflow:auto;
-    padding:0;
-    margin:0;
+  grid-area: menu;
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1400;
 }
 
 #main-container {
-    display: grid;
-    width: 100vw;
-    height: 100vh;
-    padding:0;
-    margin:0;
-    background: $panelBg;
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  background: #eef1f5;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'menu'
+    'main-content';
+}
 
-    //grid-template-columns: [main-content]minmax(600px, auto) [info-panel]minmax(400px, 25vw);
-    grid-template-columns: [main-content]minmax(600px, auto);
-    grid-template-rows: [menu]minmax(80px, 6vh) 1fr;
+#content-container {
+  width: 100%;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
 
-    grid-template-areas:
-    "menu menu"
-    "main-content info-panel";
+#main-container.has-bottom-banner #content-container {
+  box-sizing: border-box;
+  padding-bottom: 5rem;
+}
+
+.app-bottom-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5rem;
+  z-index: 1000;
+}
+
+@media (max-width: 900px) {
+  #main-container.has-bottom-banner #content-container {
+    padding-bottom: 4.6rem;
+  }
+
+  .app-bottom-banner {
+    height: 4.6rem;
+  }
 }

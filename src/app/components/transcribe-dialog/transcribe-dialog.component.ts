@@ -9,10 +9,9 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 import { NotifierService } from 'angular-notifier';
 
 @Component({
-    selector: 'app-transcribe-dialog',
-    templateUrl: './transcribe-dialog.component.html',
-    styleUrls: ['./transcribe-dialog.component.scss'],
-    standalone: false
+  selector: 'app-transcribe-dialog',
+  templateUrl: './transcribe-dialog.component.html',
+  styleUrls: ['./transcribe-dialog.component.scss'],
 })
 export class TranscribeDialogComponent implements OnInit {
 
@@ -34,21 +33,8 @@ export class TranscribeDialogComponent implements OnInit {
     name: 'KB Whisper',
   }];
 
-  showAdvancedOptions = false;
-  beamSizes = [5, 6, 7, 8, 9, 10];
-  advancedOptions = {
-    beamSize: 5,
-    repetitionPenalty: 1.3,
-    vad: false,
-    vadOnset: 0.3,
-    conditionOnPreviousText: false,
-  };
-
   private intervalId: any;
   public transcriptionQueueItemsLoaded: boolean = false;
-
-  // Stores the settings snapshot from the server for each bundle (keyed by "session/bundle")
-  queuedSettings: { [key: string]: any } = {};
 
   constructor(private fb: FormBuilder, private modalService: ModalService, private projectService: ProjectService, private systemService: SystemService, private notifierService: NotifierService) {
     
@@ -117,26 +103,6 @@ export class TranscribeDialogComponent implements OnInit {
             if (languageControl && !languageControl.touched) {
               languageControl.patchValue(queueItem.language);
             }
-
-            // Patch back model and diarize so dropdowns reflect what was actually queued
-            const modelControl = bundle.get('model');
-            if (modelControl && !modelControl.touched && queueItem.model) {
-              modelControl.patchValue(queueItem.model);
-            }
-            const diarizeControl = bundle.get('diarize');
-            if (diarizeControl && !diarizeControl.touched && queueItem.diarize !== undefined) {
-              diarizeControl.patchValue(queueItem.diarize);
-            }
-
-            // Store the full settings snapshot for the tooltip
-            const key = queueItem.session + '/' + queueItem.bundle;
-            this.queuedSettings[key] = {
-              model: queueItem.model,
-              language: queueItem.language,
-              diarize: queueItem.diarize,
-              advancedOptions: queueItem.advancedOptions || {},
-              error: queueItem.error || null,
-            };
           }
         });
 
@@ -158,7 +124,6 @@ export class TranscribeDialogComponent implements OnInit {
             name: [file.name, Validators.required],
             language: [session.language || 'Automatic Detection', Validators.required], // Default to session language or auto
             model: ['whisper', Validators.required], // Default model
-            diarize: [false],
             status: "",
             oldStatus: "",
             selectedFileType: ['srt'],
@@ -183,48 +148,6 @@ export class TranscribeDialogComponent implements OnInit {
     console.log(`Model updated for bundle ${bundle.value.name}: ${selected}`);
   }
 
-  onVadChanged(): void {
-    // Reset VAD onset to default when toggling
-    if (!this.advancedOptions.vad) {
-      this.advancedOptions.vadOnset = 0.5;
-    }
-  }
-
-  getModelLabel(modelId: string): string {
-    const m = this.models.find(m => m.id === modelId);
-    return m ? m.name : modelId || 'Unknown';
-  }
-
-  getSettingsSummary(bundle: any): string {
-    const key = bundle.value.sessionName + '/' + bundle.value.name;
-    const s = this.queuedSettings[key];
-    if (!s) return 'No settings recorded';
-
-    const lines: string[] = [];
-    lines.push('Model: ' + this.getModelLabel(s.model));
-    lines.push('Language: ' + (s.language || 'Auto'));
-    lines.push('Separate speakers: ' + (s.diarize ? 'Yes' : 'No'));
-
-    const adv = s.advancedOptions;
-    if (adv && Object.keys(adv).length > 0) {
-      lines.push('Beam Size: ' + (adv.beamSize ?? 5));
-      lines.push('Repetition Penalty: ' + (adv.repetitionPenalty ?? 1.3));
-      lines.push('VAD: ' + (adv.vad ? 'Enabled (onset ' + (adv.vadOnset ?? 0.3) + ')' : 'Disabled'));
-      if (adv.conditionOnPreviousText) {
-        lines.push('Condition on Previous Text: Yes');
-      }
-    }
-
-    if (s.error) {
-      // Truncate very long errors (e.g. stack traces) to keep the tooltip readable
-      const errMsg = s.error.length > 200 ? s.error.substring(0, 200) + '…' : s.error;
-      lines.push('');
-      lines.push('⚠ Error: ' + errMsg);
-    }
-
-    return lines.join('\n');
-  }
-
   // Add a bundle to the transcription queue
   addToTranscriptionQueue(bundle: any): void {
     console.log('Adding bundle to transcription queue:', bundle);
@@ -237,14 +160,6 @@ export class TranscribeDialogComponent implements OnInit {
         bundle: bundle.value.name,
         language: bundle.value.language,
         model: bundle.value.model,
-        diarize: bundle.value.diarize,
-        advancedOptions: {
-          beamSize: this.advancedOptions.beamSize,
-          repetitionPenalty: this.advancedOptions.repetitionPenalty,
-          vad: this.advancedOptions.vad,
-          vadOnset: this.advancedOptions.vadOnset,
-          conditionOnPreviousText: this.advancedOptions.conditionOnPreviousText,
-        },
       }
     }).then((msg:WebSocketMessage) => {
       if(!msg.result) {

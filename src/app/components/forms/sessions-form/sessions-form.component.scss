@@ -30,6 +30,14 @@ h6 {
     font-weight: bold;
 }
 
+.audio-source-help-text {
+    font-size: 0.8rem;
+    color: #444;
+    margin-top: 0.25rem;
+    margin-bottom: 0.75rem;
+    max-width: 60rem;
+}
+
 #create-project-btn {
     padding:0.8em;
     background-color: $crimson;
@@ -117,7 +125,7 @@ li {
     height: auto;
     padding-left:.2em;
     padding-right:.2em;
-    color: #666;
+    color: #fff;
 }
 
 .itemDeleteBtn:hover {
@@ -127,22 +135,24 @@ li {
 .section-header-container {
     display: flex;
     align-items: center;
-    background: #ccc;
+    background: $primary;
     margin-top: 0;
     margin-left: 0;
     margin-right: 0;
     padding-left: 1em;
     border: 0px solid #000;
     cursor: pointer;
+    color: $white;
 }
 
 .section-header-container h4 {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    color: $white;
 }
 
 .section-header-new {
-    background: #ccf;
+    background: $primary-light;
 }
 
 .input-context-container label {

@@ -16,10 +16,9 @@ import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
-    selector: 'app-manage-bundle-assignment-form',
-    templateUrl: './manage-bundle-assignment-form.component.html',
-    styleUrls: ['./manage-bundle-assignment-form.component.scss'],
-    standalone: false
+  selector: 'app-manage-bundle-assignment-form',
+  templateUrl: './manage-bundle-assignment-form.component.html',
+  styleUrls: ['./manage-bundle-assignment-form.component.scss']
 })
 export class ManageBundleAssignmentFormComponent implements OnInit {
   

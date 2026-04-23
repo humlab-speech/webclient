@@ -1,125 +1,111 @@
-@import "../../../colors.scss";
-@import '../../../../node_modules/font-awesome/scss/font-awesome.scss';
-@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
-
-h2 {
-    font-size: 1.4rem;
-    font-weight: lighter;
-    margin:0;
-    text-decoration: underline;
-    text-decoration-color: $comp2;
-    font-weight: 500;
+.info-card {
+  background: #fff;
+  border: 1px solid #d8dfe8;
+  border-radius: 22px;
+  padding: 1.2rem 1.2rem 1.25rem;
+  box-shadow: 0 10px 26px rgba(31, 56, 93, 0.08);
 }
 
-h4 {
-    margin:0;
-    padding-top:0em;
-    padding-bottom: 1em;
-    font-weight: normal;
-    color: #000;
-    font-size: 1em;
-    font-family: Quicksand;
+.info-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.8rem;
 }
 
-p {
-    background-color: white;
-    margin: 1rem;
+.info-card h4 {
+  margin: 0;
+  font-size: 1.08rem;
+  color: #1c3660;
+  text-decoration: none;
+  font-weight: 700;
 }
 
-ul {
-    padding:0;
-    padding-left:0.2em;
-    padding-right:1em;
+.info-card p {
+  margin: 0;
+  color: #6d7c98;
+  line-height: 1.6;
+  font-size: 0.97rem;
 }
 
-li {
-    list-style-type: none;
-    margin-top: 0.5em;
+.tile-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 }
 
-.info-box-main-container {
-    display: block;
+.tile-icon.pale {
+  background: #eef2f6;
+  color: #446288;
 }
 
-.info-box-header {
-    display:flex;
-    justify-content: flex-start;
-    align-items: baseline;
-    margin-left: 1rem;
-    margin-right: 1rem;
-    margin-top: 0.25em;
-    margin-bottom: 1em;
+.tile-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.info-box-header > i {
-    margin-right: .5em;
+.resource-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.6rem;
 }
 
-.info-box {
-    display: flex;
-    justify-content: flex-start;
-    margin: 0.5rem;
-    margin-left: 0rem;
-    margin-right: 0rem;
-    margin-top: 0rem;
-    margin-bottom: 0rem;
-    border-radius: 0px;
-    //border-left: 0.5em $primary solid;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    background: $white;
-    //background: linear-gradient(45deg, #fff 0%, #fff 90%, transparent 90%, transparent 100%);
+.resource-button {
+  min-height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ee8e53 0%, #e78349 100%);
+  color: white;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-weight: 700;
+  box-shadow: 0 12px 22px rgba(237, 137, 79, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-decoration: none;
 }
 
-.info-box-content {
-    border: $border-light 0px solid;
-    padding:0;
-    margin:0;
-    padding-left: 2em;
-    padding-right: 2em;
-    background: transparent;
-    font-family: "Source sans pro";
+.resource-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(237, 137, 79, 0.24);
 }
 
-.info-box-content  > ul {
-    margin:0;
+.resource-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
 }
 
-.link-button > a {
-    display:flex;
-    align-items: center;
-    font-size: 1rem;
-    margin:0;
-    margin-bottom: 1em;
-    padding:0;
-    text-decoration: none;
-    cursor: pointer;
+.resource-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.14);
 }
 
-.link-button > a > i {
-    display:flex;
-    justify-content: center;
-    background: $primary;
-    color: #fff;
-    margin:0;
-    padding: 0.5em;
-    height: 1em;
-    width: 1em;
+.resource-icon svg {
+  width: 15px;
+  height: 15px;
+  color: white;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.link-button > a > div {
-    display:inline-block;
-    position:relative;
-    background: rgb(155, 200, 250);
-    background: $dog-ear-gradient;
-    color: $black;
-    margin:0;
-    padding: 0.5em;
-    height: 1em;
-    width: 7em;
-    overflow: hidden;
-}
-
-.link-button > a > div:hover {
-    background-color: lighten($primary, 10%);
+.resource-arrow {
+  font-size: 1.15rem;
+  line-height: 1;
 }

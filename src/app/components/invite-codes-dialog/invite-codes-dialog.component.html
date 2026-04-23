@@ -1,77 +1,70 @@
 <div class="modal-bg">
-  <div class="form modal-dialog-container">
+    <div class="form modal-dialog-container invite-codes-dialog">
 
-    <div class="dialog-header"><h2>Invitation codes</h2>
-    <div class="dialog-close-btn" (click)="closeDialog()">
-      <i class="fa fa-times" aria-hidden="true"></i>
+        <div class="dialog-header"><h2>Invitation codes</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <div *ngIf="showLoadingIndicator" id="loading-indicator">
+        </div>
+
+        <div *ngIf="inviteCodes.controls.length === 0" class="no-invite-codes">
+            <p>No invite codes created yet.</p>
+        </div>
+
+        <form [formGroup]="inviteCodesForm">
+            <table class="invite-codes-table" formArrayName="inviteCodes">
+                <thead *ngIf="inviteCodes.controls.length > 0">
+                    <tr>
+                        <th>Invite code</th>
+                        <th>Status</th>
+                        <th>Assign to project</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let codeControl of inviteCodes.controls; let i=index" [formGroupName]="i">
+                            <td class="invite-code-container">
+                                {{ codeControl.value.code }}
+                            </td>
+                            <td>
+                                <span *ngIf="codeControl.value.used == true">Used</span>
+                                <span *ngIf="codeControl.value.used == false">Unused</span>
+                            </td>
+                            <td>
+                                <select class="field-select" [formControl]="codeControl.get('projectId')" (change)="onProjectSelected($event, codeControl)">
+                                    <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="field-select" [formControl]="codeControl.get('role')" (change)="onRoleSelected($event, codeControl)">
+                                    <option value="admin">Admin</option>
+                                    <option value="analyzer">Analyzer</option>
+                                    <option value="transcriber">Transcriber</option>
+                                </select>
+                            </td>
+                            <td class="cell-actions">
+                                <button class="form-btn icon-btn" type="button" (click)="copyInviteCode(i)" title="Copy">
+                                  <i class="fa fa-clone" aria-hidden="true"></i>
+                                </button>
+                                <button class="form-btn icon-btn" type="button" (click)="removeInviteCode(i)" title="Delete">
+                                  <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                </button>
+                            </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="form-btn create-code-btn" type="button" (click)="addInviteCode()">
+              <i class="fa fa-plus-circle" aria-hidden="true"></i>
+              Create invite code
+            </button>
+            
+        </form>
+        
     </div>
-  </div>
-
-  @if (showLoadingIndicator) {
-    <div id="loading-indicator">
-    </div>
-  }
-
-  @if (inviteCodes.controls.length === 0) {
-    <div class="no-invite-codes">
-      <p>No invite codes created yet.</p>
-    </div>
-  }
-
-  <form [formGroup]="inviteCodesForm">
-    <table formArrayName="inviteCodes">
-      @if (inviteCodes.controls.length > 0) {
-        <thead>
-          <th>Invite code</th>
-          <th>Status</th>
-          <th>Assign to project</th>
-          <th>Role</th>
-          <th>Actions</th>
-        </thead>
-      }
-      <tbody>
-        @for (codeControl of inviteCodes.controls; track codeControl; let i = $index) {
-          <tr [formGroupName]="i">
-            <td class="invite-code-container">
-              {{ codeControl.value.code }}
-            </td>
-            <td>
-              @if (codeControl.value.used == true) {
-                <span>Used</span>
-              }
-              @if (codeControl.value.used == false) {
-                <span>Unused</span>
-              }
-            </td>
-            <td>
-              {{ codeControl.value.project }}
-              <select [formControl]="codeControl.get('projectId')" (change)="onProjectSelected($event, codeControl)">
-                @for (project of projects; track project) {
-                  <option [value]="project.id">{{ project.name }}</option>
-                }
-              </select>
-            </td>
-            <td>
-              <select [formControl]="codeControl.get('role')" (change)="onRoleSelected($event, codeControl)">
-                <option value="admin">Admin</option>
-                <option value="analyzer">Analyzer</option>
-                <option value="transcriber">Transcriber</option>
-              </select>
-            </td>
-            <td>
-              <button class="form-btn" type="button" (click)="copyInviteCode(i)" title="Copy"><i class="fa fa-clone" aria-hidden="true"></i></button>
-              <button class="form-btn" type="button" (click)="removeInviteCode(i)" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    <br />
-    <button class="form-btn" type="button" (click)="addInviteCode()"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create invite code</button>
-
-  </form>
-
-</div>
 
 </div>

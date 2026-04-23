@@ -103,26 +103,25 @@ $secondary-light: #B26E63;
 $secondary-dark: #312829;
 */
 
-$primary: #2A4765;
-$primary-light: #435f7e;
-$bg: $ghost-white;
-$panelBg: #F1EFE4;
-$panelBg: #f4f4f5;
-$tertiary: $papaya-whip;
-$tertiary-light: $papaya-whip;
-$secondary: #D7B17C;
-$secondary-light: #f4cc96;
-$secondary-dark: #000000;
-$border: #444;
-$border-light: #ddd;
+$primary: #2f4f71;
+$primary-light: #3c6289;
+$bg: #f4f4f6;
+$panelBg: #f4f4f6;
+$tertiary: #e6e8ed;
+$tertiary-light: #eef0f4;
+$secondary: #d47752;
+$secondary-light: #e08a68;
+$secondary-dark: #b76545;
+$border: #667a90;
+$border-light: #d4d9e0;
 $white: #fff;
 $black: #000;
-$lightgrey: #eee;
-$dark-font-color: #333;
-$comp1: #73A790;
-$comp2: #D7B17C;
-$comp3: #EABAB9;
-$comp4: #F1EFE4;
+$lightgrey: #eceff3;
+$dark-font-color: #1f3044;
+$comp1: #2f4f71;
+$comp2: #d47752;
+$comp3: #d7dbe2;
+$comp4: #fff;
 
 
 /*
@@ -145,7 +144,7 @@ $dark-font-color: #333;
 
 $gradient-horizontal: linear-gradient(90deg, $primary, $primary-light);
 
-$dog-ear-gradient: linear-gradient(135deg, $comp3 0%, $comp3 90%, transparent 90%, transparent 100%);
+$dog-ear-gradient: linear-gradient(90deg, $secondary 0%, $secondary 100%);
 
 $info: $air-superiority-blue;
 $warning: $c;

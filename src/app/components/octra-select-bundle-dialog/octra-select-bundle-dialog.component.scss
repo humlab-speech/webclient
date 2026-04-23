@@ -1,13 +1,80 @@
 .modal-dialog-container {
-    max-width: 80%;
-    max-height: 80%;
+    width: min(720px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
     overflow: auto;
 }
 
-
 .dialog-content {
-    
-    max-width: 80%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+}
+
+.mode-intro {
+    margin-bottom: 1rem;
+    color: #425d86;
+    line-height: 1.45;
+    font-size: 0.95rem;
+}
+
+.launch-mode-container {
+    display: grid;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.mode-option {
+    display: grid;
+    grid-template-columns: 1.1rem 1fr;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #d7deea;
+    background: #f8fafd;
+}
+
+.mode-option input[type='radio'] {
+    margin-top: 0.2rem;
+}
+
+.mode-copy {
+    display: block;
+}
+
+.mode-title {
+    display: block;
+    color: #203a66;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.mode-description {
+    color: #5c6f91;
+    font-size: 0.9rem;
+}
+
+.form-group {
+    margin-bottom: 0.9rem;
+}
+
+.transcription-select {
+    width: 100%;
+    min-height: 2.35rem;
+    border-radius: 10px;
+    border: 1px solid #cbd6e6;
+    padding: 0.35rem 0.55rem;
+    box-sizing: border-box;
+    color: #223a63;
+    background: #fff;
+}
+
+.bundle-mode-help {
+    border-radius: 10px;
+    border: 1px solid #d8dfe8;
+    background: #f8fafc;
+    color: #526789;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.9rem;
 }
 
 li {

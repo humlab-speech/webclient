@@ -1,45 +1,111 @@
 import { Injectable } from '@angular/core';
-import Shepherd from 'shepherd.js';
+import ShepherdBase from 'shepherd.js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShepherdService {
+  private tour: ShepherdBase.Tour | null = null;
 
-  private tour: InstanceType<typeof Shepherd.Tour>;
+  private readonly selectors = {
+    createProjectButton: '#tutorial-create-project-btn',
+    projectNameFieldset: '#tutorial-project-name-fieldset',
+    sessionsForm: '#sessions-container',
+    sessionNameInput: '#sessions-container .tutorial-session-name-input',
+    audioDropzone: '#sessions-container .tutorial-audio-dropzone',
+    submitButton: '#submitBtn',
+    firstProjectCard: '#project-manager-root .project-list app-project-item:first-child .tutorial-project-card',
+    firstProjectOperations: '#project-manager-root .project-list app-project-item:first-child .tutorial-project-operations',
+    firstProjectApplications: '#project-manager-root .project-list app-project-item:first-child .tutorial-project-applications'
+  };
 
-  constructor() { 
+  private readonly onProjectSaved = () => {
+    this.showStepAfterDelay('project-saved', 'project-save-processing');
+  };
+
+  private readonly onAudioUpload = () => {
+    this.showStepAfterDelay('save-project', 'audio-upload');
+  };
+
+  constructor() {}
+
+  private waitForElement(selector: string, timeoutMs: number = 6000): Promise<void> {
+    return new Promise((resolve) => {
+      if (document.querySelector(selector)) {
+        resolve();
+        return;
+      }
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector(selector)) {
+          window.clearTimeout(timeoutHandle);
+          observer.disconnect();
+          resolve();
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      const timeoutHandle = window.setTimeout(() => {
+        observer.disconnect();
+        resolve();
+      }, timeoutMs);
+    });
   }
-  
+
+  private showStepAfterDelay(stepId: string, expectedCurrentStepId: string | null = null, delayMs: number = 450): void {
+    window.setTimeout(() => {
+      if (!this.tour || !this.tour.isActive()) {
+        return;
+      }
+
+      if (expectedCurrentStepId && this.tour.getCurrentStep()?.id !== expectedCurrentStepId) {
+        return;
+      }
+
+      if (this.tour.getById(stepId)) {
+        this.tour.show(stepId);
+      }
+    }, delayMs);
+  }
+
+  private bindWindowTutorialListeners(): void {
+    this.unbindWindowTutorialListeners();
+    window.addEventListener('projectSaved', this.onProjectSaved);
+    window.addEventListener('audioUpload', this.onAudioUpload);
+  }
+
+  private unbindWindowTutorialListeners(): void {
+    window.removeEventListener('projectSaved', this.onProjectSaved);
+    window.removeEventListener('audioUpload', this.onAudioUpload);
+  }
+
   public initializeGeneralTour() {
+    this.unbindWindowTutorialListeners();
 
-    window.addEventListener('projectSaved', () => {
-      setTimeout(() => {
-        this.tour.show('project-saved');
-      }, 500);
-    });
-
-    window.addEventListener('emu-webbapp-launched', () => {
-      setTimeout(() => {
-        this.tour.show('app-launched-emu-webapp');
-      }, 500);
-    });
-
-    window.addEventListener('audioUpload', () => {
-      setTimeout(() => {
-        this.tour.show('save-project');
-      }, 500);
-    });
-
-    this.tour = new Shepherd.Tour({
+    this.tour = new ShepherdBase.Tour({
       defaultStepOptions: {
         classes: 'shepherd-theme-arrows',
-        scrollTo: false,
+        scrollTo: false
       },
-      useModalOverlay: true,
+      useModalOverlay: true
+    });
+
+    this.bindWindowTutorialListeners();
+
+    this.tour.on('cancel', () => {
+      this.unbindWindowTutorialListeners();
+    });
+
+    this.tour.on('complete', () => {
+      this.unbindWindowTutorialListeners();
     });
 
     this.tour.addStep({
+      id: 'tutorial-intro',
       text: `Welcome to Visible Speech!
       <br /><br />
       Visible Speech lets you record, analyze, and visualize speech data online, by binding together various tools. It is based on the EMU-SDMS framework for speech analysis.
@@ -55,39 +121,34 @@ export class ShepherdService {
         {
           text: 'Next',
           action: this.tour.next
-        },/*
-        {
-          text: 'Skip project creation',
-          action: () => { this.tour.show('project-saved'); }
         }
-          */
-      ],
+      ]
     });
 
     this.tour.addStep({
-      text: `
-      Please click the 'Create new project' button to continue
-      `,
+      id: 'create-project',
+      text: `Please click the 'New project' button to continue.`,
       buttons: [
         {
           text: 'Abort',
           action: this.tour.cancel,
           classes: 'tutorial-exit-btn'
-        },
+        }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.createProjectButton),
       attachTo: {
-        element: '#project-manager-root > div > div',
+        element: this.selectors.createProjectButton,
+        on: 'bottom'
       },
       advanceOn: {
-        selector: '#create-project-btn',
+        selector: this.selectors.createProjectButton,
         event: 'click'
       }
     });
 
     this.tour.addStep({
-      text: `
-      Please enter a name for your project and click 'Next'.
-      `,
+      id: 'project-name',
+      text: `Please enter a name for your project and click 'Next'.`,
       buttons: [
         {
           text: 'Abort',
@@ -99,17 +160,16 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.projectNameFieldset),
       attachTo: {
-        element: '#project-manager-root > app-project-dialog > div > div > form > fieldset',
+        element: this.selectors.projectNameFieldset,
         on: 'bottom'
-      },
+      }
     });
 
-    /*
     this.tour.addStep({
-      text: `
-      Here you can drop any documents you might have that are associated with the project, such as your data management plan. However this is completely optional. Click 'Next' to continue.
-      `,
+      id: 'sessions-overview',
+      text: `Here we will add a recording session to the project. A recording session in an EmuDB project is a collection of audio files with associated metadata.`,
       buttons: [
         {
           text: 'Abort',
@@ -121,38 +181,16 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.sessionsForm),
       attachTo: {
-        element: '#project-manager-root > app-project-dialog > div > div > form > app-documentation-form > div',
-      },
-    });
-    */
-
-    this.tour.addStep({
-      text: `
-      Here we will add a session to project. A 'session' in the context of a EmuDB project is a collection of audio files with some associated metadata. 
-      
-      `,
-      buttons: [
-        {
-          text: 'Abort',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ],
-      attachTo: {
-        element: '#project-manager-root > app-project-dialog > div > div > form > app-sessions-form > div',
+        element: this.selectors.sessionsForm,
         on: 'top'
-      },
+      }
     });
 
     this.tour.addStep({
-      text: `
-      Enter a name for the session and click 'Next'.
-      `,
+      id: 'session-name',
+      text: `Enter a name for the recording session and click 'Next'.`,
       buttons: [
         {
           text: 'Abort',
@@ -164,41 +202,19 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.sessionNameInput),
       attachTo: {
-        element: '#sessions-container > div > div > div.section-content > div.session-metadata-container > div:nth-child(1)',
-      },
+        element: this.selectors.sessionNameInput
+      }
     });
 
-    /*
     this.tour.addStep({
-      text: `
-      Here you can enter some metadata about who speaks in this session. However this is entirely optional. Click 'Next' to continue.
-      `,
-      buttons: [
-        {
-          text: 'Abort',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ],
-      attachTo: {
-        element: '#sessions-container > div > div > div.section-content > div.session-metadata-container > div:nth-child(3)',
-        on: 'top'
-      },
-    });
-    */
-
-    this.tour.addStep({
-      id: "audio-upload",
+      id: 'audio-upload',
       text: `
       Here we select the source of our audio files in this session. You can either upload audio files from your computer or record audio directly in the browser.
       If you choose 'Recording session' you will be able to assign a recording script and you will be given a link to share with the speaker which will initiate the recording process.
       <br /><br />
-      Let's choose 'Upload audio files' for now and drop in a wav file. If you do not have a wav file of your own, you can download an example file here: 
+      Let's choose 'Uploaded files' for now and drop in a wav file. If you do not have a wav file of your own, you can download an example file here:
       <a href='https://visp.humlab.umu.se/LS010003sentence1.wav' target='_blank'>LS010003sentence1.wav</a>
       `,
       buttons: [
@@ -208,73 +224,44 @@ export class ShepherdService {
           classes: 'tutorial-exit-btn'
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.audioDropzone),
       attachTo: {
-        element: '#sessions-container > div > div > div.section-content > div:nth-child(2)',
+        element: this.selectors.audioDropzone,
         on: 'top'
       },
-      scrollTo: true,
+      scrollTo: true
     });
 
-    /*
     this.tour.addStep({
-      id: "annotation-levels",
-      text: `
-      This section houses settings for annotation levels and links, which affect how the audio files in this session will be organized in the EMU-WebApp. Let's leave it as is for now.
-       <br /><br />
-      Click 'Next' to continue.
-      `,
+      id: 'save-project',
+      text: `Click the 'Save' button to create the project.`,
       buttons: [
         {
           text: 'Abort',
           action: this.tour.cancel,
           classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
         }
       ],
-      attachTo: {
-        element: '#project-manager-root > app-project-dialog > div > div > form > app-sessions-form > div > h3:nth-child(3)',
-        on: 'top'
-      },
-    });
-    */
-
-    this.tour.addStep({
-      id: "save-project",
-      text: `
-      Click the 'Save' button to create the project.
-      `,
-      buttons: [
-        {
-          text: 'Abort',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-      ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.submitButton),
       advanceOn: {
-        selector: '#submitBtn',
+        selector: this.selectors.submitButton,
         event: 'click'
       },
-      scrollTo: true,
       attachTo: {
-        element: '#submitBtn',
+        element: this.selectors.submitButton,
         on: 'top'
       },
+      scrollTo: true
     });
 
     this.tour.addStep({
-      text: `
-      Please wait for the project to be created. This will take a moment.
-      `,
+      id: 'project-save-processing',
+      text: `Please wait for the project to be created. This will take a moment.`
     });
 
     this.tour.addStep({
       id: 'project-saved',
-      text: `
-      Now that we have a project, let's see what we can do with it.
-      `,
+      text: `Now that we have a project, let's see what we can do with it.`,
       buttons: [
         {
           text: 'Abort',
@@ -286,15 +273,15 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.firstProjectCard),
       attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1)'
-      },
+        element: this.selectors.firstProjectCard
+      }
     });
 
     this.tour.addStep({
-      text: `
-      Here is where you control the project settings, such as adding new recording sessions, assign annotation tasks, and add or remove project members.
-      `,
+      id: 'project-operations',
+      text: `Here is where you control project operations, such as managing sessions, assigning annotation tasks, and managing project members.`,
       buttons: [
         {
           text: 'Abort',
@@ -306,21 +293,21 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.firstProjectOperations),
       attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.gitlab-project-container',
+        element: this.selectors.firstProjectOperations,
         on: 'bottom'
-      },
+      }
     });
 
     this.tour.addStep({
+      id: 'project-applications',
       text: `
-      These are your tools for working with your project. You can launch the EMU-WebApp or Jupyter notebook from here.
+      These are your tools for working with your project. You can launch the transcription tool and Jupyter notebook from here.
       <br /><br />
-      Jupyter notebook can be used to run R or Python code against the files in your project to perform various types of analyses using the EMU-R library.
+      Jupyter notebook can be used to run analyses against the files in your project using the EMU-R library.
       <br /><br />
-      The EMU-WebApp is where you can visualize, annotate and analyze your speech data.
-      <br /><br />
-      
+      The transcription tool is where you can visualize, annotate and analyze your speech data.
       `,
       buttons: [
         {
@@ -328,271 +315,52 @@ export class ShepherdService {
           action: this.tour.next
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.firstProjectApplications),
       attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container',
+        element: this.selectors.firstProjectApplications,
         on: 'bottom'
-      },
+      }
     });
 
     this.tour.addStep({
-      text: `
-      This concludes the tutorial. If you have any questions, please contact us at <a href='mailto:support@humlab.umu.se'>
-      `,
+      id: 'tutorial-complete',
+      text: `This concludes the tutorial. If you have any questions, please contact us at <a href='mailto:support@humlab.umu.se'>support@humlab.umu.se</a>.`,
       buttons: [
         {
           text: 'Finish',
           action: this.tour.complete
         }
       ],
+      beforeShowPromise: () => this.waitForElement(this.selectors.firstProjectApplications),
       attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container',
+        element: this.selectors.firstProjectApplications,
         on: 'bottom'
-      },
+      }
     });
-
-
-    /*
-    this.tour.addStep({
-      text: `
-      Let's go into the transcription tool (EMU-WebApp) and see how it works. Click the button to continue.
-      `,
-      buttons: [
-        {
-          text: 'Abort',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-      ],
-      advanceOn: {
-        selector: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(2) > app-appctrl > fieldset > div > button',
-        event: 'click'
-      },
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(2) > app-appctrl > fieldset > div',
-        on: 'bottom'
-      },
-    });
-
-
-    this.tour.addStep({
-      id: 'emu-webbapp',
-      text: `
-      This is the EMU-WebApp where you can visualize and analyze speech data. We won't go into detail here, but feel free to explore the interface. When you are ready to go back to the dashboard, click the 'Back to dashboard' button in the upper left corner and the tutorial will continue.
-      `,
-      buttons: [
-        {
-          text: 'Ok',
-          action: this.tour.hide,
-        },
-      ],
-    });
-    */
-
-    //This concludes the tutorial. If you have any questions, please contact us at <a href='mailto:support@humlab.umu.se'>support@humlab.umu.se</a>
-
-    //######################################
-
-    /*
-    this.tour.addStep({
-      text: `
-      Visible Speech lets you record, analyze, and visualize speech data online, by binding together various tools such as the EMU-SDMS framework for speech analysis and the WebSpeechRecorder application.
-      Let's walk through the main parts of this interface.
-      `,
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `This is the project manager. Here you can create, edit and delete projects, as well as add and remove project members.
-      <br /><br />
-      You can also launch tools for speech analysis and transcription. Let's have a closer look at each of them.`,
-      attachTo: {
-        element: 'app-project-manager',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `This is the EMU-WebApp where you can visualize and analyze speech data.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(2) > app-appctrl > fieldset',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `This is a Jupyter notebook where you can run R code against the files in your project to perform various types of analyses using the EMU-R library.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(3) > app-appctrl',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `This is Jupyter notebook which can be used to run R and Python code for analysis.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.applications-container > div:nth-child(4) > app-appctrl',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `Here you can add or remove sessions in your project. A session is a collection of audio files with some associated metadata.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.gitlab-project-container > div > ul > li:nth-child(1) > div',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `Here you can assign annotation tasks to other project members (or yourself). This controls which audio files (or 'bundles' as they are called within the EMU-SDMS framework) that will show up in the transcription tool (EMU-WebApp) for each user.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.gitlab-project-container > div > ul > li:nth-child(2) > div',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `This is where you add/remove members from your project.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.gitlab-project-container > div > ul > li:nth-child(3) > div',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `Here you can create or edit the recording scripts used in the online speech recording application. A script in this context is a set of prompts or instructions for the speaker to follow during the recording.<br /><br />
-      You use these scripts by creating a new session in your project of the recording type, and associating the script with that session.`,
-      attachTo: {
-        element: '#project-manager-root > ul > app-project-item:nth-child(1) > li > div.project-main-panel > div.gitlab-project-container > div > ul > li:nth-child(4) > div',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel,
-          classes: 'tutorial-exit-btn'
-        },
-        {
-          text: 'Next',
-          action: this.tour.next
-        }
-      ]
-    });
-
-    this.tour.addStep({
-      text: `Let's go over the 'Create new project dialog' in detail. Please click on the 'Create new project' button.`,
-      attachTo: {
-        element: '#create-project-btn',
-      },
-      buttons: [
-        {
-          text: 'Exit',
-          action: this.tour.cancel
-        },
-      ]
-    });
-    */
-    
   }
 
-  public startTour(tourName:string = null) {
-    console.log("Starting tour: " + tourName);
-    switch(tourName) {
+  public startTour(tourName: string = null) {
+    if (this.tour && this.tour.isActive()) {
+      this.tour.cancel();
+    }
+
+    switch (tourName) {
       default:
         this.initializeGeneralTour();
     }
+
     this.tour.start();
   }
 
   public nextStep() {
-    this.tour.next();
+    this.tour?.next();
   }
 
   public backStep() {
-    this.tour.back();
+    this.tour?.back();
   }
 
   public cancelTour() {
-    this.tour.cancel();
+    this.tour?.cancel();
   }
-    
 }

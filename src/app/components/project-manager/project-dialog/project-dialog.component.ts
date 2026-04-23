@@ -14,10 +14,9 @@ import { environment } from 'src/environments/environment';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
-    selector: 'app-project-dialog',
-    templateUrl: './project-dialog.component.html',
-    styleUrls: ['./project-dialog.component.scss'],
-    standalone: false
+  selector: 'app-project-dialog',
+  templateUrl: './project-dialog.component.html',
+  styleUrls: ['./project-dialog.component.scss']
 })
 export class ProjectDialogComponent implements OnInit {
   @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;
@@ -93,6 +92,10 @@ export class ProjectDialogComponent implements OnInit {
       docFiles: this.docFiles,
       standardDirectoryStructure: new FormControl(true),
       createEmuDb: new FormControl(environment.EMUDB_INTEGRATION),
+      description: new FormControl(""),
+      financers: new FormControl(""),
+      ethicsReviewDnr: new FormControl(""),
+      qualityControlMethods: new FormControl([]),
     });
 
     this.form.statusChanges.subscribe((status) => {
@@ -125,6 +128,11 @@ export class ProjectDialogComponent implements OnInit {
 
       this.form.controls.projectName.setValue(this.project.name);
       this.form.controls.projectName.disable();
+
+      this.form.controls.description.setValue(this.project.description || "");
+      this.form.controls.financers.setValue(this.project.financers || "");
+      this.form.controls.ethicsReviewDnr.setValue(this.project.ethicsReviewDnr || "");
+      this.form.controls.qualityControlMethods.setValue(this.project.qualityControlMethods || []);
 
       this.setLoadingStatus(true);
       console.log("Going into edit mode");
@@ -277,12 +285,6 @@ export class ProjectDialogComponent implements OnInit {
       this.setTaskProgressPercentage(data.progressPercentage, "submitBtn", data.msg);
 
       if(data.progressPercentage == 100) {
-        if(data.error) {
-          // Server reported a failure — stop the spinner/loading state but don't close the dialog
-          console.error('[project-dialog] Project save failed:', data.msg);
-          this.setLoadingStatus(false);
-          return;
-        }
         this.projectService.fetchProjects(true).subscribe(msg => {
           this.setLoadingStatus(false);
           this.closeCreateProjectDialog();

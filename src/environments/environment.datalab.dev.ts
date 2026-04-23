@@ -5,7 +5,10 @@ export const environment = {
     EMUDB_INTEGRATION: false,
     ENABLED_APPLICATIONS: ["jupyter", "vscode", "octra", "labjs"],
     BASE_DOMAIN: "localtest.me",
+    GITLAB_API_ENDPOINT: "gitlab.localtest.me/api/v4",
+    GITLAB_PERSONAL_ACCESS_TOKEN: null,
     ACCESS_LIST_ENABLED: false,
+    PROJECT_MANAGER_FORCE_LOADING: false,
     PROTOCOL: "https",
     production: false
   };

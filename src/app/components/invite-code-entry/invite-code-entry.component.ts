@@ -6,10 +6,9 @@ import { WebSocketMessage } from '../../models/WebSocketMessage';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
-    selector: 'app-invite-code-entry',
-    templateUrl: './invite-code-entry.component.html',
-    styleUrls: ['./invite-code-entry.component.scss'],
-    standalone: false
+  selector: 'app-invite-code-entry',
+  templateUrl: './invite-code-entry.component.html',
+  styleUrls: ['./invite-code-entry.component.scss']
 })
 export class InviteCodeEntryComponent implements OnInit {
   inviteCodeForm: FormGroup;

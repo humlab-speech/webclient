@@ -1,13 +1,19 @@
-<div class="modal-bg">
-    <div class="form modal-dialog-container">
-        
-        <div class="dialog-header">
-            <h2>Assign annotation tasks of project {{ this.project.name }}</h2>
-            <div class="dialog-close-btn" (click)="closeDialog()">
+<div class="modal-bg assignment-dialog-backdrop">
+    <div class="form modal-dialog-container assignment-dialog-container">
+
+        <div class="dialog-header assignment-dialog-header">
+            <div class="header-copy">
+                <span class="dialog-eyebrow">Workspace</span>
+                <h2>Assign annotation tasks of project {{ this.project.name }}</h2>
+                <p>Control which bundles each member can view and annotate in integrated transcription tools.</p>
+            </div>
+            <div class="dialog-close-btn assignment-dialog-close-btn" (click)="closeDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
             </div>
         </div>
-        
-        <app-manage-bundle-assignment-form [project]="project"></app-manage-bundle-assignment-form>
+
+        <div class="assignment-dialog-content">
+            <app-manage-bundle-assignment-form [project]="project"></app-manage-bundle-assignment-form>
+        </div>
     </div>
 </div>

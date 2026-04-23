@@ -4,10 +4,9 @@ import { UserSession } from "../../models/UserSession";
 
 
 @Component({
-    selector: 'app-signin-ctrl',
-    templateUrl: './signin-ctrl.component.html',
-    styleUrls: ['./signin-ctrl.component.scss'],
-    standalone: false
+  selector: 'app-signin-ctrl',
+  templateUrl: './signin-ctrl.component.html',
+  styleUrls: ['./signin-ctrl.component.scss']
 })
 export class SigninCtrlComponent implements OnInit {
 

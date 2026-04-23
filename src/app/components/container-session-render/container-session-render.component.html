@@ -1,16 +1,10 @@
 <div id="main-container">
-  @if (showLoadingIndicator) {
-    <div id="loading-indicator-container">
-      <img src="/assets/loading-indicator-4-dark.svg">
+    <div id="loading-indicator-container" *ngIf="showLoadingIndicator">
+        <img src="/assets/loading-indicator-4-dark.svg">
     </div>
-  }
 
-  <iframe id="proxied-container" src=""></iframe>
+    <iframe id="proxied-container" src=""></iframe>
 
-  @if ((modalActive && modalName=='invite-codes-dialog')) {
-    <app-invite-codes-dialog></app-invite-codes-dialog>
-  }
-  @if ((modalActive && modalName=='help-dialog')) {
-    <app-help-dialog></app-help-dialog>
-  }
+    <app-invite-codes-dialog *ngIf="(modalActive && modalName=='invite-codes-dialog')"></app-invite-codes-dialog>
+    <app-help-dialog *ngIf="(modalActive && modalName=='help-dialog')"></app-help-dialog>
 </div>

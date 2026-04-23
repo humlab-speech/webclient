@@ -1,175 +1,206 @@
 <div class="modal-bg">
   <div class="form modal-dialog-container">
 
-    <div class="dialog-header"><h2>Help</h2>
-    <div class="dialog-close-btn" (click)="closeDialog()">
-      <i class="fa fa-times" aria-hidden="true"></i>
+    <div class="dialog-header">
+      <h2>Help</h2>
+      <div class="dialog-close-btn" (click)="closeDialog()">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </div>
     </div>
-  </div>
 
-  <div class="dialog-content">
-    <div class="help-content">
+    <div class="dialog-content">
+      <div class="help-content">
 
-      @if (getCurrentNavigation() == 'dashboard') {
-        <div>
-          <p>This guide will help you navigate the main components and tools of the Visible Speech platform.</p>
-          <h2 id="your-projects"><strong>Your Projects</strong></h2>
-          <p>This section displays the projects you have access to. Each project card includes two main sections:</p>
-          <h3 id="applications"><strong>Applications</strong></h3>
-          <p>Here you’ll find the tools available for your project:</p>
-          <ul>
-            <li><strong>Transcription Tool</strong>: Use this for transcribing audio files with advanced features.</li>
-            <li><strong>Notebook Tool</strong>: An integrated development environment (Jupyter notebook) for analyzing speech data.</li>
-            <li><strong>RStudio</strong>: An integrated development environment (RStudio) for analyzing speech data.</li>
-          </ul>
-          <h3 id="operations"><strong>Operations</strong></h3>
-          <p>Manage your project workflows with these options:</p>
-          <ul>
-            <li><strong>Sessions</strong>: View and manage sessions in your project. Think of a session as a recording session, containing the audio files from that session.</li>
-            <li><strong>Assign Annotation Tasks</strong>: Distribute tasks to project members for data annotation. The assigments are integrated with the transcription tool.</li>
-            <li><strong>Members</strong>: Manage your project's team members and their roles.</li>
-            <li><strong>Manage Recording Scripts</strong>: Create and edit recording scripts associated with your project. A script is a set of prompts for the user to speak.</li>
-          </ul>
-          <h2 id="data-management"><strong>Data Management</strong></h2>
-          <p>This section, located on the right-hand side, outlines the platform's integration with Git for version control. It ensures that your data is securely managed on our servers.</p>
-          <h2 id="help-guides"><strong>Help & Guides</strong></h2>
-          <p>Find useful resources to get started and troubleshoot:</p>
-          <ul>
-            <li><strong>VISP Tutorial</strong>: Step-by-step instructions for using the Visible Speech platform.</li>
-            <li><strong>EMU Manual</strong>: Detailed documentation for advanced users.</li>
-          </ul>
-          <h2 id="tools-resources"><strong>Tools & Resources</strong></h2>
-          <p>Quick links to additional tools and services:</p>
-          <ul>
-            <li><strong>Octra</strong>: Access Octra, our standalone transcription editing tool. Octra is not integrated with the rest of the VISP system, and thus does not require any login.</li>
-          </ul>
-          <p>If you have any additional questions, feel free to contact our support team via the <strong>E-mail</strong> button in the Help & Guides section.</p>
-          <p>Enjoy using the Visible Speech platform!</p>
-        </div>
-      }
+        @if (getCurrentNavigation() == 'dashboard') {
+          <p class="help-intro">This guide covers the main components and tools of the Visible Speech platform.</p>
 
-      @if (getCurrentNavigation() == 'emu-webapp') {
-        <div>
-          <h2>What is this?</h2>
-          You are now running the EMU-webApp, which is a labeling and correction tool that offers a multitude of labeling and visualization features.
-          <h2>How to use this tool</h2>
-          <pre>
-            On the left side of the screen you will see your bundles.
-            Only bundles that have been assigned to you in the dashboard interface by your project leader will be shown here.
-            Even if you are the project leader, you still need to assign the annotation of the bundles to yourself in order for them to show up here.
-            On your right you will be able to play back the bundle audio as well as analyze and annotate it in various ways. The EMU-webApp offers a multitude of tools for this purpose and is far too comprehensive to go through in detail here.
-            However, some commonly used functionalities are:
-            [INSERT EXAMPLES OF COMMON FUNCTIONALITIES HERE]
-          </pre>
-        </div>
-      }
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-th-large" aria-hidden="true"></i></span>
+              <h2>Your Projects</h2>
+            </div>
+            <p>Each project card gives you two panels for working with your data:</p>
 
-      @if (getCurrentNavigation() == 'jupyter') {
-        <div>
-          <h2>What is this?</h2>
-          You are now running the Jupyter notebook application.
-          Using the emuR library, you can load your Emu-R database and perform various analyses on it.
-          The code you run here is executed on the VISP server and not on your local machine.
-          <h2>How to use this tool</h2>
-          <pre>
-            Write your code in the editor on the right side of the screen.
-            On your left you will see your project directory.
-            You need to save your work in order for it to be stored on the VISP server.
-            You can go back and forth between the dashboard and the Jupyter session without losing your work.
-            However, the system will periodically shut down idle sessions, so save your work and don't count on your session being available
-            the next time you login.
-          </pre>
-        </div>
-      }
-
-      @if (getCurrentNavigation() == 'rstudio') {
-        <div>
-          <h2>What is this?</h2>
-          You are now running RStudio with access to your project.
-          Using the emuR library, you can load your Emu-R database and perform various analyses on it.
-          The code you run here is executed on the VISP server and not on your local machine.
-          <h2>How to use this tool</h2>
-          <pre>
-            Write your code in the editor on the left side of the screen.
-            On your lower right you will see your project directory.
-            You need to save your work in order for it to be stored on the VISP server.
-            You can go back and forth between the dashboard and the RStudio session without losing your work.
-            However, the system will periodically shut down idle sessions, so save your work and don't count on your session being available
-            the next time you login.
-            Please see <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/" target="_blank">The EMU-SDMS Manual</a> for more information on how to use the emuR library.
-          </pre>
-        </div>
-      }
-
-      @if (getCurrentNavigation() == 'jupyter' || getCurrentNavigation() == 'rstudio') {
-        <div>
-          <h2>Code examples</h2>
-          <ul>
-            <li>
-              <h3>Loading your Emu-R database</h3>
-              <div class="code-container">
-                <pre><code id="code1">
-                  # Load the emuR library
-                  library(emuR)
-                  # Load your Emu-R database. Within Visible Speech, the database location is assumed to be the same for all projects,
-                  # This command will therefore always provide you with a reference ’VISP’ to your speech database
-                  db_path <- "~/project/Data/VISP_emuDB"
-                  VISP <- load_emuDB(db_path)
-                </code></pre>
-                <button class="copy-btn" (click)="copyCode('code1')">Copy</button>
+            <div class="help-feature-card">
+              <div class="help-feature-card-header">
+                <i class="fa fa-cubes" aria-hidden="true"></i>
+                <h3>Applications</h3>
               </div>
-            </li>
-            <li>
-              <h3>View the sessions in your database</h3>
-              <div class="code-container">
-                <pre><code id="code2">
-                  # List the recording sessions in your database
-                  sessions <- list_sessions(VISP)
-                  print(sessions)
-                </code></pre>
-                <button class="copy-btn" (click)="copyCode('code2')">Copy</button>
+              <p>Tools you can launch to interact with your project's data:</p>
+              <ul class="help-list">
+                <li><strong>Annotation tool</strong> — Label, annotate, and visualize speech data using the Arctic.</li>
+                <li><strong>Notebook tool</strong> — Run R or Python code in a Jupyter environment on the VISP server to analyze your data using the emuR library.</li>
+                <li><strong>Arctic</strong> — A standalone transcription editor. No separate login is required, but it operates independently from the rest of the platform.</li>
+              </ul>
+            </div>
+
+            <div class="help-feature-card">
+              <div class="help-feature-card-header">
+                <i class="fa fa-cogs" aria-hidden="true"></i>
+                <h3>Operations</h3>
               </div>
-            </li>
-            <li>
-              <h3>List bundles</h3>
-              <div class="code-container">
-                <pre><code id="code3">
-                  #”Bundles” is the name used for individual sound files and associated other signal files in a session.
-                  # You can list all bundles in a database
-                  list_bundles(VISP)
-                  # You can also list all bundles or sessions matching a pattern
-                  # In the example below you will get all the bundles of sessions with names (perhaps recording date) starting with 2024
-                  list_bundles(VISP,sessionPattern="2024.*")
-                  # You can always get help for a command using ¨?¨, e.g.
-                  ?list_bundles
-                </code></pre>
-                <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
-              </div>
-            </li>
-            <li>
-              <h3>Other usage</h3>
-              <div class="code-container">
-                <pre><code id="code3">
-                  # Anything that is a attribute definition can be queried for labels.
-                  # We here assume that you have a Word level set up, similar to our default setup
-                  query(VISP,"Word !=''") #Provides a list of all non-empty word labels
-                  query(VISP,"Word =~ '^s.*'") # Uses a regular expression to find all words beginning with ‘s’
-                  query(VISP,"Word !=''. -> Word =~ '^s.*'") # Finds all (not empty) word labels preceeding a word starting with ‘s’
-                  # We can make queries that relate to the link between transcription tiers
-                  # (note the [] braces)
-                  query(VISP,"[Phonetic != '' ^ Word =~ '^s.*']")
-                </code></pre>
-                <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
-              </div>
-            </li>
-          </ul>
+              <p>Manage your project’s workflow and resources:</p>
+              <ul class="help-list">
+                <li><strong>Auto-transcribe</strong> — Submit audio files for automatic speech transcription.</li>
+                <li><strong>Recording sessions</strong> — View and manage recording sessions. Each recording session corresponds to a recording event and contains its associated audio files.</li>
+                <li><strong>Assign annotation tasks</strong> — Distribute annotation bundles to project members. Assignments are tightly integrated with the Transcription tool.</li>
+                <li><strong>Members</strong> — Manage your project’s team members and their roles.</li>
+                <li><strong>Manage recording scripts</strong> — Create and edit recording scripts. A script is a set of prompts for participants to speak during a recording session.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-database" aria-hidden="true"></i></span>
+              <h2>Data Management</h2>
+            </div>
+            <p>The sidebar panel shows your project’s data management status. Your data is securely stored on our servers with Git for version control, providing a full history of changes.</p>
+          </section>
+
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-life-ring" aria-hidden="true"></i></span>
+              <h2>Help &amp; Guides</h2>
+            </div>
+            <p>Resources available in the sidebar:</p>
+            <ul class="help-list">
+              <li><strong>VISP Tutorial</strong> — Step-by-step walkthrough of the Visible Speech platform.</li>
+              <li><strong>EMU Manual</strong> — In-depth documentation for the Arctic and the emuR library.</li>
+              <li><strong>E-mail support</strong> — Contact the support team at <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.</li>
+            </ul>
+          </section>
+        }
+
+        @if (getCurrentNavigation() == 'arctic') {
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-headphones" aria-hidden="true"></i></span>
+              <h2>Arctic</h2>
+            </div>
+            <p>The Arctic is a rich labeling and correction tool for visualizing, annotating, and analyzing speech data. It supports multiple annotation tiers, spectrogram views, and acoustic measurements.</p>
+          </section>
+
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+              <h2>Using the tool</h2>
+            </div>
+            <p>Your assigned bundles appear in the panel on the left. Only bundles assigned to you in the dashboard will be shown — even as project leader you must assign bundles to yourself before they appear here.</p>
+            <p>The main area on the right lets you play back audio, view the spectrogram, and edit annotation tiers. For a complete feature reference, see the <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual/" target="_blank">EMU-SDMS Manual</a>.</p>
+            <div class="help-tip">
+              <i class="fa fa-lightbulb-o" aria-hidden="true"></i>
+              <span>Use <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> to move between bundles and <kbd>Space</kbd> to play or stop audio.</span>
+            </div>
+          </section>
+        }
+
+        @if (getCurrentNavigation() == 'jupyter') {
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-code" aria-hidden="true"></i></span>
+              <h2>Jupyter Notebook</h2>
+            </div>
+            <p>You are running a Jupyter notebook session on the VISP server. Use R or Python to analyze your speech data, including the <strong>emuR</strong> library to work with your Emu-R database — no local installation needed.</p>
+          </section>
+
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+              <h2>Using the tool</h2>
+            </div>
+            <p>Write and run code in the notebook editor on the right. Your project directory is visible in the file browser on the left.</p>
+            <p><strong>Remember to save your work.</strong> You can navigate back to the dashboard and return to your session later, but idle sessions are periodically shut down — save regularly.</p>
+          </section>
+        }
+
+
+        @if (getCurrentNavigation() == 'jupyter') {
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-terminal" aria-hidden="true"></i></span>
+              <h2>Code examples</h2>
+            </div>
+            <ul class="help-code-list">
+
+              <li>
+                <h3>Load your Emu-R database</h3>
+                <div class="code-container">
+                  <pre><code id="code1"># Load the emuR library
+library(emuR)
+
+# Load your Emu-R database. Within Visible Speech, the database location is assumed to be the same for all projects,
+# Within Visible Speech the database path is the same for all projects.
+# This gives you a reference called 'VISP' to your speech database.
+db_path &lt;- "~/project/Data/VISP_emuDB"
+VISP &lt;- load_emuDB(db_path)</code></pre>
+                  <button class="copy-btn" (click)="copyCode('code1')">Copy</button>
+                </div>
+              </li>
+
+              <li>
+                <h3>List sessions</h3>
+                <div class="code-container">
+                  <pre><code id="code2"># List all recording sessions in the database
+sessions &lt;- list_sessions(VISP)
+print(sessions)</code></pre>
+                  <button class="copy-btn" (click)="copyCode('code2')">Copy</button>
+                </div>
+              </li>
+
+              <li>
+                <h3>List bundles</h3>
+                <div class="code-container">
+                  <pre><code id="code3"># "Bundles" are individual sound files together with their associated signal files.
+#”Bundles” is the name used for individual sound files and associated other signal files in a session.
+# You can list all bundles in a database
+
+list_bundles(VISP)
+
+# You can also list all bundles or sessions matching a pattern
+# In the example below you will get all the bundles of sessions with names (perhaps recording date) starting with 2024
+
+list_bundles(VISP,sessionPattern="2024.*")
+
+# You can always get help for a command using ¨?¨, e.g.
+
+?list_bundles
+                        </code></pre>
+                        <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
+                        </div>
+                    </li>
+
+                    <li>
+                        <h3>Other usage</h3>
+                        <div class="code-container">
+                        <pre><code id="code3">
+# Anything that is a attribute definition can be queried for labels.
+# We here assume that you have a Word level set up, similar to our default setup
+
+query(VISP,"Word !=''") #Provides a list of all non-empty word labels
+
+query(VISP,"Word =~ '^s.*'") # Uses a regular expression to find all words beginning with ‘s’
+
+query(VISP,"Word !=''. -> Word =~ '^s.*'") # Finds all (not empty) word labels preceeding a word starting with ‘s’  
+
+# We can make queries that relate to the link between transcription tiers
+
+# (note the [] braces)
+
+query(VISP,"[Phonetic != '' ^ Word =~ '^s.*']")
+                        </code></pre>
+                        <button class="copy-btn" (click)="copyCode('code3')">Copy</button>
+                        </div>
+                    </li>
+
+                </ul>
+          </section>
+        }
+
+
+                <!--<span (click)="startTour()">Tutorial</span>-->
+            </div>
         </div>
-      }
 
-
-      <!--<span (click)="startTour()">Tutorial</span>-->
     </div>
-  </div>
-
-</div>
 </div>

@@ -7,4 +7,8 @@ export class UserSession {
     eppn:string;
     username:string;
     privileges:any;
+    loginCount?: number;
+    lastLoginAt?: string;
+    previousLoginAt?: string;
+    lastLoginDurationSeconds?: number;
 }

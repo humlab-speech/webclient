@@ -1,58 +1,173 @@
-.invite-code-row {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-bottom: 1em;
-    margin-left: 1em;
+.invite-codes-dialog {
+  min-width: min(980px, 94vw);
+  max-width: 94vw;
+  padding: 1.5rem;
+  border: 1px solid #d8dfe8;
+  border-radius: 22px;
+  background: #fff !important;
+  color: #27426f;
+  box-shadow: 0 22px 46px rgba(31, 56, 93, 0.24);
 }
 
-.invite-code-container {
-    width: 14em;
+.dialog-header {
+  margin-bottom: 0.95rem;
 }
 
-.form-btn {
-    cursor: pointer;
-    font-size: 1.0rem;
-    margin-left: 1em;
+.dialog-header h2 {
+  margin: 0;
+  color: #1c3660;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.dialog-close-btn {
+  width: 36px;
+  height: 36px;
+  margin-left: 0;
+  border: 1px solid #d8dfe8;
+  border-radius: 12px;
+  color: #34527f;
+  background: #f8f9fc;
+}
+
+.dialog-close-btn:hover {
+  background: #edf2f8;
+  border-color: #c7d1df;
+  color: #1c3660;
 }
 
 #loading-indicator {
-    min-width: 2em;
-    min-height: 2em;
-    background-image: url('../../../assets/loading-indicator-4-dark.svg');
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  margin-bottom: 0.5rem;
+  background-image: url('../../../assets/loading-indicator-4-dark.svg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
 }
 
-tr:hover {
-    background-color: #f0f0f0;
+.no-invite-codes {
+  border: 1px solid #d8dfe8;
+  border-radius: 14px;
+  background: #f8f9fc;
+  color: #6d7c98;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.75rem;
 }
 
-
-table {
-    width: 100%;
-    border-collapse: collapse; /* Removes double borders between cells */
-    margin-top: 1rem;
-    font-family: Arial, sans-serif;
+.no-invite-codes p {
+  margin: 0;
 }
 
-table th,
-table td {
-    padding: 12px; /* Adds spacing inside each cell */
-    border: 1px solid #ddd; /* Adds a border around each cell */
-    text-align: left; /* Aligns text to the left */
+.invite-codes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  border: 1px solid #d8dfe8;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-table th {
-    background-color: #f4f4f4; /* Light background color for headers */
-    font-weight: bold; /* Makes header text bold */
+.invite-codes-table th,
+.invite-codes-table td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid #e6ebf2;
+  text-align: left;
+  vertical-align: middle;
 }
 
-table tr:nth-child(even) {
-    background-color: #f9f9f9; /* Alternating row colors for readability */
+.invite-codes-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-table tr:hover {
-    background-color: #e2e2e2; /* Adds a hover effect to highlight the row */
+.invite-codes-table th {
+  background: #edf2f8;
+  color: #34527f;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.invite-codes-table tbody tr:nth-child(even) {
+  background: #f9fbfe;
+}
+
+.invite-codes-table tbody tr:hover {
+  background: #eef4fb;
+}
+
+.invite-code-container {
+  min-width: 14rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.95rem;
+  color: #1c3660;
+  word-break: break-all;
+}
+
+.field-select {
+  min-height: 38px;
+  min-width: 12rem;
+  border: 1px solid #d8dfe8;
+  border-radius: 10px;
+  background: #fff;
+  color: #27426f;
+  padding: 0 0.7rem;
+}
+
+.cell-actions {
+  white-space: nowrap;
+}
+
+.form-btn {
+  min-height: 36px;
+  border: 1px solid #d8dfe8;
+  border-radius: 10px;
+  background: #f8f9fc;
+  color: #34527f;
+}
+
+.form-btn:hover {
+  background: #edf2f8;
+  border-color: #c7d1df;
+}
+
+.icon-btn {
+  width: 36px;
+  padding: 0;
+  margin-right: 0.45rem;
+}
+
+.icon-btn:last-child {
+  margin-right: 0;
+}
+
+.create-code-btn {
+  margin-top: 1rem;
+  min-height: 46px;
+  border-color: #f0e2d8;
+  background: #fbf5f2;
+  color: #34527f;
+  padding: 0 1rem;
+  font-weight: 700;
+}
+
+.create-code-btn i {
+  margin-right: 0.45rem;
+}
+
+@media (max-width: 960px) {
+  .invite-codes-dialog {
+    min-width: 94vw;
+    padding: 1rem;
+  }
+
+  .invite-codes-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .field-select {
+    min-width: 10rem;
+  }
 }

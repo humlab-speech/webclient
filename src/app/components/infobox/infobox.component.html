@@ -1,60 +1,48 @@
-<div class="info-box">
-    <div class="info-box-main-container">
-        <div class="info-box-header">
-            <i class="fa fa-info-circle" aria-hidden="true"></i>
-            <h2>{{ infobox.title }}</h2>
-        </div>
-        @switch (infobox.name) {
-            @case ('tools-and-resources') {
-                <div class="info-box-content">
-                    <ul>
-                        @if (octraEnabled) {
-                            <li class="link-button">
-                                <a href="https://octra.{{ baseDomain }}" target="_blank">
-                                    <i class="fa fa-commenting" aria-hidden="true"></i><div>Octra</div>
-                                </a>
-                            </li>
-                        }
-                        @if (labjsEnabled) {
-                            <li class="link-button">
-                                <a href="https://labjs.{{ baseDomain }}" target="_blank">
-                                    <i class="fa fa-flask" aria-hidden="true"></i><div>Lab.js</div>
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
-            @case ('help-and-guides') {
-                <div class="info-box-content">
-                    <ul>
-                        @if (userIsLoggedIn) {
-                            <li class="link-button">
-                                <a (click)="tutorial()">
-                                    <i class="fa fa-info-circle" aria-hidden="true"></i><div>VISP Tutorial</div>
-                                </a>
-                            </li>
-                        }
-                        @if (emuWebAppEnabled) {
-                            <li class="link-button">
-                                <a href="https://ips-lmu.github.io/The-EMU-SDMS-Manual" target="_blank">
-                                    <i class="fa fa-book" aria-hidden="true"></i><div>EMU Manual</div>
-                                </a>
-                            </li>
-                        }
-                        <li class="link-button">
-                            <a href="mailto:support@humlab.umu.se" target="_blank">
-                                <i class="fa fa-envelope" aria-hidden="true"></i><div>E-mail</div>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            }
-            @case ('data-management') {
-                <div class="info-box-content">
-                    We aim to provide an integrated workflow where your data is securely kept on our servers using Git for version control.
-                </div>
-            }
-        }
-    </div>
-</div>
+<article class="info-card" [ngSwitch]="infobox.name">
+  <div class="info-icon-wrap">
+    <span class="tile-icon pale" *ngIf="infobox.name === 'data-management'">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.66 3.13 3 7 3s7-1.34 7-3V5"/><path d="M5 11v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6"/></svg>
+    </span>
+
+    <span class="tile-icon pale" *ngIf="infobox.name === 'help-and-guides'">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/></svg>
+    </span>
+
+    <h4>{{ infobox.title }}</h4>
+  </div>
+
+  <p>{{ infobox.body }}</p>
+
+  <div class="resource-list" *ngSwitchCase="'help-and-guides'">
+    <a href="#" class="resource-button" *ngIf="userIsLoggedIn" (click)="tutorial(); $event.preventDefault()">
+      <span class="resource-left">
+        <span class="resource-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M12 11v5"/></svg>
+        </span>
+        VISP Tutorial
+      </span>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a *ngIf="emuWebAppEnabled" href="https://ips-lmu.github.io/The-EMU-SDMS-Manual" target="_blank" class="resource-button">
+      <span class="resource-left">
+        <span class="resource-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v14.5A2.5 2.5 0 0 0 17.5 15H4z"/><path d="M4 5.5V21l2-1 2 1 2-1 2 1 2-1 2 1"/><path d="M17.5 15A2.5 2.5 0 0 0 15 17.5"/></svg>
+        </span>
+        EMU Manual
+      </span>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="mailto:support@humlab.umu.se" target="_blank" class="resource-button">
+      <span class="resource-left">
+        <span class="resource-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 8 8 5 8-5"/></svg>
+        </span>
+        E-mail support
+      </span>
+      <span class="resource-arrow">↗</span>
+    </a>
+  </div>
+
+</article>
