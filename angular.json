@@ -16,7 +16,7 @@
       "architect": {
         "build": {
           "defaultConfiguration": "development",
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/webclient-ng",
             "index": "src/index.php",
@@ -159,6 +159,9 @@
               ]
             },
             "visp.dev": {
+              "customWebpackConfig": {
+                "path": "./webpack.dev.js"
+              },
               "sourceMap": {
                 "scripts": true,
                 "styles": true,
