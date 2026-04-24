@@ -549,7 +549,7 @@ export class ProjectService {
     let sessionNameFormatted = this.getFormattedSessionName(sessionName);
 
     const commitActions = [];
-    //prepare to commit the session metadata file (<sessionNameFormatted>.meta_json)
+    //prepare to commit the session metadata file (<sessionNameFormatted>.json)
     //which should (at least) contain "Gender" and "Age"
     let action = "create";
     if(!sessionFormGroup.controls.new.value) {
@@ -568,7 +568,7 @@ export class ProjectService {
 
     commitActions.push({
       "action": action,
-      "file_path": "Data/VISP_emuDB/"+sessionNameFormatted+"_ses/"+sessionNameFormatted+".meta_json",
+      "file_path": "Data/VISP_emuDB/"+sessionNameFormatted+"_ses/"+sessionNameFormatted+".json",
       "content": JSON.stringify(sessionMetadata, null, 2),
       "encoding": "text"
     });

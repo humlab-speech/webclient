@@ -544,13 +544,17 @@ class Application {
         }
     
         $targetDir = "/tmp/uploads/".$_SESSION['username']."/".$context."/".$group;
-        $this->createDirectory($targetDir);
+        $dirOk = $this->createDirectory($targetDir);
+        if (!$dirOk || !is_writable($targetDir)) {
+            $this->addLog("Upload directory is not writable: ".$targetDir, "error");
+            return new ApiResponse(400, "Server could not create upload directory. Check server permissions.");
+        }
     
         // Attempt to move the uploaded file and check if it succeeds
         $targetFilePath = $targetDir . "/" . $fileName;
         if (!move_uploaded_file($_FILES['fileData']['tmp_name'], $targetFilePath)) {
             $this->addLog("Failed to move uploaded file to target directory: ".$targetFilePath, "error");
-            return new ApiResponse(500, "Failed to move uploaded file.");
+            return new ApiResponse(400, "Failed to move uploaded file to destination.");
         }
     
         // Successfully moved file
