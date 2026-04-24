@@ -12,7 +12,7 @@
 
     <span class="tile-copy">
       <span class="tile-label">{{ btnTitle }}</span>
-      <span *ngIf="vispApp.subtitle" class="tile-subtitle">{{ vispApp.subtitle }}</span>
+      <span *ngIf="vispApp.subtitle && !(vispApp.name === 'jupyter' && statusMsg.length > 0)" class="tile-subtitle">{{ vispApp.subtitle }}</span>
       <span *ngIf="statusMsg.length > 0" class="tile-status">
         <img *ngIf="showLoadingIndicator" src="../../../assets/loading-indicator-4-light.svg" alt="Loading">
         {{ statusMsg }}
