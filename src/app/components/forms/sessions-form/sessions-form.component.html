@@ -255,7 +255,7 @@
 
                     <br />
 
-                    <details>
+                    <details (toggle)="onAdvancedDetailsToggle(session, $event)">
                         <summary>Advanced</summary>
                         
                         <div class="attribute-container">
@@ -292,6 +292,33 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="attribute-container">
+                            <h6>Time of recording</h6>
+                            <input type="datetime-local" formControlName="timeOfRecording">
+                        </div>
+
+                        <div class="attribute-container">
+                            <h6>Place of recording</h6>
+                            <div class="location-search-grid">
+                                <input
+                                    [value]="getLocationQuery(session.controls.id.value)"
+                                    (input)="onLocationInputChange(session, $any($event.target).value)"
+                                    (keyup.enter)="searchLocation(session)"
+                                    placeholder="Address or latitude, longitude">
+                                <button type="button" class="small-inline-button" (click)="searchLocation(session)" [disabled]="isLocationSearchInProgress(session.controls.id.value)">
+                                    {{ isLocationSearchInProgress(session.controls.id.value) ? 'Searching...' : 'Search' }}
+                                </button>
+                            </div>
+                            <ul *ngIf="hasLocationSearchResults(session.controls.id.value)" class="location-search-results">
+                                <li *ngFor="let locationResult of getLocationSearchResults(session.controls.id.value)">
+                                    <button type="button" class="location-result-btn" (click)="selectLocationSearchResult(session, locationResult)">
+                                        {{ locationResult.display_name }}
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="session-location-map" [id]="getLocationMapElementId(session.controls.id.value)"></div>
+                        </div>
                     </details>
 
 
@@ -303,7 +330,7 @@
         </div>
         
         <!--ADD SESSION BUTTON-->
-        <button class="small-button form-add-button" (click)="addSession()">
+        <button class="small-button form-add-button" (click)="addSession()" [disabled]="isAddingSession">
             <i class="fa fa-plus-circle" aria-hidden="true"></i>
             &nbsp;Add recording session
         </button>

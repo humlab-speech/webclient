@@ -18,18 +18,23 @@ import { NotifierService } from 'angular-notifier';
 import { ProjectService } from 'src/app/services/project.service';
 import { Project } from '../../../models/Project';
 import { ProjectManagerComponent } from '../../project-manager/project-manager.component';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
 import { FileUploadService } from "../../../services/file-upload.service";
-import { Observable, of } from 'rxjs';
-import { map, debounceTime } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 import { nanoid } from 'nanoid';
 import { Clipboard } from '@angular/cdk/clipboard';
+import * as L from 'leaflet';
 
 export interface EmudbFormValues {
   sessions: [];
   annotLevels: [];
   annotLevelLinks: [];
+}
+
+interface NominatimSearchResult {
+  display_name: string;
+  lat: string;
+  lon: string;
 }
 
 @Component({
@@ -82,6 +87,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   formIsValid:boolean = true;
   emuDbLoadingStatus:boolean = true;
   supportReOpeningSealedSprSession:boolean = false;
+  isAddingSession:boolean = false;
+  locationSearchQueryBySessionId: Record<string, string> = {};
+  locationSearchResultsBySessionId: Record<string, NominatimSearchResult[]> = {};
+  locationSearchInProgressBySessionId: Record<string, boolean> = {};
+  sessionMapBySessionId: Map<string, L.Map> = new Map();
+  sessionMarkerBySessionId: Map<string, L.CircleMarker> = new Map();
+  readonly defaultMapCenter:[number, number] = [59.3293, 18.0686];
+  readonly defaultMapZoom:number = 3;
 
   get value(): EmudbFormValues {
     return this.form.value;
@@ -99,6 +112,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     private projectService: ProjectService, 
     private fileUploadService: FileUploadService,
     private userService: UserService,
+    private http: HttpClient,
     private clipboard: Clipboard,
     ) {
   }
@@ -184,6 +198,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
+    this.sessionMapBySessionId.forEach(mapInstance => mapInstance.remove());
+    this.sessionMapBySessionId.clear();
+    this.sessionMarkerBySessionId.clear();
   }
 
   isFormValid() {
@@ -218,6 +235,234 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
 
   validateForm() {
     this.formIsValid = this.form.valid;
+  }
+
+  formatDateTimeForInput(value:any):string|null {
+    if(!value) {
+      return null;
+    }
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime())) {
+      return null;
+    }
+    const pad = (num:number) => String(num).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  formatCoordinates(lat:number, lon:number):string {
+    return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+  }
+
+  parseCoordinates(value:any):{ lat:number, lon:number }|null {
+    if(value === null || typeof value === "undefined") {
+      return null;
+    }
+    const match = String(value).trim().match(/^(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)$/);
+    if(!match) {
+      return null;
+    }
+    const lat = Number(match[1]);
+    const lon = Number(match[2]);
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return null;
+    }
+    if(lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      return null;
+    }
+    return { lat, lon };
+  }
+
+  validateCoordinatesIfProvided(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if(value === null || typeof value === "undefined" || String(value).trim() === "") {
+      return null;
+    }
+    return this.parseCoordinates(value) ? null : { invalidCoordinates: true };
+  }
+
+  getLocationMapElementId(sessionId:string):string {
+    return `session-location-map-${sessionId}`;
+  }
+
+  getLocationQuery(sessionId:string):string {
+    return this.locationSearchQueryBySessionId[sessionId] || "";
+  }
+
+  setLocationQuery(sessionId:string, value:string) {
+    this.locationSearchQueryBySessionId[sessionId] = value;
+  }
+
+  getLocationSearchResults(sessionId:string):NominatimSearchResult[] {
+    return this.locationSearchResultsBySessionId[sessionId] || [];
+  }
+
+  clearLocationSearchResults(sessionId:string) {
+    this.locationSearchResultsBySessionId[sessionId] = [];
+  }
+
+  isLocationSearchInProgress(sessionId:string):boolean {
+    return this.locationSearchInProgressBySessionId[sessionId] === true;
+  }
+
+  hasLocationSearchResults(sessionId:string):boolean {
+    return this.getLocationSearchResults(sessionId).length > 0;
+  }
+
+  async searchLocation(session: FormGroup) {
+    const sessionId = String(session.controls.id.value);
+    const query = this.getLocationQuery(sessionId).trim();
+    if(!query) {
+      this.clearLocationSearchResults(sessionId);
+      return;
+    }
+    this.locationSearchInProgressBySessionId[sessionId] = true;
+    this.clearLocationSearchResults(sessionId);
+
+    this.http.get<NominatimSearchResult[]>("https://nominatim.openstreetmap.org/search", {
+      params: {
+        q: query,
+        format: "json",
+        limit: "5",
+      },
+      headers: {
+        "Accept-Language": "en"
+      }
+    }).subscribe({
+      next: (results) => {
+        this.locationSearchResultsBySessionId[sessionId] = Array.isArray(results) ? results : [];
+      },
+      error: () => {
+        this.notifierService.notify("warning", "Location search failed. Try another query or enter coordinates manually.");
+        this.locationSearchResultsBySessionId[sessionId] = [];
+        this.locationSearchInProgressBySessionId[sessionId] = false;
+      },
+      complete: () => {
+        this.locationSearchInProgressBySessionId[sessionId] = false;
+      }
+    });
+  }
+
+  selectLocationSearchResult(session: FormGroup, result: NominatimSearchResult) {
+    const sessionId = String(session.controls.id.value);
+    const lat = Number(result.lat);
+    const lon = Number(result.lon);
+    if(!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      this.notifierService.notify("warning", "The selected location did not contain valid coordinates.");
+      return;
+    }
+    const coordString = this.formatCoordinates(lat, lon);
+    session.controls.placeOfRecording.setValue(coordString);
+    session.controls.placeOfRecording.markAsDirty();
+    this.setLocationQuery(sessionId, result.display_name || coordString);
+    this.clearLocationSearchResults(sessionId);
+    this.updateSessionMapMarker(sessionId, lat, lon, true);
+  }
+
+  onLocationInputChange(session: FormGroup, value: string) {
+    const sessionId = String(session.controls.id.value);
+    this.setLocationQuery(sessionId, value);
+    this.clearLocationSearchResults(sessionId);
+    const parsed = this.parseCoordinates(value);
+    if(parsed) {
+      const coordString = this.formatCoordinates(parsed.lat, parsed.lon);
+      session.controls.placeOfRecording.setValue(coordString);
+      session.controls.placeOfRecording.markAsDirty();
+      this.updateSessionMapMarker(sessionId, parsed.lat, parsed.lon, true);
+    } else if(value.trim() === '') {
+      session.controls.placeOfRecording.setValue('');
+      session.controls.placeOfRecording.markAsDirty();
+    }
+  }
+
+  onAdvancedDetailsToggle(session: FormGroup, event: Event) {
+    const details = event.target as HTMLDetailsElement;
+    if(details.open) {
+      setTimeout(() => this.ensureSessionMap(session), 0);
+    }
+  }
+
+  ensureSessionMap(session: FormGroup) {
+    const sessionId = String(session.controls.id.value);
+    const mapElementId = this.getLocationMapElementId(sessionId);
+    const mapElement = document.getElementById(mapElementId);
+    if(!mapElement) {
+      return;
+    }
+
+    let mapInstance = this.sessionMapBySessionId.get(sessionId);
+    if(!mapInstance) {
+      mapInstance = L.map(mapElementId).setView(this.defaultMapCenter, this.defaultMapZoom);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(mapInstance);
+
+      mapInstance.on("click", (event:L.LeafletMouseEvent) => {
+        const coordinates = this.formatCoordinates(event.latlng.lat, event.latlng.lng);
+        session.controls.placeOfRecording.setValue(coordinates);
+        session.controls.placeOfRecording.markAsDirty();
+        this.setLocationQuery(sessionId, coordinates);
+        this.clearLocationSearchResults(sessionId);
+        this.updateSessionMapMarker(
+          sessionId,
+          event.latlng.lat,
+          event.latlng.lng,
+          false,
+        );
+      });
+
+      this.sessionMapBySessionId.set(sessionId, mapInstance);
+    } else {
+      mapInstance.invalidateSize();
+    }
+
+    const parsedCoords = this.parseCoordinates(
+      session.controls.placeOfRecording.value,
+    );
+    if(parsedCoords) {
+      this.updateSessionMapMarker(sessionId, parsedCoords.lat, parsedCoords.lon, true);
+    }
+  }
+
+  updateSessionMapMarker(sessionId:string, lat:number, lon:number, panToMarker = true) {
+    const mapInstance = this.sessionMapBySessionId.get(sessionId);
+    if(!mapInstance) {
+      return;
+    }
+
+    let marker = this.sessionMarkerBySessionId.get(sessionId);
+    if(!marker) {
+      marker = L.circleMarker([lat, lon], {
+        radius: 7,
+        color: "#c0392b",
+        fillColor: "#e74c3c",
+        fillOpacity: 0.8,
+        weight: 2,
+      }).addTo(mapInstance);
+      this.sessionMarkerBySessionId.set(sessionId, marker);
+    } else {
+      marker.setLatLng([lat, lon]);
+    }
+
+    if(panToMarker) {
+      mapInstance.setView([lat, lon], Math.max(mapInstance.getZoom(), 9));
+    }
+  }
+
+  destroySessionMap(sessionId:string) {
+    const marker = this.sessionMarkerBySessionId.get(sessionId);
+    if(marker) {
+      marker.remove();
+      this.sessionMarkerBySessionId.delete(sessionId);
+    }
+    const mapInstance = this.sessionMapBySessionId.get(sessionId);
+    if(mapInstance) {
+      mapInstance.remove();
+      this.sessionMapBySessionId.delete(sessionId);
+    }
+    delete this.locationSearchQueryBySessionId[sessionId];
+    delete this.locationSearchResultsBySessionId[sessionId];
+    delete this.locationSearchInProgressBySessionId[sessionId];
   }
 
   addAnnotLevel(name = "", type = "ITEM") {
@@ -316,6 +561,11 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   async addSession(session = null) {
+    if (this.isAddingSession) {
+      return null;
+    }
+    this.isAddingSession = true;
+    try {
     await this.fetchSprScripts();
 
     let files = [];
@@ -332,10 +582,12 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         name: defaultSessionName,
         speakerGender: null,
         speakerAge: 35,
+        timeOfRecording: null,
+        placeOfRecording: "",
         dataSource: "upload",
         new: true,
         collapsed: false,
-        sprSessionSealed: false
+        sprSessionSealed: false,
       }
     }
     else {
@@ -362,6 +614,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       session.name = session.sessionName ? session.sessionName : session.name;
       session.new = false;
       session.collapsed = true;
+      session.timeOfRecording = this.formatDateTimeForInput(session.timeOfRecording);
+      session.placeOfRecording = session.placeOfRecording || "";
       session.files.forEach(file => {
         files.push({
           name: file.name,
@@ -408,12 +662,17 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         validators: [Validators.pattern("[0-9]*"), Validators.nullValidator],
         updateOn: 'blur'
       }),
+      timeOfRecording: new FormControl(session.timeOfRecording),
+      placeOfRecording: new FormControl(session.placeOfRecording, {
+        validators: [this.validateCoordinatesIfProvided.bind(this)],
+        updateOn: 'blur'
+      }),
       dataSource: dataSourceControl, //upload or record
       recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
       sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(dataSourceControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
-      sprSessionSealed: new FormControl(session.sprSessionSealed)
+      sprSessionSealed: new FormControl(session.sprSessionSealed),
     });
 
 
@@ -432,6 +691,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       });
     });
 
+    const sessionId = String(sessionGroup.controls.id.value);
+    this.locationSearchQueryBySessionId[sessionId] = session.placeOfRecording || "";
+    this.locationSearchResultsBySessionId[sessionId] = [];
+
     
 
     if(session.new) {
@@ -439,6 +702,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
     else {
       this.sessions.push(sessionGroup);
+    }
+    } finally {
+      this.isAddingSession = false;
     }
   }
 
@@ -570,7 +836,17 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.sessions.controls.forEach(group => {
       let g = group as FormGroup;
       if(sessionName == g.controls.name.value) {
-        g.controls.collapsed.setValue(!g.controls.collapsed.value);
+        const nextCollapsedState = !g.controls.collapsed.value;
+        g.controls.collapsed.setValue(nextCollapsedState);
+        if(!nextCollapsedState) {
+          setTimeout(() => {
+            const sessionId = String(g.controls.id.value);
+            const mapInstance = this.sessionMapBySessionId.get(sessionId);
+            if(mapInstance) {
+              mapInstance.invalidateSize();
+            }
+          }, 0);
+        }
       }
     });
   }
@@ -608,14 +884,17 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       evt.stopPropagation();
     }
     let sessionFormGroup = this.sessionForms.at(index) as FormGroup;
+    const sessionId = String(sessionFormGroup.controls.id.value);
     if(!sessionFormGroup.controls.new.value) {
       if(window.confirm("Are you sure you wish to delete this session and all its associated data? The session will not be erased from the version controlled history, but it will no longer show up in the user interface.")) {
         let session = this.sessionForms.at(index) as FormGroup;
         session.controls.deleted.setValue(true); //mark this session as deleted so that when the form is saved, we know what to delete from gitlab without having to fetch all the sessions and compare
+        this.destroySessionMap(sessionId);
         //this.sessionForms.removeAt(index);
       }
     }
     else {
+      this.destroySessionMap(sessionId);
       this.sessionForms.removeAt(index);
     }
   }
@@ -641,7 +920,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     for(let key in event.addedFiles) {
       let file = event.addedFiles[key];
       this.uploadFile(file, session).then((uploadResultData:any) => {
-        if(uploadResultData.code == 400) {
+        if(uploadResultData.code != 200) {
           this.notifierService.notify('error', file.name + ': ' + uploadResultData.body);
 
           //remove the file from the form
@@ -695,6 +974,11 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
 
   resetForm() {
+    this.sessionForms.controls.forEach((sessionControl) => {
+      const sessionGroup = sessionControl as FormGroup;
+      this.destroySessionMap(String(sessionGroup.controls.id.value));
+    });
+
     while(this.sessions.length > 0) {
       this.sessions.removeAt(0);
     }
