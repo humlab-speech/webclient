@@ -18,7 +18,7 @@
           "defaultConfiguration": "development",
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "outputPath": "dist/webclient-ng",
+            "outputPath": "dist",
             "index": "src/index.php",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
