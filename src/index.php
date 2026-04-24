@@ -219,6 +219,10 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
 
     $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
     $_SESSION['id'] = $user['id'];
+    // Copy auth/privilege fields into the PHP session so api.php can use them
+    // without a redundant MongoDB lookup on every request.
+    $_SESSION['loginAllowed'] = isset($user['loginAllowed']) ? $user['loginAllowed'] : false;
+    $_SESSION['privileges'] = isset($user['privileges']) ? $user['privileges'] : [];
   }
 }
 
