@@ -52,19 +52,21 @@
                         <input id="projectFinancers" type="text" class="project-info-input" formControlName="financers" placeholder="Financers">
                     </div>
                     <div class="info-field">
+                        <label for="spokenLanguage">Spoken language</label>
+                        <input id="spokenLanguage" type="text" class="project-info-input" formControlName="spokenLanguage" placeholder="Free text, e.g. Swedish">
+                    </div>
+                    <div class="info-field">
+                        <label for="recordingDevice">Recording device</label>
+                        <input id="recordingDevice" type="text" class="project-info-input" formControlName="recordingDevice" placeholder="Free text, e.g. Zoom H5">
+                    </div>
+                    <div class="info-field">
                         <label for="ethicsReviewDnr">Dnr from the Swedish Ethical Review Authority</label>
                         <input id="ethicsReviewDnr" type="text" class="project-info-input" formControlName="ethicsReviewDnr" placeholder="Ethical review Dnr">
                     </div>
                     <div class="info-field">
                         <label for="qualityControlMethods">Methods of quality control</label>
                         <select id="qualityControlMethods" class="project-info-input project-info-multiselect" multiple formControlName="qualityControlMethods">
-                            <option value="manual-review">Manual review</option>
-                            <option value="peer-review">Peer review</option>
-                            <option value="double-annotation">Double annotation</option>
-                            <option value="automated-validation">Automated validation</option>
-                            <option value="systematic-sampling">Systematic sampling</option>
-                            <option value="technical-quality-check">Technical quality check</option>
-                            <option value="perceptual-evaluation">Perceptual evaluation</option>
+                            <option *ngFor="let option of qualityControlMethodOptions" [value]="option.id">{{ option.label }}</option>
                         </select>
                         <span class="info-field-hint">Hold Ctrl / Cmd to select multiple options</span>
                     </div>

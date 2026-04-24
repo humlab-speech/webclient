@@ -14,4 +14,10 @@ export class Project {
     liveAppSessions?:any;
     members?:any;
     membersInfo?:any;
+    spokenLanguage?:string;
+    recordingDevice?:string;
+    description?:string;
+    financers?:string;
+    ethicsReviewDnr?:string;
+    qualityControlMethods?:string[];
 }

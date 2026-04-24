@@ -43,6 +43,15 @@ export class ProjectDialogComponent implements OnInit {
   dialogTitle:string = "Create new project";
   emuDbLoadedSubject:Subject<boolean> = new Subject<boolean>();
   emuDbLoaded$:Observable<boolean> = this.emuDbLoadedSubject.asObservable();
+  qualityControlMethodOptions = [
+    { id: "manual-review", label: "Manual review" },
+    { id: "peer-review", label: "Peer review" },
+    { id: "double-annotation", label: "Double annotation" },
+    { id: "automated-validation", label: "Automated validation" },
+    { id: "systematic-sampling", label: "Systematic sampling" },
+    { id: "technical-quality-check", label: "Technical quality check" },
+    { id: "perceptual-evaluation", label: "Perceptual evaluation" },
+  ];
 
   form:FormGroup;
 
@@ -96,6 +105,8 @@ export class ProjectDialogComponent implements OnInit {
       financers: new FormControl(""),
       ethicsReviewDnr: new FormControl(""),
       qualityControlMethods: new FormControl([]),
+      spokenLanguage: new FormControl(""),
+      recordingDevice: new FormControl(""),
     });
 
     this.form.statusChanges.subscribe((status) => {
@@ -132,7 +143,11 @@ export class ProjectDialogComponent implements OnInit {
       this.form.controls.description.setValue(this.project.description || "");
       this.form.controls.financers.setValue(this.project.financers || "");
       this.form.controls.ethicsReviewDnr.setValue(this.project.ethicsReviewDnr || "");
-      this.form.controls.qualityControlMethods.setValue(this.project.qualityControlMethods || []);
+      this.form.controls.qualityControlMethods.setValue(
+        this.normalizeQualityControlMethods(this.project.qualityControlMethods),
+      );
+      this.form.controls.spokenLanguage.setValue(this.project.spokenLanguage || "");
+      this.form.controls.recordingDevice.setValue(this.project.recordingDevice || "");
 
       this.setLoadingStatus(true);
       console.log("Going into edit mode");
@@ -268,6 +283,9 @@ export class ProjectDialogComponent implements OnInit {
     mergedForm.annotLevels = emuDbFormValues.annotLevels;
     mergedForm.annotLevelLinks = emuDbFormValues.annotLevelLinks;
     mergedForm.formContextId = this.formContextId;
+    mergedForm.qualityControlMethods = this.normalizeQualityControlMethods(
+      mergedForm.qualityControlMethods,
+    );
 
     mergedForm.docFiles = [];
     this.docsFormComponent.docFiles.value.forEach(docFile => {
@@ -401,6 +419,51 @@ export class ProjectDialogComponent implements OnInit {
 
   onDocDrop(event) {
     this.docFiles.value.push(...event.addedFiles);
+  }
+
+  private normalizeQualityControlLookupToken(value:any) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[`*_]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  private resolveQualityControlMethodId(value:any):string | null {
+    const lookupValue = this.normalizeQualityControlLookupToken(value);
+    if(!lookupValue) {
+      return null;
+    }
+
+    for(const option of this.qualityControlMethodOptions) {
+      if(
+        lookupValue == this.normalizeQualityControlLookupToken(option.id) ||
+        lookupValue == this.normalizeQualityControlLookupToken(option.label)
+      ) {
+        return option.id;
+      }
+    }
+    return null;
+  }
+
+  normalizeQualityControlMethods(value:any):string[] {
+    let rawValues:any[] = [];
+    if(Array.isArray(value)) {
+      rawValues = value;
+    }
+    else if(typeof value == "string" && value.trim().length > 0) {
+      rawValues = value.split(/[;,]/);
+    }
+
+    let normalized:string[] = [];
+    rawValues.forEach((entry) => {
+      const methodId = this.resolveQualityControlMethodId(entry);
+      if(methodId && normalized.includes(methodId) == false) {
+        normalized.push(methodId);
+      }
+    });
+    return normalized;
   }
   
 
