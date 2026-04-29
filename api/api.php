@@ -222,9 +222,9 @@ class Application {
                     $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
                 }
             }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/arctic/session/please");
+            $matchResult = $this->restMatchPath($reqPath, "/api/v1/artic/session/please");
             if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/arctic/session/please", "debug");
+                $this->addLog("POST: /api/v1/artic/session/please", "debug");
                 if($this->userHasProjectAuthorization($postData->projectId)) {
                     $apiResponse = new ApiResponse(200, array('personalAccessToken' => $_SESSION['personalAccessToken']));
                 }

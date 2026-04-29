@@ -21,7 +21,7 @@ export class InfoboxComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes('arctic');
+    this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes('artic');
     this.userIsLoggedIn = !!this.userService.getSession()?.eppn;
 
     this.userService.sessionObs.subscribe((userSession) => {

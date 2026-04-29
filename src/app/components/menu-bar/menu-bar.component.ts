@@ -47,8 +47,8 @@ export class MenuBarComponent implements OnInit, OnDestroy {
           firstPathPart = firstPathPart.substring(0, firstPathPart.indexOf('?'));
         }
 
-        this.containerSessionViewActive = firstPathPart == 'app' || firstPathPart == 'arctic';
-        this.showBackToDashboardButton = firstPathPart == 'app' || firstPathPart == 'arctic' || firstPathPart == 'octra' || firstPathPart == 'admin';
+        this.containerSessionViewActive = firstPathPart == 'app' || firstPathPart == 'artic';
+        this.showBackToDashboardButton = firstPathPart == 'app' || firstPathPart == 'artic' || firstPathPart == 'octra' || firstPathPart == 'admin';
       }
     });
 

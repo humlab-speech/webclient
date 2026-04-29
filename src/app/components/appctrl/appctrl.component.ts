@@ -67,9 +67,9 @@ export class AppctrlComponent implements OnInit {
 
   preFlightChecks() {
     let failures = [];
-    if(this.vispApp.name == "arctic") {
+    if(this.vispApp.name == "artic") {
       let foundFiles = false;
-      //check that this project contains at least one session with files in it, otherwise arctic should not be launchable
+      //check that this project contains at least one session with files in it, otherwise artic should not be launchable
       this.project.sessions.forEach((session) => {
         if(session.files.length > 0) {
           foundFiles = true;
@@ -110,9 +110,9 @@ export class AppctrlComponent implements OnInit {
     });
 
     switch(this.vispApp.name) {
-      case "arctic":
+      case "artic":
         this.launchEmuWebAppSession();
-        this.systemService.setCurrentApplication("arctic");
+        this.systemService.setCurrentApplication("artic");
       break;
       case "octra":
         this.launchOctraSession();
@@ -232,9 +232,9 @@ export class AppctrlComponent implements OnInit {
     //set projectId cookie
     Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
-    this.router.navigate(['/arctic'], { queryParams: {
+    this.router.navigate(['/artic'], { queryParams: {
       autoConnect: true,
-      serverUrl: "wss://arctic."+window.location.hostname
+      serverUrl: "wss://artic."+window.location.hostname
     }});
   }
 

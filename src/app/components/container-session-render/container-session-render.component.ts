@@ -38,8 +38,8 @@ export class ContainerSessionRenderComponent implements OnInit {
       case "/app":
         iframe.setAttribute("src", window.location.protocol+"//app."+window.location.hostname+"?token="+this.token);
         break;
-      case "/arctic":
-        let emuWebAppUrl = window.location.protocol+"//arctic."+window.location.hostname+window.location.search;
+      case "/artic":
+        let emuWebAppUrl = window.location.protocol+"//artic."+window.location.hostname+window.location.search;
         iframe.setAttribute("src", emuWebAppUrl);
         break;
       case "/octra":

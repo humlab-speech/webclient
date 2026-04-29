@@ -52,10 +52,10 @@ export class ProjectItemComponent implements OnInit {
     let projectMember = projects.find(project => project.id == this.project.id).members.find(member => member.eppn == sess.eppn);
 
     environment.ENABLED_APPLICATIONS.forEach((vispAppName) => {
-      if(vispAppName == "arctic") {
+      if(vispAppName == "artic") {
         let emuWebApp = new VispApp();
-        emuWebApp.name = "arctic";
-        emuWebApp.title = "Arctic";
+        emuWebApp.name = "artic";
+        emuWebApp.title = "Artic";
         emuWebApp.subtitle = "Annotation tool";
         emuWebApp.icon = "app-icons/88x88-color/emuwebapp-icon.png";
         emuWebApp.disabled = this.shouldAppBeDisabled(emuWebApp.name);

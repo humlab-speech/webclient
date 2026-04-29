@@ -12,7 +12,7 @@ import { AdminPanelComponent } from './components/admin-panel/admin-panel.compon
 const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'app', component: ContainerSessionRenderComponent },
-  { path: 'arctic', component: ContainerSessionRenderComponent },
+  { path: 'artic', component: ContainerSessionRenderComponent },
   { path: 'octra', component: ContainerSessionRenderComponent },
   { path: 'about', component: AboutComponent },
   { path: 'om', component: AboutComponent },
