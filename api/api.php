@@ -9,6 +9,7 @@ $domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : fals
 //if we are running on visp.local set cookie secure to false
 $secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
 $httpOnly = false;
+$accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) !== "false";
 
 session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
 session_start();
@@ -20,7 +21,9 @@ $hsApiAccessToken = getenv("HS_API_ACCESS_TOKEN");
 class Application {
     function __construct($domain) {
         global $hsApiAccessToken;
+        global $accessListEnabled;
         $this->sessionManagerInterface = new SessionManagerInterface($this, $hsApiAccessToken);
+        $this->accessListEnabled = $accessListEnabled;
     }
 
     /**
@@ -122,15 +125,34 @@ class Application {
             $_SESSION = $session;
         }
 
+        // In open-access mode, normalize loginAllowed so downstream checks and
+        // session consumers can rely on a consistent truthy value.
+        if(!$this->accessListEnabled) {
+            $_SESSION['loginAllowed'] = true;
+        }
+
         //AUTH CONTROL - ALL METHODS BEYOND THIS POINT REQUIRES THE USER TO BE SIGNED-IN
-        if(empty($_SESSION['loginAllowed']) || $_SESSION['loginAllowed'] !== true) {
-            //if user has not passed a valid authentication, don't allow access to this API
-            $this->addLog("User not signed in - Authorization required");
-            $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
-            $this->addLog("session: ".print_r($_SESSION, true), "debug");
-            $ar = new ApiResponse(401, "Authorization required");
-            echo $ar->toJSON();
-            exit();
+        if($this->accessListEnabled) {
+            // Access list mode: user must be explicitly authorized.
+            if(empty($_SESSION['loginAllowed']) || $_SESSION['loginAllowed'] !== true) {
+                $this->addLog("User not signed in - Authorization required");
+                $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
+                $this->addLog("session: ".print_r($_SESSION, true), "debug");
+                $ar = new ApiResponse(401, "Authorization required");
+                echo $ar->toJSON();
+                exit();
+            }
+        }
+        else {
+            // Open access mode: require authenticated identity but skip loginAllowed gate.
+            if(empty($_SESSION['username'])) {
+                $this->addLog("User not signed in - Authentication required");
+                $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
+                $this->addLog("session: ".print_r($_SESSION, true), "debug");
+                $ar = new ApiResponse(401, "Authentication required");
+                echo $ar->toJSON();
+                exit();
+            }
         }
 
         if($reqMethod == "GET") {
