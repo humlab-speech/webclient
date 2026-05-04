@@ -24,7 +24,6 @@ export class OctraSelectBundleDialogComponent implements OnInit {
   bundleOptions = [];
   selectionForm: FormGroup;
   userBundleList: BundleListItem[] = [];
-  OCTRA_BASE_URL:string = `https://octra.${window.location.hostname}`;
 
   constructor(modalService: ModalService, systemService: SystemService, userService: UserService, private router: Router) {
     this.modalService = modalService;
@@ -33,7 +32,6 @@ export class OctraSelectBundleDialogComponent implements OnInit {
     this.router = router;
 
     this.selectionForm = new FormGroup({
-      launchMode: new FormControl('bundle'),
       session: new FormControl(null),
       bundle: new FormControl({value: null, disabled: true})
     });
@@ -48,23 +46,13 @@ export class OctraSelectBundleDialogComponent implements OnInit {
       this.onFormSessionChange();
     }
 
-    this.selectionForm.get('launchMode').valueChanges.subscribe(() => {
-      this.onLaunchModeChange();
-    });
-
     // Listen to session changes
     this.selectionForm.get('session').valueChanges.subscribe(() => {
       this.onFormSessionChange();
     });
-
-    this.onLaunchModeChange();
   }
 
   onFormSessionChange(): void {
-    if (this.selectionForm.get('launchMode').value !== 'bundle') {
-      return;
-    }
-
     const selectedSessionId = this.selectionForm.get('session').value;
     if (selectedSessionId) {
       this.bundleOptions = this.getSessionBundles(selectedSessionId);
@@ -83,50 +71,15 @@ export class OctraSelectBundleDialogComponent implements OnInit {
     }
   }
 
-  onLaunchModeChange(): void {
-    const launchMode = this.selectionForm.get('launchMode').value;
-    const sessionControl = this.selectionForm.get('session');
-    const bundleControl = this.selectionForm.get('bundle');
-
-    if (launchMode === 'standalone') {
-      sessionControl.disable({ emitEvent: false });
-      bundleControl.disable({ emitEvent: false });
-      return;
-    }
-
-    sessionControl.enable({ emitEvent: false });
-    if (this.selectionForm.get('session').value) {
-      this.onFormSessionChange();
-    } else {
-      bundleControl.disable({ emitEvent: false });
-    }
-  }
-
   hasBundleModeOptions():boolean {
     return this.sessionOptions.length > 0 && this.bundleOptions.length > 0;
   }
 
   launchOctra(): void {
-    const launchMode = this.selectionForm.get('launchMode').value;
-    if (launchMode === 'standalone') {
-      this.launchStandaloneOctra();
-      return;
-    }
-
     this.bundleSelected();
   }
 
-  launchStandaloneOctra(): void {
-    this.closeDialog();
-    window.open(this.OCTRA_BASE_URL, '_blank', 'noopener,noreferrer');
-  }
-
   launchDisabled():boolean {
-    const launchMode = this.selectionForm.get('launchMode').value;
-    if (launchMode === 'standalone') {
-      return false;
-    }
-
     return !this.selectionForm.get('session').value || !this.selectionForm.get('bundle').value;
   }
 
