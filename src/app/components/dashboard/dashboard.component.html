@@ -1,39 +1,12 @@
-<div id="dashboard">
+<div id="dashboard" [class.dashboard--signed-out-frontpage]="showSignedOutFrontpage">
   <main id="main-content">
     <ng-container *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized; else unauthenticatedState">
-      <section class="hero" [style.--hero-collapse]="heroCollapseProgress">
-        <div class="hero-badge">{{ greetingLine }}</div>
-        <h1>Your speech research,<br><span>secured and organized.</span></h1>
-        <p>
-          Manage projects, transcribe recordings, and collaborate with your team
-          in one modern workspace.
-        </p>
-        <div class="hero-actions">
-          <button id="tutorial-create-project-btn" class="btn btn-primary" (click)="createProject()" [disabled]="!canCreateProjects">
-            <span class="btn-plus">+</span>
-            <span>New project</span>
-          </button>
-          <button class="btn btn-secondary" (click)="openHelpDialog()">Help</button>
-        </div>
-      </section>
-
       <section class="workspace-section">
         <app-project-manager [dashboard]="this"></app-project-manager>
       </section>
     </ng-container>
 
     <ng-template #unauthenticatedState>
-      <section class="hero hero-signed-out" [style.--hero-collapse]="heroCollapseProgress" *ngIf="!userIsAuthenticated && userAuthenticationCheckPerformed">
-        <div class="hero-badge">Welcome to VISP</div>
-        <h1>Research speech data,<br><span>with one shared platform.</span></h1>
-        <p>
-          Visible Speech is a collection of research tools for speech analysis.
-          If you need access to the system, contact us at
-          <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
-        </p>
-        <app-signin-ctrl></app-signin-ctrl>
-      </section>
-
       <section id="userFailedAccessListCheckContainer" *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && !userIsAuthorized">
         <h2>Missing access grant</h2>
 
@@ -56,7 +29,7 @@
     <app-octra-select-bundle-dialog *ngIf="(modalActive && modalName=='octra-select-bundle-dialog')" [project]="modalArgs[0]"></app-octra-select-bundle-dialog>
   </main>
 
-  <aside id="sidebar">
-    <app-infobox-manager></app-infobox-manager>
+  <aside id="infobar">
+    <app-infobox-manager [expandedLayout]="showSignedOutFrontpage"></app-infobox-manager>
   </aside>
 </div>

@@ -25,6 +25,7 @@ app-menu-bar {
 #content-container {
   width: 100%;
   overflow: auto;
+  overflow-anchor: none;
   padding: 0;
   margin: 0;
 }
