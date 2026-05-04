@@ -152,6 +152,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
     // For test users, automatically grant access. For real users, access must be granted via access list.
     $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
     
+    $newUserPrivileges = ['createInviteCodes' => false];
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
       'lastName' => $_SESSION['lastName'],
@@ -166,10 +167,11 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       'previousLoginAt' => null,
       'lastLoginSessionId' => $sid,
       'lastLoginDurationSeconds' => null,
-      'privileges' => [
-        'createInviteCodes' => false,
-      ]
+      'privileges' => $newUserPrivileges
     ]);
+    $_SESSION['loginAllowed'] = $loginAllowed;
+    $_SESSION['privileges'] = $newUserPrivileges;
+    $_SESSION['loginCount'] = 1;
     
   }
   else if($cursor != null) {
@@ -223,6 +225,8 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
     // without a redundant MongoDB lookup on every request.
     $_SESSION['loginAllowed'] = isset($user['loginAllowed']) ? $user['loginAllowed'] : false;
     $_SESSION['privileges'] = isset($user['privileges']) ? $user['privileges'] : [];
+    $_SESSION['loginCount'] = isset($user['loginCount']) ? (int)$user['loginCount'] : null;
+    $_SESSION['lastLoginDurationSeconds'] = isset($cursor['lastLoginDurationSeconds']) ? $cursor['lastLoginDurationSeconds'] : null;
   }
 }
 
@@ -257,6 +261,10 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       shibSessionExpires: "<?php echo $_SESSION['shibSessionExpires']; ?>",
       shibSessionInactivity: "<?php echo $_SESSION['shibSessionInactivity']; ?>",
       shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
+      loginAllowed: <?php echo json_encode(isset($_SESSION['loginAllowed']) ? (bool)$_SESSION['loginAllowed'] : false); ?>,
+      privileges: <?php echo json_encode(isset($_SESSION['privileges']) && is_array($_SESSION['privileges']) ? $_SESSION['privileges'] : (object)[]); ?>,
+      loginCount: <?php echo json_encode(isset($_SESSION['loginCount']) ? (int)$_SESSION['loginCount'] : null); ?>,
+      lastLoginDurationSeconds: <?php echo json_encode(isset($_SESSION['lastLoginDurationSeconds']) && is_numeric($_SESSION['lastLoginDurationSeconds']) ? (int)$_SESSION['lastLoginDurationSeconds'] : null); ?>,
     };
   </script>
 </head>
