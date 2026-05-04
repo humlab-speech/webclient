@@ -1,4 +1,8 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Subject } from 'rxjs';
+import { ModalService } from 'src/app/services/modal.service';
+import { UserService } from 'src/app/services/user.service';
 
 import { InfoboxComponent } from './infobox.component';
 
@@ -8,7 +12,21 @@ describe('InfoboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ InfoboxComponent ]
+      declarations: [ InfoboxComponent ],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        {
+          provide: UserService,
+          useValue: {
+            getSession: () => null,
+            sessionObs: new Subject()
+          }
+        },
+        {
+          provide: ModalService,
+          useValue: { showModal: jasmine.createSpy('showModal') }
+        }
+      ]
     })
     .compileComponents();
   });

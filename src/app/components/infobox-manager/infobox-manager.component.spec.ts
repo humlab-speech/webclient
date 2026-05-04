@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { InfoboxManagerComponent } from './infobox-manager.component';
 
@@ -8,7 +10,8 @@ describe('InfoboxManagerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ InfoboxManagerComponent ]
+      declarations: [ InfoboxManagerComponent ],
+      imports: [ReactiveFormsModule, RouterTestingModule]
     })
     .compileComponents();
   });

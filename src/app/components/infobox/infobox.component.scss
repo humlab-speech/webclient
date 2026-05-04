@@ -1,9 +1,39 @@
+:host {
+  display: block;
+}
+
 .info-card {
+  --accent-color: #446288;
+  --accent-strong: #2c4d73;
+  --accent-soft: #eef2f6;
+  --accent-mid: #d6e1ef;
+  --accent-shadow: rgba(68, 98, 136, 0.22);
   background: #fff;
   border: 1px solid #d8dfe8;
   border-radius: 22px;
   padding: 1.2rem 1.2rem 1.25rem;
   box-shadow: 0 10px 26px rgba(31, 56, 93, 0.08);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+:host-context(.infobar-block--expanded) .info-card {
+  border-color: var(--accent-mid);
+  box-shadow: 0 8px 22px rgba(31, 56, 93, 0.09);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+:host-context(.infobar-block--expanded) .info-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color) 0%, var(--accent-strong) 100%);
+}
+
+:host-context(.infobar-block--expanded) .info-card h4 {
+  color: var(--accent-strong);
 }
 
 .info-icon-wrap {
@@ -42,6 +72,11 @@
   color: #446288;
 }
 
+:host-context(.infobar-block--expanded) .tile-icon.pale {
+  background: var(--accent-soft);
+  color: var(--accent-color);
+}
+
 .tile-icon svg {
   width: 17px;
   height: 17px;
@@ -74,9 +109,18 @@
   text-decoration: none;
 }
 
+:host-context(.infobar-block--expanded) .resource-button {
+  background: linear-gradient(180deg, var(--accent-color) 0%, var(--accent-strong) 100%);
+  box-shadow: 0 12px 22px var(--accent-shadow);
+}
+
 .resource-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 28px rgba(237, 137, 79, 0.24);
+}
+
+:host-context(.infobar-block--expanded) .resource-button:hover {
+  box-shadow: 0 16px 28px var(--accent-shadow);
 }
 
 .resource-left {
@@ -108,4 +152,45 @@
 .resource-arrow {
   font-size: 1.15rem;
   line-height: 1;
+}
+
+.resource-disabled-message {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px dashed #c9d5e5;
+  background: #f4f8fd;
+  color: #55729a;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  padding: 0.65rem 0.75rem;
+}
+
+:host-context(.infobar-block--expanded) .resource-disabled-message {
+  border-color: var(--accent-mid);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.info-card--secure-infrastructure {
+  --accent-color: #2c6c8f;
+  --accent-strong: #1f4e69;
+  --accent-soft: #e7f2f8;
+  --accent-mid: #c9dfec;
+  --accent-shadow: rgba(44, 108, 143, 0.24);
+}
+
+.info-card--reproducible-workflows {
+  --accent-color: #3e7d52;
+  --accent-strong: #2b5d3b;
+  --accent-soft: #e9f4ec;
+  --accent-mid: #cde2d3;
+  --accent-shadow: rgba(62, 125, 82, 0.22);
+}
+
+.info-card--tools {
+  --accent-color: #ca6f2f;
+  --accent-strong: #9f4e1e;
+  --accent-soft: #f9eee6;
+  --accent-mid: #efd6c4;
+  --accent-shadow: rgba(202, 111, 47, 0.24);
 }

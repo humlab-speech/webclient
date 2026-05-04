@@ -1,8 +1,70 @@
-<section class="sidebar-block">
-  <div class="sidebar-heading">
+<section class="infobar-block" [class.infobar-block--expanded]="expandedLayout">
+  <div class="infobar-heading">
     <span class="accent-line"></span>
-    <h3>Get Started</h3>
+    <h3>{{ headingText }}</h3>
   </div>
 
-  <app-infobox *ngFor="let infobox of infoboxes" [infobox]="infobox"></app-infobox>
+  <div class="infobar-intro-row" *ngIf="expandedLayout">
+    <p class="infobar-intro">
+      Learn how VISP supports speech research, onboarding, and secure collaboration.
+    </p>
+    <button type="button" class="infobar-cta-button" (click)="toggleAccessRequestForm()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="8" cy="15" r="4"/>
+        <path d="m12.5 11.5 8-8"/>
+        <path d="M22 6.5h-1.5v1.5"/>
+        <path d="M20 4.5v1.5h1.5"/>
+      </svg>
+      {{ showAccessRequestForm ? 'Close form' : 'Request access' }}
+    </button>
+  </div>
+
+  <form
+    *ngIf="expandedLayout && showAccessRequestForm"
+    class="access-request-form"
+    [formGroup]="accessRequestForm"
+    (ngSubmit)="submitAccessRequest()"
+    novalidate
+  >
+    <div class="access-form-header">
+      <span class="access-form-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v2.5c0 6.5-3.6 9.7-8 11.5C7.6 16.2 4 13 4 6.5V4z"/><path d="m9 12 2 2 4-4"/></svg>
+      </span>
+      <div>
+        <h4>Request access to VISP</h4>
+        <p>Enter your email address and we'll open a prefilled message to our support team.</p>
+      </div>
+    </div>
+    <div class="access-request-field">
+      <label for="access-request-email">Your contact email</label>
+      <div class="access-request-row">
+        <div class="access-input-wrap">
+          <svg class="access-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 8 8 5 8-5"/></svg>
+          <input
+            id="access-request-email"
+            type="email"
+            formControlName="email"
+            placeholder="name@example.org"
+            autocomplete="email"
+          >
+        </div>
+        <button type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+          Send request
+        </button>
+      </div>
+      <p class="access-request-error" *ngIf="accessEmailControl?.touched && accessEmailControl?.invalid">
+        Enter a valid e-mail address to continue.
+      </p>
+    </div>
+    <p class="access-request-hint">
+      This opens your e-mail client with a prefilled request to support&#64;humlab.umu.se.
+    </p>
+  </form>
+
+  <div class="infobar-card-grid">
+    <app-infobox *ngFor="let infobox of infoboxes" [infobox]="infobox"></app-infobox>
+  </div>
+
+
 </section>

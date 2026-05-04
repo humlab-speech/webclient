@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Infobox } from '../../models/Infobox';
 import { environment } from 'src/environments/environment';
-import { ShepherdService } from '../../services/shepherd.service';
 import { UserService } from '../../services/user.service';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-infobox',
@@ -12,16 +12,18 @@ import { UserService } from '../../services/user.service';
 export class InfoboxComponent implements OnInit {
 
   @Input() infobox: Infobox;
-  emuWebAppEnabled:boolean = false;
+  octraEnabled:boolean = false;
+  octraUrl:string = '';
   userIsLoggedIn:boolean = false;
 
   constructor(
-    private shepherdService: ShepherdService,
-    private userService: UserService
+    private userService: UserService,
+    private modalService: ModalService
   ) { }
 
   ngOnInit(): void {
-    this.emuWebAppEnabled = environment.ENABLED_APPLICATIONS.includes('artic');
+    this.octraEnabled = environment.ENABLED_APPLICATIONS.includes('octra');
+    this.octraUrl = `https://octra.${window.location.hostname}`;
     this.userIsLoggedIn = !!this.userService.getSession()?.eppn;
 
     this.userService.sessionObs.subscribe((userSession) => {
@@ -29,7 +31,7 @@ export class InfoboxComponent implements OnInit {
     });
   }
 
-  tutorial() {
-    this.shepherdService.startTour();
+  showHelpDialog() {
+    this.modalService.showModal('help-dialog');
   }
 }
