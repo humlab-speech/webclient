@@ -11,6 +11,7 @@ import { UserService } from '../../services/user.service';
 export class DashboardComponent implements OnInit {
 
   userAuthenticationCheckPerformed:boolean = false;
+  userAuthorizationCheckPerformed:boolean = false;
   modalActive:boolean = false;
   modalName:string = '';
   modalArgs:any[] = [];
@@ -33,10 +34,12 @@ export class DashboardComponent implements OnInit {
 
       if(event === 'userAuthorization') {
         this.userIsAuthorized = this.userService.userIsAuthorized;
+        this.userAuthorizationCheckPerformed = true;
       }
     });
 
     this.userAuthenticationCheckPerformed = this.userService.userAuthenticationCheckPerformed;
+    this.userAuthorizationCheckPerformed = this.userService.userAuthorizationCheckPerformed;
     this.userIsAuthenticated = this.userService.userIsAuthenticated;
     this.userIsAuthorized = this.userService.userIsAuthorized;
   }
