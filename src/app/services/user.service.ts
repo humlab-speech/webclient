@@ -29,6 +29,22 @@ export class UserService {
   constructor(private http:HttpClient, private systemService:SystemService) {
     this.sessionObs = new Subject();
 
+    // Synchronously bootstrap auth state from window.visp, which PHP populates
+    // from the validated Shibboleth + MongoDB session on every page load.
+    // This lets the dashboard render immediately without waiting for WebSocket
+    // round-trips. The WebSocket calls below still run as a background
+    // authoritative check and will update state if anything changed.
+    const visp = (window as any).visp;
+    if (visp?.eppn) {
+      this.setUserAuthenticationStatus(true);
+      if (visp.loginAllowed === true) {
+        this.setAuthorizationStatus(true);
+      }
+    } else if (visp && ('eppn' in visp)) {
+      // eppn key is present but empty — user is not authenticated
+      this.setUserAuthenticationStatus(false);
+    }
+
     this.authenticateUser().then((result:boolean) => {
       if(result) {
         this.authorizeUser();
