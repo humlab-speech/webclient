@@ -106,17 +106,26 @@ export class UserComponent implements OnInit {
 
   async signOut() {
 
-    this.userService.signOut().subscribe((response) => {
-      console.log(response);
-      Cookies.set('SessionAccessCode', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
-      Cookies.set('PHPSESSID', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
-      Cookies.set('PHPSESSID', '', { domain: '.'+window.location.hostname, path: '/', secure: true, sameSite: 'None' });
-      Cookies.set('ProjectId', '', { domain: window.location.hostname, path: '/', secure: true, sameSite: 'None' });
+    // Step 1: Notify session-manager via WebSocket (clears phpSessionId from MongoDB and logs the sign-out)
+    this.userService.signOut().subscribe(async (response) => {
+      // Step 2: Destroy the PHP session server-side — this sends a proper Set-Cookie header
+      // that expires PHPSESSID, which is the authoritative way to invalidate the server session.
+      try {
+        await fetch('/api/v1/signout', { redirect: 'manual' });
+      } catch (_) {
+        // Continue with client-side cleanup even if the request fails
+      }
 
-      document.cookie = 'cookieName=SessionAccessCode; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'cookieName=PHPSESSID; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'cookieName=ProjectId; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // Step 3: Delete cookies client-side as a belt-and-suspenders measure.
+      // Note: _shibsession_* is HttpOnly and cannot be touched from JavaScript.
+      // In production the redirect to /Shibboleth.sso/Logout below handles it server-side.
+      Cookies.remove('SessionAccessCode', { path: '/' });
+      Cookies.remove('PHPSESSID', { path: '/' });
+      Cookies.remove('PHPSESSID', { path: '/', domain: '.' + window.location.hostname });
+      Cookies.remove('ProjectId', { path: '/' });
 
+      // Step 4: Redirect. In production the Shibboleth SP logout endpoint invalidates
+      // the SP session and clears _shibsession_* via Set-Cookie on the server side.
       if(environment.production) {
         window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname;
       }
