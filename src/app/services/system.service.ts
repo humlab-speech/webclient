@@ -233,7 +233,7 @@ export class SystemService {
       if(window.location.protocol == "http:") {
         webSocketProto = "ws:";
       }
-      const wsUrl = webSocketProto+'//'+environment.BASE_DOMAIN;
+      const wsUrl = webSocketProto+'//'+window.location.hostname;
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = (event) => {
