@@ -129,6 +129,10 @@ body {
     font-family: 'Inter', "Helvetica Neue", sans-serif;
 }
 
+body.hero-phase1 {
+    overflow: hidden;
+}
+
 h1 {
     font-family: 'Inter', "Helvetica Neue", sans-serif;
     text-decoration: none;

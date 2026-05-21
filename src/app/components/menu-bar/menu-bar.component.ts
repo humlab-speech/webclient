@@ -39,16 +39,103 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   public notifications: TopBarNotification[] = [];
 
   private readonly maxNotifications:number = 12;
-  private readonly heroCollapseDistance:number = 216;
-  private readonly collapseBottomLockDistance:number = 6;
+
+  private readonly COLLAPSE_DISTANCE = 520;
+  private readonly BASE_CHASE_SPEED = 0.14;
+  private readonly DISTANCE_CHASE_BOOST = 0.42;
+  private readonly SNAP_THRESHOLD = 1.4;
+
+  private collapseTargetScroll = 0;
+  private collapseAnimatedScroll = 0;
+  private isPageScrollUnlocked = false;
+  private prevShowDashboardHero = false;
   private heroCollapseRafId:number | null = null;
-  private observedScrollElement: HTMLElement | null = null;
-  private readonly onAnyDocumentScroll = (event: Event) => {
-    const eventTarget = event.target;
-    if(eventTarget instanceof HTMLElement) {
-      this.observedScrollElement = eventTarget;
+  private lastTouchClientY:number | null = null;
+
+  private readonly onCollapseWheel = (event: WheelEvent) => {
+    if(!this.showDashboardHero) {
+      return;
     }
-    this.scheduleHeroCollapseUpdate();
+
+    if(!this.isPageScrollUnlocked) {
+      event.preventDefault();
+      this.handleCollapseDelta(event.deltaY);
+      return;
+    }
+
+    if(window.scrollY <= 0 && event.deltaY < 0) {
+      event.preventDefault();
+      this.lockCollapsePage();
+      this.handleCollapseDelta(event.deltaY);
+    }
+  };
+
+  private readonly onCollapseTouchStart = (event: TouchEvent) => {
+    const touch = event.touches[0];
+    this.lastTouchClientY = touch ? touch.clientY : null;
+  };
+
+  private readonly onCollapseTouchMove = (event: TouchEvent) => {
+    const touch = event.touches[0];
+    if(!touch || this.lastTouchClientY === null) {
+      return;
+    }
+
+    const deltaY = this.lastTouchClientY - touch.clientY;
+    this.lastTouchClientY = touch.clientY;
+
+    if(!this.isPageScrollUnlocked) {
+      event.preventDefault();
+      this.handleCollapseDelta(deltaY * 1.4);
+      return;
+    }
+
+    if(window.scrollY <= 0 && deltaY < 0) {
+      event.preventDefault();
+      this.lockCollapsePage();
+      this.handleCollapseDelta(deltaY * 1.4);
+    }
+  };
+
+  private readonly onCollapseTouchEnd = () => {
+    this.lastTouchClientY = null;
+  };
+
+  private readonly onCollapseKeydown = (event: KeyboardEvent) => {
+    if(!this.showDashboardHero) {
+      return;
+    }
+
+    const downKeys = ['ArrowDown', 'PageDown', ' '];
+    const upKeys = ['ArrowUp', 'PageUp'];
+
+    if(!this.isPageScrollUnlocked && downKeys.includes(event.key)) {
+      event.preventDefault();
+      this.handleCollapseDelta(event.key === 'PageDown' || event.key === ' ' ? 140 : 42);
+      return;
+    }
+
+    if(!this.isPageScrollUnlocked && upKeys.includes(event.key)) {
+      event.preventDefault();
+      this.handleCollapseDelta(event.key === 'PageUp' ? -140 : -42);
+      return;
+    }
+
+    if(this.isPageScrollUnlocked && window.scrollY <= 0 && upKeys.includes(event.key)) {
+      event.preventDefault();
+      this.lockCollapsePage();
+      this.handleCollapseDelta(event.key === 'PageUp' ? -140 : -42);
+    }
+  };
+
+  private readonly onCollapseScroll = () => {
+    if(!this.showDashboardHero) {
+      return;
+    }
+
+    if(this.isPageScrollUnlocked && window.scrollY <= 0 && this.collapseTargetScroll < this.COLLAPSE_DISTANCE) {
+      this.lockCollapsePage();
+    }
   };
 
   private readonly firstLoginPhrases:string[] = [
@@ -87,8 +174,14 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateRouteFlags(this.router.url || '/');
-    if(typeof document !== 'undefined') {
-      document.addEventListener('scroll', this.onAnyDocumentScroll, { passive: true, capture: true });
+    if(typeof window !== 'undefined') {
+      window.addEventListener('wheel', this.onCollapseWheel, { passive: false });
+      window.addEventListener('touchstart', this.onCollapseTouchStart, { passive: true });
+      window.addEventListener('touchmove', this.onCollapseTouchMove, { passive: false });
+      window.addEventListener('touchend', this.onCollapseTouchEnd, { passive: true });
+      window.addEventListener('touchcancel', this.onCollapseTouchEnd, { passive: true });
+      window.addEventListener('keydown', this.onCollapseKeydown);
+      window.addEventListener('scroll', this.onCollapseScroll, { passive: true });
     }
 
     this.routerSubscription = this.router.events.subscribe((value) => {
@@ -113,7 +206,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.scheduleHeroCollapseUpdate();
+      this.updateHeroCollapseForStateChange();
     });
 
     this.toastActionSubscription = this.toastService.actionStream.subscribe((action:any) => {
@@ -129,7 +222,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     });
 
     this.fetchNotificationsFromBackend();
-    this.scheduleHeroCollapseUpdate();
+    this.updateHeroCollapseForStateChange();
   }
 
   ngOnDestroy(): void {
@@ -143,9 +236,17 @@ export class MenuBarComponent implements OnInit, OnDestroy {
       this.heroCollapseRafId = null;
     }
 
-    if(typeof document !== 'undefined') {
-      document.removeEventListener('scroll', this.onAnyDocumentScroll, true);
+    if(typeof window !== 'undefined') {
+      window.removeEventListener('wheel', this.onCollapseWheel);
+      window.removeEventListener('touchstart', this.onCollapseTouchStart);
+      window.removeEventListener('touchmove', this.onCollapseTouchMove);
+      window.removeEventListener('touchend', this.onCollapseTouchEnd);
+      window.removeEventListener('touchcancel', this.onCollapseTouchEnd);
+      window.removeEventListener('keydown', this.onCollapseKeydown);
+      window.removeEventListener('scroll', this.onCollapseScroll);
     }
+
+    this.unlockCollapsePage();
   }
 
   backButtonClicked() {
@@ -232,7 +333,6 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    this.scheduleHeroCollapseUpdate();
   }
 
   @HostListener('document:click')
@@ -252,7 +352,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     this.showBackToDashboardButton = firstPathPart === 'app' || firstPathPart === 'artic' || firstPathPart === 'octra' || firstPathPart === 'admin';
     this.isDashboardRoute = firstPathPart === '';
 
-    this.scheduleHeroCollapseUpdate();
+    this.updateHeroCollapseForStateChange();
   }
 
   private getFirstPathPart(url:string): string {
@@ -262,85 +362,84 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     return normalizedPath.split('/')[1] || '';
   }
 
-  private scheduleHeroCollapseUpdate(): void {
-    if(typeof window === 'undefined') {
-      return;
-    }
+  private updateHeroCollapseForStateChange(): void {
+    const current = this.showDashboardHero;
 
-    if(this.heroCollapseRafId !== null) {
-      return;
-    }
-
-    this.heroCollapseRafId = window.requestAnimationFrame(() => {
-      this.heroCollapseRafId = null;
-      this.updateHeroCollapseProgress();
-    });
-  }
-
-  private updateHeroCollapseProgress(): void {
-    if(!this.showDashboardHero) {
+    if(current && !this.prevShowDashboardHero) {
+      this.collapseTargetScroll = 0;
+      this.collapseAnimatedScroll = 0;
+      this.heroCollapseProgress = 0;
+      this.lockCollapsePage();
+    } else if(!current && this.prevShowDashboardHero) {
       this.heroCollapseProgress = 1;
+      this.collapseTargetScroll = 0;
+      this.collapseAnimatedScroll = 0;
+      this.unlockCollapsePage();
+    }
+
+    this.prevShowDashboardHero = current;
+  }
+
+  private handleCollapseDelta(deltaY: number): void {
+    this.collapseTargetScroll = Math.max(0, Math.min(this.COLLAPSE_DISTANCE, this.collapseTargetScroll + deltaY));
+
+    if(this.collapseTargetScroll >= this.COLLAPSE_DISTANCE && !this.isPageScrollUnlocked) {
+      this.unlockCollapsePage();
+    }
+
+    this.scheduleCollapseApply();
+  }
+
+  private scheduleCollapseApply(): void {
+    if(typeof window === 'undefined' || this.heroCollapseRafId !== null) {
       return;
     }
 
-    const { scrollTop, maxScrollTop } = this.getCurrentScrollMetrics();
-    const distanceToBottom = maxScrollTop - scrollTop;
-    const lockCollapsedAtBottom = maxScrollTop > 0 && distanceToBottom <= this.collapseBottomLockDistance;
+    this.heroCollapseRafId = window.requestAnimationFrame(() => this.applyCollapse());
+  }
 
-    if(lockCollapsedAtBottom) {
-      if(this.heroCollapseProgress !== 1) {
-        this.heroCollapseProgress = 1;
-      }
-      return;
+  private applyCollapse(): void {
+    this.heroCollapseRafId = null;
+
+    const distanceToTarget = this.collapseTargetScroll - this.collapseAnimatedScroll;
+    const normalizedDistance = Math.abs(distanceToTarget) / this.COLLAPSE_DISTANCE;
+    const chaseSpeed = this.BASE_CHASE_SPEED + normalizedDistance * this.DISTANCE_CHASE_BOOST;
+
+    this.collapseAnimatedScroll += distanceToTarget * chaseSpeed;
+
+    if(Math.abs(distanceToTarget) < this.SNAP_THRESHOLD) {
+      this.collapseAnimatedScroll = this.collapseTargetScroll;
     }
 
-    const nextProgress = Math.max(0, Math.min(1, scrollTop / this.heroCollapseDistance));
+    if(this.collapseTargetScroll >= this.COLLAPSE_DISTANCE && !this.isPageScrollUnlocked) {
+      this.unlockCollapsePage();
+    }
 
-    if(Math.abs(nextProgress - this.heroCollapseProgress) > 0.001) {
-      this.heroCollapseProgress = nextProgress;
-    } else if(nextProgress === 0 || nextProgress === 1) {
-      this.heroCollapseProgress = nextProgress;
+    this.heroCollapseProgress = Math.max(0, Math.min(1, this.collapseAnimatedScroll / this.COLLAPSE_DISTANCE));
+
+    if(Math.abs(this.collapseTargetScroll - this.collapseAnimatedScroll) > this.SNAP_THRESHOLD) {
+      this.scheduleCollapseApply();
     }
   }
 
-  private getCurrentScrollMetrics(): { scrollTop:number; maxScrollTop:number } {
-    if(typeof window === 'undefined') {
-      return { scrollTop: 0, maxScrollTop: 0 };
+  private lockCollapsePage(): void {
+    this.isPageScrollUnlocked = false;
+
+    if(typeof document !== 'undefined') {
+      document.body.classList.add('hero-phase1');
     }
 
-    const scrollRoot = (document.scrollingElement || document.documentElement || document.body) as HTMLElement;
-    const candidates: HTMLElement[] = [];
-
-    if(this.observedScrollElement) {
-      candidates.push(this.observedScrollElement);
+    if(typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
     }
-    if(scrollRoot) {
-      candidates.push(scrollRoot);
+  }
+
+  private unlockCollapsePage(): void {
+    this.isPageScrollUnlocked = true;
+
+    if(typeof document !== 'undefined') {
+      document.body.classList.remove('hero-phase1');
     }
-
-    let bestScrollTop = 0;
-    let bestMaxScrollTop = 0;
-
-    for(const candidate of candidates) {
-      const candidateScrollTop = Math.max(0, candidate.scrollTop || 0);
-      const candidateMaxScrollTop = Math.max(0, (candidate.scrollHeight || 0) - (candidate.clientHeight || 0));
-
-      if(candidateScrollTop > bestScrollTop || (candidateScrollTop === bestScrollTop && candidateMaxScrollTop > bestMaxScrollTop)) {
-        bestScrollTop = candidateScrollTop;
-        bestMaxScrollTop = candidateMaxScrollTop;
-      }
-    }
-
-    const windowScrollTop = Math.max(0, window.scrollY || window.pageYOffset || 0);
-    if(windowScrollTop > bestScrollTop) {
-      bestScrollTop = windowScrollTop;
-      bestMaxScrollTop = Math.max(bestMaxScrollTop, Math.max(0, (scrollRoot?.scrollHeight || 0) - (scrollRoot?.clientHeight || 0)));
-    }
-
-    return {
-      scrollTop: bestScrollTop,
-      maxScrollTop: bestMaxScrollTop
-    };
   }
 
   private getGreetingPrefix():string {

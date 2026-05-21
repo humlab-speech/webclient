@@ -239,10 +239,6 @@ export class ProjectDialogComponent implements OnInit {
   }
 
   async saveProject(form) {
-    this.projectService.loadingStatus$.subscribe((status) => {
-      this.submitBtnLabel = status;
-    });
-
     if(!this.validateForm()) {
       this.notifierService.notify('warning', "This form is not ready to be submitted yet.");
       //this.setLoadingStatus(false);

@@ -117,21 +117,20 @@ export class UserComponent implements OnInit {
       }
 
       // Step 3: Delete cookies client-side as a belt-and-suspenders measure.
-      // Note: _shibsession_* is HttpOnly and cannot be touched from JavaScript.
-      // In production the redirect to /Shibboleth.sso/Logout below handles it server-side.
+      // Note: _shibsession_* is HttpOnly and cannot be touched from JavaScript;
+      // the /Shibboleth.sso/Logout redirect in step 4 handles it server-side.
       Cookies.remove('SessionAccessCode', { path: '/' });
       Cookies.remove('PHPSESSID', { path: '/' });
       Cookies.remove('PHPSESSID', { path: '/', domain: '.' + window.location.hostname });
       Cookies.remove('ProjectId', { path: '/' });
 
-      // Step 4: Redirect. In production the Shibboleth SP logout endpoint invalidates
-      // the SP session and clears _shibsession_* via Set-Cookie on the server side.
-      if(environment.production) {
-        window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname;
-      }
-      else {
-        window.location.href = '/';
-      }
+      // Step 4: Redirect through the Shibboleth SP logout endpoint. This is required in
+      // both dev and prod: mod_shib clears the HttpOnly _shibsession_* cookie server-side,
+      // which cannot be removed from JavaScript. Without this, index.php would see a still-
+      // valid Shibboleth session on the next request and immediately re-authenticate the user.
+      // If there is no active Shibboleth session (e.g. test-user logins), mod_shib simply
+      // redirects to the return URL without error.
+      window.location.href = '/Shibboleth.sso/Logout?return=https://'+window.location.hostname;
     });
 
   }
