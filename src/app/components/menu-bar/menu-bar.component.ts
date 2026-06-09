@@ -157,6 +157,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   private userEventSubscription?: Subscription;
   private toastActionSubscription?: Subscription;
   private wsMessageSubscription?: Subscription;
+  private notificationsFetched:boolean = false;
 
   constructor(
     private router: Router,
@@ -203,6 +204,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
         this.userIsAuthorized = this.userService.userIsAuthorized;
         if(this.userIsAuthorized) {
           this.userSession = this.userService.getSession();
+          this.fetchNotificationsFromBackend();
         }
       }
 
@@ -221,7 +223,9 @@ export class MenuBarComponent implements OnInit, OnDestroy {
       this.addNotification(this.mapServerNotification(message.data.notification));
     });
 
-    this.fetchNotificationsFromBackend();
+    if(this.userIsAuthorized) {
+      this.fetchNotificationsFromBackend();
+    }
     this.updateHeroCollapseForStateChange();
   }
 
@@ -471,6 +475,12 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   }
 
   private async fetchNotificationsFromBackend() {
+    if(this.notificationsFetched) {
+      return;
+    }
+
+    this.notificationsFetched = true;
+
     try {
       const response:any = await this.systemService.sendCommandToBackend({
         cmd: 'fetchNotifications',
@@ -483,6 +493,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
       this.notifications = notifications.map((notification:any) => this.mapServerNotification(notification));
       this.unreadNotificationCount = this.notifications.filter((notification) => notification.read === false).length;
     } catch (error) {
+      this.notificationsFetched = false;
       console.warn('Failed to fetch notifications from backend', error);
     }
   }
