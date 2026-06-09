@@ -58,7 +58,7 @@
                         <i *ngIf="!session.controls.collapsed.value" class='fa fa-chevron-up'></i>
                         
                         <h4 *ngIf="session.controls.new.value">New recording session</h4>
-                        <h4 *ngIf="!session.controls.new.value">Recording session {{ session.controls.name.value }}</h4>
+                        <h4 *ngIf="!session.controls.new.value">{{ session.controls.name.value }}</h4>
                     </div>
                     
                     <div class="itemDeleteBtn">
