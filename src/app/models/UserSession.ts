@@ -6,6 +6,7 @@ export class UserSession {
     email:string;
     eppn:string;
     username:string;
+    loginAllowed:boolean;
     privileges:any;
     loginCount?: number;
     lastLoginAt?: string;

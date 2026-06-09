@@ -45,14 +45,15 @@ export class UserService {
       this.setUserAuthenticationStatus(false);
     }
 
-    this.authenticateUser().then((result:boolean) => {
-      if(result) {
-        this.authorizeUser();
-      }
-    });
-    
     this.fetchSession().subscribe((response:UserSession) => {
       this.importSession(<UserSession>response);
+      if(response?.eppn) {
+        this.authenticateUser(response).then((result:boolean) => {
+          if(result) {
+            this.authorizeUser();
+          }
+        });
+      }
     });
 
     setInterval(() => {
@@ -73,11 +74,11 @@ export class UserService {
     window.location.href = '/DS/Login'; //This url does not exist in the angular application, it is specified in apache as the trigger-url for shibboleth auth
   }
 
-  async authenticateUser():Promise<boolean> {
+  async authenticateUser(sessionData:UserSession = null):Promise<boolean> {
     this.bootstrapLoadingStatus$.next("authenticateUser:start");
 
     try {
-      const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: (window as any).visp });
+      const response: WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: "authenticateUser", data: sessionData || (window as any).visp });
       if (response.data.msg === "Authenticated") {
         this.setUserAuthenticationStatus(true);
         this.bootstrapLoadingStatus$.next("authenticateUser:done");
@@ -201,6 +202,14 @@ export class UserService {
 
   importSession(session:UserSession) {
     this.session = session;
+    if(session?.eppn) {
+      this.setUserAuthenticationStatus(true);
+      this.setAuthorizationStatus(session.loginAllowed === true);
+    }
+    else {
+      this.setUserAuthenticationStatus(false);
+      this.setAuthorizationStatus(false);
+    }
     this.sessionObs.next(this.session);
   }
 
