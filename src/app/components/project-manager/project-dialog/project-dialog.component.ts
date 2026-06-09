@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ValidationErrors, Validators, FormArray, AbstractControl, FormControlName } from '@angular/forms';
 import { nanoid } from 'nanoid';
 import { ProjectService } from "../../../services/project.service";
@@ -18,7 +18,7 @@ import { SystemService } from 'src/app/services/system.service';
   templateUrl: './project-dialog.component.html',
   styleUrls: ['./project-dialog.component.scss']
 })
-export class ProjectDialogComponent implements OnInit {
+export class ProjectDialogComponent implements OnInit, OnDestroy {
   @ViewChild(SessionsFormComponent, { static: false }) public emudbFormComponent: SessionsFormComponent;
   @ViewChild(DocumentationFormComponent, { static: false }) public docsFormComponent: DocumentationFormComponent;
 
@@ -56,6 +56,11 @@ export class ProjectDialogComponent implements OnInit {
   form:FormGroup;
 
   formContextId:string = nanoid();
+  private bodyScrollTop:number = 0;
+  private previousBodyPosition:string = "";
+  private previousBodyTop:string = "";
+  private previousBodyWidth:string = "";
+  private previousBodyOverflow:string = "";
 
   constructor(private http:HttpClient, private fb:FormBuilder, private systemService:SystemService, private projectService:ProjectService, private userService:UserService, private fileUploadService:FileUploadService, private notifierService: NotifierService) {
     this.emuDbIntegrationEnabled = environment.EMUDB_INTEGRATION;
@@ -86,6 +91,8 @@ export class ProjectDialogComponent implements OnInit {
   */
 
   ngOnInit(): void {
+    this.lockDocumentScroll();
+
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null
     console.log(this.project);
 
@@ -160,6 +167,10 @@ export class ProjectDialogComponent implements OnInit {
     }
 
     this.validateForm();
+  }
+
+  ngOnDestroy(): void {
+    this.unlockDocumentScroll();
   }
 
   setLoadingStatus(isLoading = true, label = "Loading") {
@@ -338,6 +349,28 @@ export class ProjectDialogComponent implements OnInit {
     }
     this.fileUploadService.reset();
     this.projectManager.dashboard.modalActive = false;
+  }
+
+  private lockDocumentScroll() {
+    this.bodyScrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    this.previousBodyPosition = document.body.style.position;
+    this.previousBodyTop = document.body.style.top;
+    this.previousBodyWidth = document.body.style.width;
+    this.previousBodyOverflow = document.body.style.overflow;
+
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${this.bodyScrollTop}px`;
+    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
+  }
+
+  private unlockDocumentScroll() {
+    document.body.style.position = this.previousBodyPosition;
+    document.body.style.top = this.previousBodyTop;
+    document.body.style.width = this.previousBodyWidth;
+    document.body.style.overflow = this.previousBodyOverflow;
+
+    window.scrollTo(0, this.bodyScrollTop);
   }
 
   onAudioUpload(event, session) {
