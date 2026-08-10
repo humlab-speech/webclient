@@ -72,24 +72,6 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
     */
   }
 
-  /*
-
-  this.userService.sessionObs.subscribe((session:UserSession) => {
-      if(session && session.eppn != null) {
-        this.userIsSignedIn = true;
-        let userSession = this.userService.getSession();
-        console.log("User session", userSession);
-        if(userSession.privileges.createInviteCodes) {
-          this.showInviteCodesMenuOption = true;
-        }
-      }
-      else {
-        this.userIsSignedIn = false;
-      }
-    });
-
-  */
-
   ngOnInit(): void {
     this.lockDocumentScroll();
 

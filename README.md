@@ -10,7 +10,7 @@ tools, and queue transcriptions.
 - Authenticate via Shibboleth (federated academic SSO)
 - Create / edit / delete speech-recording projects
 - Upload audio files (drag-and-drop)
-- Launch embedded tools in iframes (RStudio, Jupyter, EMU-webApp, Octra,
+- Launch embedded tools in iframes (RStudio, Jupyter, Artic (EMU-webApp), Octra,
   Speech Recorder)
 - Queue speech-to-text transcription via WhisperX
 - Manage project members, bundle assignments, and invite codes

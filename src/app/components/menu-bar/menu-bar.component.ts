@@ -52,8 +52,17 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   private heroCollapseRafId:number | null = null;
   private lastTouchClientY:number | null = null;
 
+  // Any open dialog (project-dialog, invite-codes-dialog, etc.) owns wheel/touch/keydown
+  // input for as long as it's open — all of them share the .modal-bg backdrop. Without this
+  // check, this hero-collapse animation (which lives at the window level, ahead of the
+  // dialog's own scroll handling) hijacks scroll input meant for the dialog and animates
+  // the hero banner behind it instead, which reads as "the dashboard scrolls in the background".
+  private isEventInsideModal(target: EventTarget | null): boolean {
+    return !!(target as HTMLElement | null)?.closest?.('.modal-bg');
+  }
+
   private readonly onCollapseWheel = (event: WheelEvent) => {
-    if(!this.showDashboardHero) {
+    if(!this.showDashboardHero || this.isEventInsideModal(event.target)) {
       return;
     }
 
@@ -84,6 +93,10 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     const deltaY = this.lastTouchClientY - touch.clientY;
     this.lastTouchClientY = touch.clientY;
 
+    if(this.isEventInsideModal(event.target)) {
+      return;
+    }
+
     if(!this.isPageScrollUnlocked) {
       event.preventDefault();
       this.handleCollapseDelta(deltaY * 1.4);
@@ -102,7 +115,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   };
 
   private readonly onCollapseKeydown = (event: KeyboardEvent) => {
-    if(!this.showDashboardHero) {
+    if(!this.showDashboardHero || this.isEventInsideModal(event.target)) {
       return;
     }
 
@@ -316,7 +329,8 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   }
 
   get canCreateProjects():boolean {
-    return !!this.userSession?.privileges?.createProjects;
+    // Creating a project is a system-level action, reserved for sysadmins.
+    return this.userService.userIsSysAdmin();
   }
 
   get firstName():string {

@@ -3,12 +3,14 @@ import { UserService } from '../../services/user.service';
 import { SystemService } from '../../services/system.service';
 import { Router } from '@angular/router';
 import { WebSocketMessage } from '../../models/WebSocketMessage';
+import { Role, PROJECT_ROLE_RESEARCHER } from '../../models/Role';
 
 export interface AdminProjectMember {
   username: string;
   fullName: string;
   email: string;
-  role: string;
+  /** Project role: 'project_admin' | 'researcher'. */
+  role?: string;
 }
 
 export interface AdminUserSearchResult {
@@ -20,12 +22,34 @@ export interface AdminUserSearchResult {
   lastName?: string;
 }
 
+export interface AdminBundleStorageStats {
+  name: string;
+  size: number;
+}
+
+export interface AdminSessionStorageStats {
+  name: string;
+  bundleCount: number;
+  totalSize: number;
+  bundles: AdminBundleStorageStats[];
+}
+
+export interface AdminProjectStorageStats {
+  sessionCount: number;
+  bundleCount: number;
+  totalSize: number;
+  sessions: AdminSessionStorageStats[];
+}
+
 export interface AdminProject {
   id: number | string;
   name: string;
   archived: boolean;
   created_at?: string;
   members: AdminProjectMember[];
+  storageStats?: AdminProjectStorageStats;
+  storageStatsLoading?: boolean;
+  storageStatsError?: string;
 }
 
 @Component({
@@ -35,12 +59,15 @@ export interface AdminProject {
 })
 export class AdminPanelComponent implements OnInit {
 
-  readonly roleOptions:string[] = ['admin', 'analyzer', 'transcriber', 'member'];
-
   projects: AdminProject[] = [];
   loading = true;
   error: string = null;
   expandedProjectId: number | string = null;
+  expandedStorageProjectId: number | string = null;
+
+  projectRoles: Role[] = [];
+  /** Role to assign to the next member added, per project. */
+  newMemberRoleByProject: Record<string, string> = {};
 
   memberSearchValueByProject: Record<string, string> = {};
   memberSearchResultsByProject: Record<string, AdminUserSearchResult[]> = {};
@@ -61,11 +88,13 @@ export class AdminPanelComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const session = this.userService.getSession();
-    if (!session?.privileges?.sysAdmin) {
+    if (!this.userService.userIsSysAdmin()) {
       this.router.navigate(['/']);
       return;
     }
+    this.userService.fetchProjectRoles().subscribe((roles: Role[]) => {
+      this.projectRoles = roles;
+    });
     this.fetchProjects(true, false);
   }
 
@@ -86,6 +115,7 @@ export class AdminPanelComponent implements OnInit {
 
     const projectKey = this.projectIdKey(project.id);
     this.expandedProjectId = project.id;
+    this.newMemberRoleByProject[projectKey] = PROJECT_ROLE_RESEARCHER;
     this.memberSearchValueByProject[projectKey] = '';
     this.memberSearchResultsByProject[projectKey] = [];
     this.memberSearchErrorByProject[projectKey] = null;
@@ -175,7 +205,8 @@ export class AdminPanelComponent implements OnInit {
         cmd: 'adminAddProjectMember',
         data: {
           projectId: project.id,
-          username: user.username
+          username: user.username,
+          role: this.newMemberRoleByProject[projectKey] || PROJECT_ROLE_RESEARCHER
         }
       });
 
@@ -195,26 +226,22 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  async updateMemberRole(project: AdminProject, member: AdminProjectMember, event: Event): Promise<void> {
+  async changeMemberRole(project: AdminProject, member: AdminProjectMember, event: Event): Promise<void> {
     const projectKey = this.projectIdKey(project.id);
-    const selectElement = event.target as HTMLSelectElement;
-    const selectedRole = selectElement?.value;
+    const selectEl = event.target as HTMLSelectElement;
+    const newRole = selectEl.value;
     const previousRole = member.role;
 
+    if (newRole === previousRole) {
+      return;
+    }
+
     this.projectActionErrorByProject[projectKey] = null;
-
-    if (!selectedRole || selectedRole === previousRole) {
-      return;
-    }
-
-    if (previousRole === 'admin' && selectedRole !== 'admin' && this.getAdminCount(project) < 2) {
-      this.projectActionErrorByProject[projectKey] = 'A project must always have at least one admin.';
-      selectElement.value = previousRole;
-      return;
-    }
-
     const memberKey = this.memberActionKey(project.id, member.username);
     this.updatingRoleKeys.add(memberKey);
+
+    // Optimistic, so the select does not snap back while the request is in flight.
+    member.role = newRole;
 
     try {
       const wsMsg:WebSocketMessage = await this.systemService.sendCommandToBackend({
@@ -222,20 +249,22 @@ export class AdminPanelComponent implements OnInit {
         data: {
           projectId: project.id,
           username: member.username,
-          role: selectedRole
+          role: newRole
         }
       });
 
       if (wsMsg?.result === false) {
+        member.role = previousRole;
+        selectEl.value = previousRole;
         this.projectActionErrorByProject[projectKey] = wsMsg.message || 'Failed to update member role.';
-        selectElement.value = previousRole;
         return;
       }
 
       await this.fetchProjects(false, true);
     } catch (_error) {
-      this.projectActionErrorByProject[projectKey] = 'Could not update role right now.';
-      selectElement.value = previousRole;
+      member.role = previousRole;
+      selectEl.value = previousRole;
+      this.projectActionErrorByProject[projectKey] = 'Could not update member role right now.';
     } finally {
       this.updatingRoleKeys.delete(memberKey);
     }
@@ -244,11 +273,6 @@ export class AdminPanelComponent implements OnInit {
   async removeMemberFromProject(project: AdminProject, member: AdminProjectMember): Promise<void> {
     const projectKey = this.projectIdKey(project.id);
     this.projectActionErrorByProject[projectKey] = null;
-
-    if (member.role === 'admin' && this.getAdminCount(project) < 2) {
-      this.projectActionErrorByProject[projectKey] = 'Cannot remove the last admin from a project.';
-      return;
-    }
 
     const confirmed = window.confirm(`Remove ${member.fullName || member.username} from ${project.name}?`);
     if (!confirmed) {
@@ -368,6 +392,7 @@ export class AdminPanelComponent implements OnInit {
       const msg:WebSocketMessage = await this.systemService.sendCommandToBackend({ cmd: 'adminFetchAllProjects' });
       if (msg.result) {
         this.projects = msg.data.projects || [];
+        this.loadStorageStatsForProjects();
       } else {
         this.error = msg.message || 'Failed to fetch projects.';
       }
@@ -385,8 +410,59 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  getAdminCount(project: AdminProject): number {
-    return (project.members || []).filter((member) => member.role === 'admin').length;
+  // Fired once the initial (fast) project list has rendered. Each project's
+  // storage stats require walking its EmuDB directory tree on disk, which is
+  // too slow to make the whole panel wait on — so these run as independent,
+  // concurrent requests and fill in as they arrive rather than blocking load.
+  private loadStorageStatsForProjects(): void {
+    for (const project of this.projects) {
+      this.fetchStorageStatsForProject(project);
+    }
+  }
+
+  private async fetchStorageStatsForProject(project: AdminProject): Promise<void> {
+    project.storageStatsLoading = true;
+    project.storageStatsError = null;
+
+    try {
+      const msg:WebSocketMessage = await this.systemService.sendCommandToBackend({
+        cmd: 'adminFetchProjectStorageStats',
+        data: { projectId: project.id }
+      });
+
+      if (msg.result) {
+        project.storageStats = {
+          sessionCount: msg.data.sessionCount || 0,
+          bundleCount: msg.data.bundleCount || 0,
+          totalSize: msg.data.totalSize || 0,
+          sessions: msg.data.sessions || []
+        };
+      } else {
+        project.storageStatsError = msg.message || 'Failed to load storage stats.';
+      }
+    } catch (_error) {
+      project.storageStatsError = 'Could not load storage stats.';
+    } finally {
+      project.storageStatsLoading = false;
+    }
+  }
+
+  formatBytes(bytes: number): string {
+    if (!bytes || bytes <= 0) {
+      return '0 B';
+    }
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const value = bytes / Math.pow(1024, exponent);
+    return `${value.toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
+  }
+
+  isStorageDetailsOpen(project: AdminProject): boolean {
+    return this.expandedStorageProjectId === project.id;
+  }
+
+  toggleStorageDetails(project: AdminProject): void {
+    this.expandedStorageProjectId = this.isStorageDetailsOpen(project) ? null : project.id;
   }
 
   isArchivingProject(projectId: number | string): boolean {
@@ -411,6 +487,10 @@ export class AdminPanelComponent implements OnInit {
 
   isUpdatingMemberRole(projectId: number | string, username: string): boolean {
     return this.updatingRoleKeys.has(this.memberActionKey(projectId, username));
+  }
+
+  roleLabel(roleName: string): string {
+    return this.projectRoles.find(role => role.name === roleName)?.label || roleName || '-';
   }
 
   private memberActionKey(projectId: number | string, username: string): string {

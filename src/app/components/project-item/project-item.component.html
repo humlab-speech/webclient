@@ -30,6 +30,7 @@
       </button>
 
       <ul *ngIf="projectMenuVisible" class="project-menu-dropdown">
+        <li *ngIf="!isArchived && canCreateInviteCodes" (click)="showInviteCodesDialog()"><i class="fa fa-envelope" aria-hidden="true"></i> Invitation codes</li>
         <li *ngIf="!isArchived" (click)="archiveProject()"><i class="fa fa-archive" aria-hidden="true"></i> Archive project</li>
         <li *ngIf="isArchived" (click)="unarchiveProject()"><i class="fa fa-unlock" aria-hidden="true"></i> Unarchive project</li>
         <li *ngIf="!isArchived" (click)="deleteProject()"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete project</li>

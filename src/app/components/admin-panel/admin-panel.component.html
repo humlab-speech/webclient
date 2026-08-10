@@ -31,6 +31,7 @@
           <th>Project</th>
           <th>Status</th>
           <th>Created</th>
+          <th>Storage</th>
           <th>Members &amp; Roles</th>
           <th>Actions</th>
         </tr>
@@ -45,11 +46,27 @@
               </span>
             </td>
             <td class="date-cell">{{ project.created_at | date:'mediumDate' }}</td>
+            <td class="storage-cell">
+              <span class="storage-loading" *ngIf="project.storageStatsLoading">
+                <span class="spinner spinner-sm" aria-hidden="true"></span>
+                <span>Loading&hellip;</span>
+              </span>
+              <span class="storage-error" *ngIf="!project.storageStatsLoading && project.storageStatsError">
+                {{ project.storageStatsError }}
+              </span>
+              <button class="storage-summary-btn"
+                      *ngIf="!project.storageStatsLoading && !project.storageStatsError && project.storageStats"
+                      (click)="toggleStorageDetails(project)">
+                <span>{{ project.storageStats.sessionCount }} session<ng-container *ngIf="project.storageStats.sessionCount !== 1">s</ng-container></span>
+                <span>{{ project.storageStats.bundleCount }} bundle<ng-container *ngIf="project.storageStats.bundleCount !== 1">s</ng-container></span>
+                <span>{{ formatBytes(project.storageStats.totalSize) }}</span>
+                <i class="fa" [ngClass]="isStorageDetailsOpen(project) ? 'fa-caret-up' : 'fa-caret-down'" aria-hidden="true"></i>
+              </button>
+            </td>
             <td class="members-cell">
               <ul class="members-list" *ngIf="project.members?.length; else noMembers">
                 <li *ngFor="let member of project.members" class="member-row">
                   <span class="member-name">{{ member.fullName || member.username }}</span>
-                  <span class="member-role role-{{ member.role }}">{{ member.role }}</span>
                 </li>
               </ul>
               <ng-template #noMembers>
@@ -82,7 +99,7 @@
           </tr>
 
           <tr class="row-error-container" *ngIf="projectActionErrorByProject[projectIdKey(project.id)]">
-            <td colspan="5">
+            <td colspan="6">
               <div class="row-error-msg">
                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
                 <span>{{ projectActionErrorByProject[projectIdKey(project.id)] }}</span>
@@ -90,8 +107,46 @@
             </td>
           </tr>
 
+          <tr class="storage-details-row" *ngIf="isStorageDetailsOpen(project) && project.storageStats">
+            <td colspan="6">
+              <div class="storage-details">
+                <div class="storage-details-header">
+                  <h3>Storage for {{ project.name }}</h3>
+                  <p>Session and bundle sizes, read directly from disk.</p>
+                </div>
+
+                <table class="storage-details-table" *ngIf="project.storageStats.sessions.length; else noSessions">
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Bundles</th>
+                      <th>Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngFor="let session of project.storageStats.sessions">
+                      <tr>
+                        <td>{{ session.name }}</td>
+                        <td>{{ session.bundleCount }}</td>
+                        <td>{{ formatBytes(session.totalSize) }}</td>
+                      </tr>
+                      <tr class="storage-bundle-row" *ngFor="let bundle of session.bundles">
+                        <td class="storage-bundle-name">{{ bundle.name }}</td>
+                        <td></td>
+                        <td>{{ formatBytes(bundle.size) }}</td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+                <ng-template #noSessions>
+                  <div class="no-sessions-msg">No sessions found on disk for this project.</div>
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+
           <tr class="member-editor-row" *ngIf="isMembersEditorOpen(project)">
-            <td colspan="5">
+            <td colspan="6">
               <div class="member-editor">
                 <div class="member-editor-header">
                   <h3>Members for {{ project.name }}</h3>
@@ -112,6 +167,15 @@
                     <i class="fa fa-search" aria-hidden="true"></i>
                     <span>{{ isSearchingUsers(project.id) ? 'Searching...' : 'Search users' }}</span>
                   </button>
+
+                  <label class="member-add-role">
+                    <span>Add as</span>
+                    <select class="member-role-select"
+                            [value]="newMemberRoleByProject[projectIdKey(project.id)]"
+                            (change)="newMemberRoleByProject[projectIdKey(project.id)] = $any($event.target).value">
+                      <option *ngFor="let role of projectRoles" [value]="role.name">{{ role.label }}</option>
+                    </select>
+                  </label>
                 </div>
 
                 <div class="member-search-error" *ngIf="memberSearchErrorByProject[projectIdKey(project.id)]">
@@ -137,8 +201,8 @@
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Role</th>
                       <th>Email</th>
+                      <th>Role</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -151,20 +215,18 @@
                         <span class="member-name">{{ member.fullName || member.username }}</span>
                         <span class="member-username">{{ member.username }}</span>
                       </td>
+                      <td>{{ member.email || '-' }}</td>
                       <td>
                         <select class="member-role-select"
                                 [value]="member.role"
-                                [disabled]="isUpdatingMemberRole(project.id, member.username) || isRemovingMember(project.id, member.username)"
-                                (change)="updateMemberRole(project, member, $event)">
-                          <option *ngFor="let roleOption of roleOptions" [value]="roleOption">
-                            {{ roleOption }}
-                          </option>
+                                [disabled]="isUpdatingMemberRole(project.id, member.username)"
+                                (change)="changeMemberRole(project, member, $event)">
+                          <option *ngFor="let role of projectRoles" [value]="role.name">{{ role.label }}</option>
                         </select>
                       </td>
-                      <td>{{ member.email || '-' }}</td>
                       <td>
                         <button class="member-remove-btn"
-                                [disabled]="isRemovingMember(project.id, member.username) || isUpdatingMemberRole(project.id, member.username)"
+                                [disabled]="isRemovingMember(project.id, member.username)"
                                 (click)="removeMemberFromProject(project, member)">
                           <i class="fa fa-user-times" aria-hidden="true"></i>
                           <span>{{ isRemovingMember(project.id, member.username) ? 'Removing...' : 'Remove' }}</span>

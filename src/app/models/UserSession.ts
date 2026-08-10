@@ -7,7 +7,8 @@ export class UserSession {
     eppn:string;
     username:string;
     loginAllowed:boolean;
-    privileges:any;
+    /** System-level role: 'sys_admin' or 'user'. See models/Role.ts. */
+    system_role?:string;
     loginCount?: number;
     lastLoginAt?: string;
     previousLoginAt?: string;

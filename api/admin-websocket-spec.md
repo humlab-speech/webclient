@@ -31,7 +31,7 @@ On failure, `result` should be `false` and `message` should contain a human-read
 
 ## Authorization requirement
 
-All admin commands **must** verify that the requesting user's session has `privileges.sysAdmin === true`. If not, respond with:
+All admin commands **must** verify that the requesting user's system role is `sys_admin` (`users.system_role`, checked via `ApiServer.isSysAdminUser()`). If not, respond with:
 ```json
 {
   "result": false,
@@ -73,13 +73,13 @@ Returns all projects in the system, each with their full member list and roles.
             "username": "anna.svensson",
             "fullName": "Anna Svensson",
             "email": "anna.svensson@umu.se",
-            "role": "admin"
+            "role": "project_admin"
           },
           {
             "username": "erik.lindgren",
             "fullName": "Erik Lindgren",
             "email": "erik.lindgren@umu.se",
-            "role": "analyzer"
+            "role": "researcher"
           }
         ]
       }
@@ -96,7 +96,7 @@ Returns all projects in the system, each with their full member list and roles.
 - `members[].username` — the slugified eppn stored in the session / MongoDB `members` array
 - `members[].fullName` — display name; the UI falls back to `username` if this is absent
 - `members[].email` — email address of the member
-- `members[].role` — string role within the project; currently `"admin"` and `"analyzer"` are styled specially, any other value is shown with a neutral style
+- `members[].role` — the member's project role: `"project_admin"` or `"researcher"` (see `project_roles`). Members stored before project roles existed have no `role` and are treated as `"researcher"`.
 
 **Implementation hint:** This is equivalent to a privileged version of `fetchProjects` with no user filter applied — query the MongoDB `projects` collection without restricting to `$_SESSION['username']`, and for each project include the full `members` sub-document array.
 
@@ -202,7 +202,7 @@ Searches users to add as project members.
 
 ### `adminAddProjectMember`
 
-Adds a user to a project member list.
+Adds a user to a project member list, with a project role.
 
 **Request:**
 ```json
@@ -211,10 +211,14 @@ Adds a user to a project member list.
   "requestId": "abc127",
   "data": {
     "projectId": 42,
-    "username": "anna.svensson"
+    "username": "anna.svensson",
+    "role": "researcher"
   }
 }
 ```
+
+`role` is optional and defaults to `"researcher"`. It must be a defined project
+role (`project_admin` or `researcher`).
 
 **Response:**
 ```json
@@ -224,8 +228,13 @@ Adds a user to a project member list.
   "result": true,
   "data": {
     "projectId": 42,
-    "username": "anna.svensson",
-    "added": true
+    "member": {
+      "username": "anna.svensson",
+      "fullName": "Anna Svensson",
+      "email": "anna.svensson@umu.se",
+      "eppn": "anna.svensson@umu.se",
+      "role": "researcher"
+    }
   }
 }
 ```
@@ -276,7 +285,7 @@ Changes a member role within a project.
   "data": {
     "projectId": 42,
     "username": "anna.svensson",
-    "role": "admin"
+    "role": "project_admin"
   }
 }
 ```
@@ -290,7 +299,7 @@ Changes a member role within a project.
   "data": {
     "projectId": 42,
     "username": "anna.svensson",
-    "role": "admin"
+    "role": "project_admin"
   }
 }
 ```
@@ -301,10 +310,13 @@ Changes a member role within a project.
 
 - Reject any non-`sysAdmin` caller.
 - Reject unknown `projectId` and unknown `username`.
-- Reject invalid roles (allow list should at least include `admin`, `analyzer`, `transcriber`, `member`).
-- Prevent operations that would leave a project with zero admin members:
-  - `adminRemoveProjectMember` when target is the last admin.
-  - `adminUpdateProjectMemberRole` when demoting the last admin.
+- Reject any role that is not a defined project role (`project_admin`, `researcher`).
+- The admin commands deliberately do **not** refuse to leave a project with zero
+  ProjectAdmins. SysAdmins hold every project permission in every project without
+  being members, so an admin-less project is still administrable, and this panel is
+  the tool for repairing one. (The project-scoped equivalents used by the regular
+  Members dialog — `removeProjectMember` and `setProjectMemberRole` — *do* enforce
+  that guard, since a project admin could otherwise strand their own project.)
 - Make add/remove idempotent where possible:
   - add existing member can return success with `"added": false` (or clear error message).
   - remove missing member can return success with `"removed": false` (or clear error message).

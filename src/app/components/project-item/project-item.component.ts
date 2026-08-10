@@ -47,10 +47,6 @@ export class ProjectItemComponent implements OnInit {
     });
 
 
-    let sess = this.userService.getSession();
-    let projects = this.projectService.getProjects();
-    let projectMember = projects.find(project => project.id == this.project.id).members.find(member => member.eppn == sess.eppn);
-
     environment.ENABLED_APPLICATIONS.forEach((vispAppName) => {
       if(vispAppName == "artic") {
         let emuWebApp = new VispApp();
@@ -69,9 +65,7 @@ export class ProjectItemComponent implements OnInit {
         jupyterApp.icon = "app-icons/88x88-color/jupyter-icon.png";
         jupyterApp.disabled = this.shouldAppBeDisabled(jupyterApp.name);
         
-        if(projectMember.role == "admin" || projectMember.role == "analyzer") {
-          this.vispApplications.push(jupyterApp);
-        }
+        this.vispApplications.push(jupyterApp);
       }
       if(vispAppName == "octra") {
         let octraApp = new VispApp();
@@ -101,6 +95,22 @@ export class ProjectItemComponent implements OnInit {
     });
 
     this.vispApplications.reverse();
+  }
+
+  /**
+   * Whether the signed-in user may issue invite codes for *this* project.
+   * Mirrors the backend's project-role check; the backend re-verifies anyway.
+   */
+  get canCreateInviteCodes():boolean {
+    return this.project?.userProjectPermissions?.createInviteCodes === true;
+  }
+
+  showInviteCodesDialog() {
+    if(this.isArchived) {
+      this.notifierService.notify('warning', 'This project is archived and locked.');
+      return;
+    }
+    this.projectManager.showInviteCodesDialog(this.project);
   }
 
   get isArchived():boolean {

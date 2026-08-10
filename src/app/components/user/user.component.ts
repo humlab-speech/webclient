@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { ModalService } from '../../services/modal.service';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
+import { Role, SYSTEM_ROLE_SYS_ADMIN } from '../../models/Role';
 
 @Component({
   selector: 'app-user',
@@ -16,35 +17,32 @@ export class UserComponent implements OnInit {
   accountMenuVisible:boolean = false;
   menuTimeout:any;
   userIsSignedIn:boolean = false;
-  showInviteCodesMenuOption:boolean = false;
-  isAdmin:boolean = false;
+  roles:Role[] = [];
 
   constructor(private userService:UserService, private modalService: ModalService, private router: Router) {
   }
 
   ngOnInit(): void {
 
+    this.userService.fetchSystemRoles().subscribe((roles: Role[]) => {
+      this.roles = roles;
+    });
+
     this.userService.sessionObs.subscribe((session:UserSession) => {
-      if(session && session.eppn != null) {
-        this.userIsSignedIn = true;
-        let userSession = this.userService.getSession();
-        if(userSession?.privileges?.createInviteCodes) {
-          this.showInviteCodesMenuOption = true;
-        }
-        this.isAdmin = !!userSession?.privileges?.sysAdmin;
-      }
-      else {
-        this.userIsSignedIn = false;
-        this.isAdmin = false;
-      }
+      this.userIsSignedIn = !!(session && session.eppn != null);
     });
 
     let userSession = this.userService.getSession();
     if(userSession) {
       this.userIsSignedIn = true;
-      this.showInviteCodesMenuOption = !!userSession?.privileges?.createInviteCodes;
-      this.isAdmin = !!userSession?.privileges?.sysAdmin;
     }
+  }
+
+  // Computed live on every change-detection cycle (like getUserRole()) rather than
+  // latched once from a subscription, since session.system_role can arrive
+  // asynchronously after this component's initial synchronous check already ran.
+  isAdmin():boolean {
+    return this.userService.userIsSysAdmin();
   }
 
   getUserDisplayName():string {
@@ -63,17 +61,19 @@ export class UserComponent implements OnInit {
     return initials || 'VS';
   }
 
+  /**
+   * The label shown under the user's name in the account pill. This is the
+   * *system* role, since project roles vary per project and there is no single
+   * one to show here.
+   */
   getUserRole():string {
-    const session = this.userService.getSession();
-    if(!session?.privileges) {
+    if(!this.userService.getSession()) {
       return 'User';
     }
 
-    if(session.privileges.createProjects || session.privileges.createInviteCodes) {
-      return 'Project admin';
-    }
-
-    return 'Researcher';
+    const roleName = this.userService.getSystemRoleName();
+    const role = this.roles?.find(r => r.name === roleName);
+    return role?.label || (roleName === SYSTEM_ROLE_SYS_ADMIN ? 'System admin' : 'User');
   }
 
   showAccountMenu(show:boolean = true, useTimer = false) {
@@ -86,10 +86,6 @@ export class UserComponent implements OnInit {
     else {
       this.accountMenuVisible = show;
     }
-  }
-
-  showInviteCodesDialog() {
-    this.modalService.showModal('invite-codes-dialog');
   }
 
   showHelpDialog() {

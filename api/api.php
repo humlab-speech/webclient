@@ -786,7 +786,7 @@ class Application {
             'username' => $this->slugify($_SESSION['eppn']),
             'id' => $_SESSION['id'],
             'eppn' => $_SESSION['eppn'],
-            'privileges' => $_SESSION['privileges'],
+            'system_role' => isset($_SESSION['system_role']) ? $_SESSION['system_role'] : 'user',
             'loginCount' => isset($_SESSION['loginCount']) ? $_SESSION['loginCount'] : null,
             'lastLoginAt' => isset($_SESSION['lastLoginAt']) ? $_SESSION['lastLoginAt'] : null,
             'previousLoginAt' => isset($_SESSION['previousLoginAt']) ? $_SESSION['previousLoginAt'] : null,

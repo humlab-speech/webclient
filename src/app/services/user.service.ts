@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable, Subject, from, BehaviorSubject } from 'rxjs';
+import { timeout, retry } from 'rxjs/operators';
 import { UserSession } from "../models/UserSession";
 import { ApiResponse } from "../models/ApiResponse";
 import { environment } from 'src/environments/environment';
 import { SystemService } from './system.service';
 import { EventEmitter } from '@angular/core';
 import { WebSocketMessage } from '../models/WebSocketMessage';
+import { Role, SYSTEM_ROLE_SYS_ADMIN, SYSTEM_ROLE_USER, PROJECT_ROLE_RESEARCHER } from '../models/Role';
 
 @Injectable({
   providedIn: 'root'
@@ -152,21 +154,73 @@ export class UserService {
     }
   }
 
-  fetchInviteCodesByUser() {
-    let data = { 
-      cmd: "getInviteCodesByUser",
-      data: {}
+  /** Invite codes are scoped to a project, so listing them requires one. */
+  fetchInviteCodesByProject(projectId:string) {
+    let data = {
+      cmd: "getInviteCodesByProject",
+      data: {
+        projectId: projectId
+      }
     };
 
     return from(this.systemService.sendCommandToBackend(data));
   }
 
-  generateInviteCode(projectId:string = ""):Observable<unknown> {
+  private projectRoles:Role[] | null = null;
+  private systemRoles:Role[] | null = null;
 
-    let data = { 
+  fetchProjectRoles():Observable<Role[]> {
+    return this.fetchRoleDefinitions("getProjectRoles", () => this.projectRoles, (roles) => this.projectRoles = roles);
+  }
+
+  fetchSystemRoles():Observable<Role[]> {
+    return this.fetchRoleDefinitions("getSystemRoles", () => this.systemRoles, (roles) => this.systemRoles = roles);
+  }
+
+  // A fresh { cmd, data } literal is built inside the Observable executor (not
+  // reused across attempts) so that each retry gets its own requestId - reusing
+  // one that was sent on a websocket connection which failed to authenticate
+  // (e.g. during the initial page-load handshake) would otherwise wait forever
+  // for a response that can never arrive on that dead connection.
+  private fetchRoleDefinitions(cmd:string, read:() => Role[] | null, write:(roles:Role[]) => void):Observable<Role[]> {
+    const cached = read();
+    if (cached) {
+      return from(Promise.resolve(cached));
+    }
+    return new Observable<Role[]>((observer) => {
+      this.systemService.sendCommandToBackend({ cmd: cmd, data: {} }).then((response:WebSocketMessage) => {
+        const roles = <Role[]>response.data;
+        write(roles);
+        observer.next(roles);
+        observer.complete();
+      }).catch((error) => observer.error(error));
+    }).pipe(
+      timeout(5000),
+      retry(3)
+    );
+  }
+
+  /** True if this user is a system super user (admin panel, project creation). */
+  userIsSysAdmin():boolean {
+    return this.session?.system_role === SYSTEM_ROLE_SYS_ADMIN;
+  }
+
+  getSystemRoleName():string {
+    return this.session?.system_role === SYSTEM_ROLE_SYS_ADMIN ? SYSTEM_ROLE_SYS_ADMIN : SYSTEM_ROLE_USER;
+  }
+
+  /**
+   * Create an invite code into `projectId`. Every code must name a project and a
+   * project role; `eppn` optionally locks it to one SWAMID identity.
+   */
+  generateInviteCode(projectId:string, role:string = PROJECT_ROLE_RESEARCHER, eppn:string = null):Observable<unknown> {
+
+    let data = {
       cmd: "generateInviteCode",
       data: {
-        projectId: projectId
+        projectId: projectId,
+        role: role,
+        eppn: eppn
       }
     };
 

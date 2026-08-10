@@ -14,6 +14,14 @@ export class Project {
     liveAppSessions?:any;
     members?:any;
     membersInfo?:any;
+    /** This user's role in this project ('project_admin' | 'researcher'), from the backend. */
+    userProjectRole?:string;
+    /** What this user may do in this project, as resolved by the backend. */
+    userProjectPermissions?:{
+        createInviteCodes?:boolean;
+        manageProjectMembers?:boolean;
+        editProjectFiles?:boolean;
+    };
     spokenLanguage?:string;
     recordingDevice?:string;
     description?:string;

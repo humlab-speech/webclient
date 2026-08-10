@@ -237,6 +237,11 @@ ngx-dropzone > ngx-dropzone-preview {
     max-height: 92vh;
     min-width: 600px;
     overflow:auto;
+    // Stop scroll chaining: once this dialog's own scroll hits its top/bottom
+    // boundary, further wheel/touch delta must not bubble to the page behind it.
+    // Complements the JS position:fixed body-lock (see dashboard/*dialog ngOnInit),
+    // which only blocks body-level scroll and not this boundary-scroll-chaining case.
+    overscroll-behavior: contain;
 }
 
 .modal-dialog-container-greyout {

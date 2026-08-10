@@ -1,70 +1,90 @@
 <div class="modal-bg">
     <div class="form modal-dialog-container invite-codes-dialog">
 
-        <div class="dialog-header"><h2>Invitation codes</h2>
+        <div class="dialog-header">
+            <div class="header-copy">
+                <h2>Invitation codes</h2>
+                <p *ngIf="projectName">Invite people into <strong>{{ projectName }}</strong>. Each code is valid once.</p>
+            </div>
             <div class="dialog-close-btn" (click)="closeDialog()">
                 <i class="fa fa-times" aria-hidden="true"></i>
             </div>
         </div>
 
-        <div *ngIf="showLoadingIndicator" id="loading-indicator">
+        <div class="create-code-panel" *ngIf="!loadFailed">
+            <form [formGroup]="newInviteCodeForm" class="create-code-fields">
+                <label class="create-code-field">
+                    <span>Role in project</span>
+                    <select class="field-select" formControlName="role">
+                        <option *ngFor="let role of grantableRoles" [value]="role.name">{{ role.label }}</option>
+                    </select>
+                </label>
+
+                <label class="create-code-field">
+                    <span>Restrict to EPPN <em>(optional)</em></span>
+                    <input type="text" class="field-input" formControlName="eppn" placeholder="user@example.org">
+                </label>
+
+                <button class="form-btn create-code-btn" type="button" [disabled]="isCreatingInviteCode" (click)="addInviteCode()">
+                    <i class="fa" [ngClass]="isCreatingInviteCode ? 'fa-spinner fa-spin' : 'fa-plus-circle'" aria-hidden="true"></i>
+                    {{ isCreatingInviteCode ? 'Creating…' : 'Create invite code' }}
+                </button>
+            </form>
+            <p class="create-code-hint">
+                Leave EPPN empty for a code anyone can redeem. Set it to invite one specific person.
+            </p>
         </div>
 
-        <div *ngIf="inviteCodes.controls.length === 0" class="no-invite-codes">
+        <div *ngIf="showLoadingIndicator" id="loading-indicator"></div>
+
+        <div *ngIf="loadFailed" class="no-invite-codes">
+            <p>Could not load invite codes for this project.</p>
+        </div>
+
+        <div *ngIf="!showLoadingIndicator && !loadFailed && inviteCodes.controls.length === 0" class="no-invite-codes">
             <p>No invite codes created yet.</p>
         </div>
 
-        <form [formGroup]="inviteCodesForm">
+        <form [formGroup]="inviteCodesForm" *ngIf="!showLoadingIndicator && inviteCodes.controls.length > 0">
             <table class="invite-codes-table" formArrayName="inviteCodes">
-                <thead *ngIf="inviteCodes.controls.length > 0">
+                <thead>
                     <tr>
                         <th>Invite code</th>
                         <th>Status</th>
-                        <th>Assign to project</th>
                         <th>Role</th>
+                        <th>Restricted to EPPN</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let codeControl of inviteCodes.controls; let i=index" [formGroupName]="i">
-                            <td class="invite-code-container">
-                                {{ codeControl.value.code }}
-                            </td>
-                            <td>
-                                <span *ngIf="codeControl.value.used == true">Used</span>
-                                <span *ngIf="codeControl.value.used == false">Unused</span>
-                            </td>
-                            <td>
-                                <select class="field-select" [formControl]="codeControl.get('projectId')" (change)="onProjectSelected($event, codeControl)">
-                                    <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select class="field-select" [formControl]="codeControl.get('role')" (change)="onRoleSelected($event, codeControl)">
-                                    <option value="admin">Admin</option>
-                                    <option value="analyzer">Analyzer</option>
-                                    <option value="transcriber">Transcriber</option>
-                                </select>
-                            </td>
-                            <td class="cell-actions">
-                                <button class="form-btn icon-btn" type="button" (click)="copyInviteCode(i)" title="Copy">
-                                  <i class="fa fa-clone" aria-hidden="true"></i>
-                                </button>
-                                <button class="form-btn icon-btn" type="button" (click)="removeInviteCode(i)" title="Delete">
-                                  <i class="fa fa-trash-o" aria-hidden="true"></i>
-                                </button>
-                            </td>
+                        <td class="invite-code-container">
+                            {{ codeControl.value.code }}
+                        </td>
+                        <td>
+                            <span *ngIf="codeControl.value.used == true">Used</span>
+                            <span *ngIf="codeControl.value.used == false">Unused</span>
+                        </td>
+                        <td>
+                            <select class="field-select" formControlName="role" (change)="saveInviteCodes()">
+                                <option *ngFor="let role of grantableRoles" [value]="role.name">{{ role.label }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="field-input" formControlName="eppn" placeholder="Anyone" (blur)="saveInviteCodes()">
+                        </td>
+                        <td class="cell-actions">
+                            <button class="form-btn icon-btn" type="button" (click)="copyInviteCode(i)" title="Copy invite link">
+                                <i class="fa fa-clone" aria-hidden="true"></i>
+                            </button>
+                            <button class="form-btn icon-btn" type="button" (click)="removeInviteCode(i)" title="Delete">
+                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
-
-            <button class="form-btn create-code-btn" type="button" (click)="addInviteCode()">
-              <i class="fa fa-plus-circle" aria-hidden="true"></i>
-              Create invite code
-            </button>
-            
         </form>
-        
-    </div>
 
+    </div>
 </div>

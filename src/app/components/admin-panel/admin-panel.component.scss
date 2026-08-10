@@ -359,6 +359,7 @@
 .member-search {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.55rem;
   margin-bottom: 0.6rem;
 
@@ -483,6 +484,19 @@
   margin-top: 0.08rem;
 }
 
+.member-add-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  color: #4a628a;
+  font-size: 0.82rem;
+}
+
+.member-add-role .member-role-select {
+  width: auto;
+}
+
 .member-role-select {
   width: 100%;
   min-width: 6.2rem;
@@ -514,6 +528,123 @@
 
 .projects-table tbody tr.member-editor-row:hover td {
   background: #fbfcff;
+}
+
+// ── Storage ─────────────────────────────────────────────────────────────────
+
+.storage-cell {
+  min-width: 9rem;
+}
+
+.storage-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #7f93af;
+  font-size: 0.8rem;
+}
+
+.spinner-sm {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.storage-error {
+  color: #b42318;
+  font-size: 0.78rem;
+}
+
+.storage-summary-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: #27426f;
+  font-size: 0.8rem;
+  text-align: left;
+
+  i {
+    align-self: flex-end;
+    color: #7f93af;
+    margin-top: -1.1rem;
+  }
+}
+
+.storage-details-row td {
+  background: #fbfcff;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.storage-details {
+  border: 1px solid #d9e3f1;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.storage-details-header {
+  margin-bottom: 0.9rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #1f3c6a;
+  }
+
+  p {
+    margin: 0.28rem 0 0;
+    font-size: 0.86rem;
+    color: #587395;
+  }
+}
+
+.storage-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #dde5f0;
+  border-radius: 10px;
+  overflow: hidden;
+
+  th {
+    background: #f3f7fc;
+    color: #567198;
+    border-bottom: 1px solid #dde5f0;
+    padding: 0.56rem 0.62rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 0.5rem 0.62rem;
+    border-bottom: 1px solid #edf2f8;
+    color: #27426f;
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.storage-bundle-row td {
+  color: #7f93af;
+  font-size: 0.8rem;
+}
+
+.storage-bundle-row td.storage-bundle-name {
+  padding-left: 1.6rem;
+}
+
+.no-sessions-msg {
+  color: #7f93af;
+  font-style: italic;
+  text-align: center;
 }
 
 .no-projects-msg {

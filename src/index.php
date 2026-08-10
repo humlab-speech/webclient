@@ -152,7 +152,9 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
     // For test users, automatically grant access. For real users, access must be granted via access list.
     $loginAllowed = !empty($_SESSION['testUser']) ? true : false;
     
-    $newUserPrivileges = ['createInviteCodes' => false];
+    // New accounts always start as plain Users. SysAdmin is granted out of band
+    // (vispctl users set-system-role), never on first sign-in.
+    $newUserSystemRole = 'user';
     $collection->insertOne([
       'firstName' => $_SESSION['firstName'],
       'lastName' => $_SESSION['lastName'],
@@ -167,10 +169,10 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       'previousLoginAt' => null,
       'lastLoginSessionId' => $sid,
       'lastLoginDurationSeconds' => null,
-      'privileges' => $newUserPrivileges
+      'system_role' => $newUserSystemRole
     ]);
     $_SESSION['loginAllowed'] = $loginAllowed;
-    $_SESSION['privileges'] = $newUserPrivileges;
+    $_SESSION['system_role'] = $newUserSystemRole;
     $_SESSION['loginCount'] = 1;
     
   }
@@ -221,10 +223,12 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
 
     $user = json_decode(json_encode(iterator_to_array($cursor)), TRUE); //this is so dumb... but it works
     $_SESSION['id'] = $user['id'];
-    // Copy auth/privilege fields into the PHP session so api.php can use them
+    // Copy auth/role fields into the PHP session so api.php can use them
     // without a redundant MongoDB lookup on every request.
     $_SESSION['loginAllowed'] = isset($user['loginAllowed']) ? $user['loginAllowed'] : false;
-    $_SESSION['privileges'] = isset($user['privileges']) ? $user['privileges'] : [];
+    // Unknown/missing system roles fall back to the least-privileged one - this
+    // field gates the admin panel, so it must fail closed.
+    $_SESSION['system_role'] = (isset($user['system_role']) && $user['system_role'] === 'sys_admin') ? 'sys_admin' : 'user';
     $_SESSION['loginCount'] = isset($user['loginCount']) ? (int)$user['loginCount'] : null;
     $_SESSION['lastLoginDurationSeconds'] = isset($cursor['lastLoginDurationSeconds']) ? $cursor['lastLoginDurationSeconds'] : null;
   }
@@ -261,7 +265,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
       shibSessionInactivity: "<?php echo $_SESSION['shibSessionInactivity']; ?>",
       shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
       loginAllowed: <?php echo json_encode(isset($_SESSION['loginAllowed']) ? (bool)$_SESSION['loginAllowed'] : false); ?>,
-      privileges: <?php echo json_encode(isset($_SESSION['privileges']) && is_array($_SESSION['privileges']) ? $_SESSION['privileges'] : (object)[]); ?>,
+      system_role: <?php echo json_encode(isset($_SESSION['system_role']) ? $_SESSION['system_role'] : 'user'); ?>,
       loginCount: <?php echo json_encode(isset($_SESSION['loginCount']) ? (int)$_SESSION['loginCount'] : null); ?>,
       lastLoginDurationSeconds: <?php echo json_encode(isset($_SESSION['lastLoginDurationSeconds']) && is_numeric($_SESSION['lastLoginDurationSeconds']) ? (int)$_SESSION['lastLoginDurationSeconds'] : null); ?>,
     };

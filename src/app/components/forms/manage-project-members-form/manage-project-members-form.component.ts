@@ -15,6 +15,7 @@ import { NotifierService } from 'angular-notifier';
 import { Subject } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
 import { WebSocketMessage } from 'src/app/models/WebSocketMessage';
+import { Role, PROJECT_ROLE_RESEARCHER } from 'src/app/models/Role';
 
 @Component({
   selector: 'app-manage-project-members-form',
@@ -38,6 +39,8 @@ export class ManageProjectMembersFormComponent implements OnInit {
   searchUsers:any = [];
   addMemberDialogShown:boolean = false;
   notifierService:NotifierService;
+  projectRoles:Role[] = [];
+  newMemberRole:string = PROJECT_ROLE_RESEARCHER;
 
   constructor(private fb:FormBuilder, private projectService:ProjectService, private systemService:SystemService, private userService:UserService, notifierService: NotifierService) {
     this.notifierService = notifierService;
@@ -54,6 +57,10 @@ export class ManageProjectMembersFormComponent implements OnInit {
       members: this.fb.array([]),
     });
 
+    this.userService.fetchProjectRoles().subscribe((roles: Role[]) => {
+      this.projectRoles = roles;
+    });
+
     this.project.members.forEach((member) => {
       (this.form.get('members') as FormArray).push(this.fb.group({
         username: member.username,
@@ -61,7 +68,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
         lastName: member.lastName,
         fullName: member.firstName + " " + member.lastName,
         eppn: member.eppn,
-        role: member.role,
+        role: member.role || PROJECT_ROLE_RESEARCHER,
         selected: false
       }));
     });
@@ -117,15 +124,41 @@ export class ManageProjectMembersFormComponent implements OnInit {
     });
   }
 
-  userIsProjectAdmin() {
-    let userSession = this.userService.getSession();
-    let result = false;
-    this.project.members.forEach((member) => {
-      if(member.username == userSession.username && member.role == "admin") {
-        result = true;
+  /**
+   * Whether the signed-in user may manage membership of *this* project. Resolved
+   * by the backend and shipped with the project; re-checked server-side anyway.
+   */
+  userCanManageMembers() {
+    return this.project?.userProjectPermissions?.manageProjectMembers === true;
+  }
+
+  roleLabel(roleName:string):string {
+    return this.projectRoles.find(role => role.name === roleName)?.label || roleName;
+  }
+
+  /** Persist a role change for one existing member. */
+  onMemberRoleChanged(member:any) {
+    const username = member.get('username').value;
+    const role = member.get('role').value;
+
+    this.systemService.sendCommandToBackend({
+      cmd: "setProjectMemberRole",
+      projectId: this.project.id,
+      username: username,
+      role: role
+    }).then((wsMsg:WebSocketMessage) => {
+      if(wsMsg.progress == "end" && wsMsg.result) {
+        this.notifierService.notify("info", "Updated role for "+member.get('fullName').value);
+        this.projectService.fetchProjects(true).subscribe(() => {});
+        return;
       }
+
+      // Rejected (e.g. last project admin) - put the control back to what the
+      // server still has, so the UI never shows a role that was not saved.
+      this.notifierService.notify("error", wsMsg.message);
+      const original = this.project.members.find((m:any) => m.username === username);
+      member.get('role').setValue(original?.role || PROJECT_ROLE_RESEARCHER, { emitEvent: false });
     });
-    return result;
   }
 
   onChange(value) {
@@ -168,67 +201,13 @@ export class ManageProjectMembersFormComponent implements OnInit {
     }
   }
 
-  updateRole(user) {
-    const userSession = this.userService.getSession();
-    const isCurrentUser = user.value.username === userSession?.username;
-    const currentProjectMember = this.project.members.find((member) => member.username === user.value.username);
-    const previousRole = currentProjectMember?.role ?? "member";
-
-    //check that this user is not the last admin user on the project
-    let numAdmins = 0;
-    this.members.controls.forEach((member) => {
-      if(member.value.role == "admin") {
-        numAdmins++;
-      }
-    });
-    if(numAdmins == 0 && user.value.role != "admin") {
-      this.notifierService.notify("error", "The project needs to have at least one admin user");
-      user.get('role').setValue(previousRole);
-      return;
-    }
-
-    const isSelfDemotedFromAdmin = isCurrentUser && previousRole === "admin" && user.value.role !== "admin";
-    if (isSelfDemotedFromAdmin) {
-      const confirmed = window.confirm(
-        "You are about to remove your own admin role. If you continue, you will no longer be able to change your role back unless another admin updates it for you. Continue?"
-      );
-
-      if (!confirmed) {
-        user.get('role').setValue(previousRole);
-        return;
-      }
-    }
-
-    if (previousRole === user.value.role) {
-      return;
-    }
-
-    this.systemService.sendCommandToBackend({
-      cmd: "updateProjectMemberRole",
-      projectId: this.project.id,
-      username: user.value.username,
-      role: user.value.role
-    }).then((wsMsg:WebSocketMessage) => {
-      if(wsMsg.progress == "end" && wsMsg.result) {
-        this.notifierService.notify("info", "Updated role for "+user.value.fullName);
-        if (currentProjectMember) {
-          currentProjectMember.role = user.value.role;
-        }
-        this.projectService.fetchProjects(true).subscribe((projects) => {});
-      }
-      else {
-        this.notifierService.notify("error", "Failed to update role for "+user.value.fullName);
-        user.get('role').setValue(previousRole);
-      }
-    });
-  }
-
   addMember(user) {
     //Add this user as a member to the project
     this.systemService.sendCommandToBackend({
       cmd: "addProjectMember",
       projectId: this.project.id,
-      username: user.username
+      username: user.username,
+      role: this.newMemberRole
     }).then((wsMsg:WebSocketMessage) => {
       if(wsMsg.progress == "end" && !wsMsg.result) {
         this.notifierService.notify("error", wsMsg.message);
@@ -247,7 +226,7 @@ export class ManageProjectMembersFormComponent implements OnInit {
           lastName: wsMsg.data.user.lastName,
           fullName: wsMsg.data.user.firstName + " " + wsMsg.data.user.lastName,
           eppn: wsMsg.data.user.eppn,
-          role: "member",
+          role: wsMsg.data.role || PROJECT_ROLE_RESEARCHER,
           selected: false
         }));
 
@@ -258,18 +237,6 @@ export class ManageProjectMembersFormComponent implements OnInit {
   }
 
   removeMember(user) {
-    //check that this user is not the last admin user on the project
-    let numAdmins = 0;
-    this.members.controls.forEach((member) => {
-      if(member.value.role == "admin") {
-        numAdmins++;
-      }
-    });
-    if(numAdmins < 2 && user.value.role == "admin") {
-      this.notifierService.notify("error", "Cannot remove last admin user from project");
-      return;
-    }
-
     if(window.confirm('Really remove member '+user.value.fullName+' from the project?')) {
       this.systemService.sendCommandToBackend({
         cmd: "removeProjectMember",

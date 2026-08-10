@@ -86,10 +86,8 @@ export class ProjectManagerComponent implements OnInit, OnDestroy {
       this.applyLoadingStatus(status);
     }));
 
-    this.subscriptions.push(this.userService.sessionObs.subscribe((session) => {
-      if(session?.privileges?.createProjects) {
-        this.showCreateProjectButton = true;
-      }
+    this.subscriptions.push(this.userService.sessionObs.subscribe(() => {
+      this.showCreateProjectButton = this.userService.userIsSysAdmin();
     }));
 
     this.subscriptions.push(this.projectService.projects$.subscribe(projects => {
@@ -107,10 +105,7 @@ export class ProjectManagerComponent implements OnInit, OnDestroy {
       }
     }));
 
-    let userSession = this.userService.getSession();
-    if(userSession?.privileges?.createProjects) {
-      this.showCreateProjectButton = true;
-    }
+    this.showCreateProjectButton = this.userService.userIsSysAdmin();
 
     // Kick off project loading as soon as authorization is known.
     // ProjectService handles waiting/retrying until a session becomes available.
@@ -241,6 +236,7 @@ export class ProjectManagerComponent implements OnInit, OnDestroy {
   }
 
   showInviteCodesDialog(project = null) {
+    this.projectInEdit = project;
     this.dashboard.modalActive = true;
     this.dashboard.modalName = 'invite-codes-dialog';
   }
