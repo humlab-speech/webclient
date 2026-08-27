@@ -7,6 +7,10 @@
 
     <div class="section-actions">
       <div class="active-count"><span>{{ activeProjectCount }}</span> active</div>
+      <button class="workspace-action-btn" (click)="showUseInviteCodeDialog()">
+        <i class="fa fa-ticket" aria-hidden="true"></i>
+        <span>Use invite code</span>
+      </button>
       <button *ngIf="showCreateProjectButton" class="create-project-btn" (click)="showProjectDialog()">
         <i class="fa fa-plus-circle" aria-hidden="true"></i>
         <span>New project</span>

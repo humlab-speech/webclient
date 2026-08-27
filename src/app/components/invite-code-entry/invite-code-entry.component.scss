@@ -1,13 +1,48 @@
+.invite-code-entry form {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 #inviteCode {
-    font-size: 1.2em;
+    flex: 1 1 16rem;
+    min-height: 2.45rem;
+    border: 1px solid #d8dfe8;
+    border-radius: 10px;
+    color: #27426f;
+    padding: 0 0.75rem;
+    font-size: 0.98rem;
 }
 
 button {
-    font-size: 1.2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 2.45rem;
+    padding: 0 0.9rem;
+    border: 1px solid #d8dfe8;
+    border-radius: 10px;
+    background: #f8f9fc;
+    color: #24497e;
+    font-size: 0.93rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #edf2f8;
+    border-color: #c7d1df;
 }
 
 .formMessage {
     margin-top: 1em;
-    font-size: 1.2em;
+    color: #27426f;
+    font-size: 0.95rem;
     font-weight: bold;
+}
+
+.invite-code-entry--dialog form {
+    align-items: stretch;
 }

@@ -57,6 +57,7 @@ import { TranscribeDialogComponent } from './components/transcribe-dialog/transc
 import { OctraSelectBundleDialogComponent } from './components/octra-select-bundle-dialog/octra-select-bundle-dialog.component';
 import { FrontpageComponent } from './components/frontpage/frontpage.component';
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
+import { UseInviteCodeDialogComponent } from './components/use-invite-code-dialog/use-invite-code-dialog.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +94,8 @@ import { AdminPanelComponent } from './components/admin-panel/admin-panel.compon
     TranscribeDialogComponent,
     OctraSelectBundleDialogComponent,
     FrontpageComponent,
-    AdminPanelComponent
+    AdminPanelComponent,
+    UseInviteCodeDialogComponent
   ],
   imports: [
     CommonModule,

@@ -229,6 +229,10 @@ export class ProjectManagerComponent implements OnInit, OnDestroy {
     this.dashboard.modalName = 'project-dialog';
   }
 
+  showUseInviteCodeDialog() {
+    this.modalService.showModal('use-invite-code-dialog');
+  }
+
   showSprScriptsDialog(project = null) {
     this.projectInEdit = project;
     this.dashboard.modalActive = true;

@@ -1,0 +1,45 @@
+.use-invite-code-dialog {
+  width: min(440px, 94vw);
+  padding: 1.35rem;
+  border: 1px solid #d8dfe8;
+  border-radius: 18px;
+  background: #fff !important;
+  color: #27426f;
+  box-shadow: 0 22px 46px rgba(31, 56, 93, 0.24);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dialog-header h2 {
+  margin: 0;
+  color: #1c3660;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.dialog-header p {
+  margin: 0.3rem 0 0;
+  color: #6d7c98;
+  font-size: 0.92rem;
+}
+
+.dialog-close-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d8dfe8;
+  border-radius: 10px;
+  color: #34527f;
+  background: #f8f9fc;
+}
+
+.dialog-close-btn:hover {
+  background: #edf2f8;
+  border-color: #c7d1df;
+  color: #1c3660;
+}

@@ -48,7 +48,8 @@
   font-weight: 700;
 }
 
-.create-project-btn {
+.create-project-btn,
+.workspace-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -63,6 +64,10 @@
 }
 
 .create-project-btn:hover {
+  background: #eef3f8;
+}
+
+.workspace-action-btn:hover {
   background: #eef3f8;
 }
 

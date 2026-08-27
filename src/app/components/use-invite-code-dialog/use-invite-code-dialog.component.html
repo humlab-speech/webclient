@@ -1,0 +1,15 @@
+<div class="modal-bg">
+  <div class="form modal-dialog-container use-invite-code-dialog">
+    <div class="dialog-header">
+      <div class="header-copy">
+        <h2>Use invite code</h2>
+        <p>Enter an invitation code to join another project.</p>
+      </div>
+      <button class="dialog-close-btn" type="button" (click)="closeDialog()" aria-label="Close">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <app-invite-code-entry [embeddedInDialog]="true" (redeemed)="closeDialog()"></app-invite-code-entry>
+  </div>
+</div>

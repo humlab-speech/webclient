@@ -1,7 +1,10 @@
-<div>
+<div class="invite-code-entry" [class.invite-code-entry--dialog]="embeddedInDialog">
     <form [formGroup]="inviteCodeForm" (ngSubmit)="onSubmit()">
         <input id="inviteCode" formControlName="code" type="text" placeholder="Enter invite code here">
-        <button type="submit">Submit</button>
+        <button type="submit">
+            <i class="fa fa-ticket" aria-hidden="true"></i>
+            <span>Use code</span>
+        </button>
     </form>
     <div *ngIf="formMessage" class="formMessage">{{ formMessage }}</div>
 </div>

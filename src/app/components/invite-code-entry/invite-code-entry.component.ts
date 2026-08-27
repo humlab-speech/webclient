@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SystemService } from '../../services/system.service';
 import { ProjectService } from '../../services/project.service';
@@ -11,6 +11,9 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./invite-code-entry.component.scss']
 })
 export class InviteCodeEntryComponent implements OnInit {
+  @Input() embeddedInDialog:boolean = false;
+  @Output() redeemed:EventEmitter<void> = new EventEmitter<void>();
+
   inviteCodeForm: FormGroup;
   formMessage: string;
 
@@ -59,13 +62,10 @@ export class InviteCodeEntryComponent implements OnInit {
             console.log("Fetching user session");
             this.userService.fetchSession().subscribe(session => {
               console.log("User session", session);
-              //re-fetch projects
-              /*
-              console.log("Fetching projects");
-              this.projectService.fetchProjects(true).subscribe(projects => {
-                console.log(projects);
+              this.projectService.fetchProjects(true).subscribe(() => {
+                this.inviteCodeForm.reset();
+                this.redeemed.emit();
               });
-              */
             });
             
           }, 3000);

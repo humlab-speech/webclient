@@ -92,6 +92,11 @@ export class UserComponent implements OnInit {
     this.modalService.showModal('help-dialog');
   }
 
+  showUseInviteCodeDialog() {
+    this.accountMenuVisible = false;
+    this.modalService.showModal('use-invite-code-dialog');
+  }
+
   openAdminPanel() {
     this.router.navigate(['/admin']);
   }

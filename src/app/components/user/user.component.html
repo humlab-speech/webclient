@@ -10,6 +10,7 @@
 
   <ul *ngIf="accountMenuVisible" class="account-menu-dropdown">
     <li *ngIf="isAdmin()" (click)="openAdminPanel()"><i class="fa fa-cogs" aria-hidden="true"></i> Admin</li>
+    <li (click)="showUseInviteCodeDialog()"><i class="fa fa-ticket" aria-hidden="true"></i> Use invite code</li>
     <li (click)="showHelpDialog()"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</li>
     <li (click)="signOut()"><i class="fa fa-sign-out" aria-hidden="true"></i> Sign out</li>
   </ul>
