@@ -13,6 +13,16 @@
         </div>
 
         <div class="members-dialog-content">
+            <div *ngIf="canCreateInviteCodes()" class="member-invite-panel">
+                <div>
+                    <h3>Invite new members</h3>
+                    <p>Create one-use invitation codes.</p>
+                </div>
+                <button class="member-invite-btn" type="button" (click)="showInviteCodesDialog()">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                    <span>Invitation codes</span>
+                </button>
+            </div>
             <app-manage-project-members-form [project]="project"></app-manage-project-members-form>
         </div>
     </div>

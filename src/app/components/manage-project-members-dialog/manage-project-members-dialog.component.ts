@@ -29,4 +29,12 @@ export class ManageProjectMembersDialogComponent implements OnInit {
     this.projectManager.dashboard.modalActive = false;
   }
 
+  canCreateInviteCodes(): boolean {
+    return this.project?.userProjectPermissions?.createInviteCodes === true;
+  }
+
+  showInviteCodesDialog(): void {
+    this.projectManager.showInviteCodesDialog(this.project);
+  }
+
 }

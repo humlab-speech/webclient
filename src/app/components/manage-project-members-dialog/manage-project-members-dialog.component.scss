@@ -86,6 +86,52 @@
   background: #f8fafd;
 }
 
+.member-invite-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.95rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid #d8dfe8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(31, 56, 93, 0.06);
+}
+
+.member-invite-panel h3 {
+  margin: 0;
+  color: #1c3660;
+  font-size: 1rem;
+}
+
+.member-invite-panel p {
+  margin: 0.25rem 0 0;
+  color: #6d7c98;
+  font-size: 0.9rem;
+}
+
+.member-invite-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.45rem;
+  padding: 0 0.95rem;
+  border: 1px solid #d9e1eb;
+  border-radius: 999px;
+  background: #f8f9fc;
+  color: #24497e;
+  font-size: 0.93rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.member-invite-btn:hover {
+  background: #eef3f8;
+}
+
 @media (max-width: 900px) {
   .members-dialog-container {
     width: calc(100vw - 1rem);
@@ -100,5 +146,10 @@
 
   .members-dialog-header p {
     font-size: 0.88rem;
+  }
+
+  .member-invite-panel {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
