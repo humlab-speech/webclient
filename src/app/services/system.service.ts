@@ -19,6 +19,14 @@ export class SystemService {
   public wsSubject: Subject<MessageEvent>;
   private wsHealthCheckInterval:any = null;
   private wsError:boolean = false;
+
+  // Fires when the backend reports that it can no longer identify us - the PHP
+  // session behind this connection is gone or expired. UserService listens and
+  // tears the signed-in state down. It lives here rather than in UserService
+  // because every command shares this socket, so any of them can be the one
+  // that discovers the session died; UserService cannot be injected here
+  // without a circular dependency (it already depends on SystemService).
+  public sessionInvalidated$: Subject<void> = new Subject<void>();
   
 
   constructor(private http:HttpClient, private notifierService: NotifierService) {
@@ -264,7 +272,16 @@ export class SystemService {
       };
 
       this.ws.onmessage = (event) => {
-        this.wsSubject.next(JSON.parse(event.data));
+        let data = JSON.parse(event.data);
+
+        // Watch every reply, not just the ones a caller is awaiting: a command
+        // whose promise nobody handles must still be able to surface an expired
+        // session.
+        if(data?.data?.reason === "authentication") {
+          this.sessionInvalidated$.next();
+        }
+
+        this.wsSubject.next(data);
       };
     });
   }

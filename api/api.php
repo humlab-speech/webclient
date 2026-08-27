@@ -11,7 +11,7 @@ $domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".vi
 //if we are running on visp.local set cookie secure to false
 $secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
 $httpOnly = false;
-$accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) !== "false";
+$accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true";
 
 session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
 session_start();

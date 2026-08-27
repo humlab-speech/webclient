@@ -58,9 +58,38 @@ export class UserService {
       }
     });
 
+    // Any command may be the one that discovers the PHP session died; when that
+    // happens the signed-in UI has to come down immediately rather than linger
+    // showing a dashboard whose every action fails.
+    this.systemService.sessionInvalidated$.subscribe(() => {
+      this.handleSessionInvalidated();
+    });
+
     setInterval(() => {
       this.checkValidityOfPhpSessionCookie();
     }, 60000);
+  }
+
+  /**
+   * Tear down every trace of the signed-in state. Guarded because a burst of
+   * parallel commands will each come back denied, and re-running this per reply
+   * would emit a storm of identical events at the components.
+   */
+  private sessionInvalidationHandled:boolean = false;
+
+  private handleSessionInvalidated() {
+    if(this.sessionInvalidationHandled) {
+      return;
+    }
+    this.sessionInvalidationHandled = true;
+
+    console.warn("Backend reports the session is no longer valid - signing out locally.");
+    this.session = null;
+    this.projectRoles = null;
+    this.systemRoles = null;
+    this.setUserAuthenticationStatus(false);
+    this.setAuthorizationStatus(false);
+    this.sessionObs.next(null);
   }
 
   signOut():Observable<unknown> {
@@ -189,6 +218,14 @@ export class UserService {
     }
     return new Observable<Role[]>((observer) => {
       this.systemService.sendCommandToBackend({ cmd: cmd, data: {} }).then((response:WebSocketMessage) => {
+        // A denial answers with an object, not an array. Caching that poisons
+        // every later read for the lifetime of the page - callers do .find() on
+        // what they get back - so refuse anything that is not role data and let
+        // the caller retry.
+        if(!Array.isArray(response.data)) {
+          observer.error(new Error(cmd + " did not return a role list"));
+          return;
+        }
         const roles = <Role[]>response.data;
         write(roles);
         observer.next(roles);
@@ -257,6 +294,8 @@ export class UserService {
   importSession(session:UserSession) {
     this.session = session;
     if(session?.eppn) {
+      //a live session again (fresh sign-in), so re-arm the invalidation guard
+      this.sessionInvalidationHandled = false;
       this.setUserAuthenticationStatus(true);
       this.setAuthorizationStatus(session.loginAllowed === true);
     }
@@ -309,13 +348,28 @@ export class UserService {
     return this.session.firstName.toLocaleLowerCase()+"."+this.session.lastName.toLocaleLowerCase();
   }
 
+  /**
+   * Heartbeat. The cookie merely existing proves nothing - PHP expires sessions
+   * server-side at gc_maxlifetime while the cookie sits there for hours - so ask
+   * the backend whether the session is actually still alive. getSession answers
+   * null once it isn't, and importSession turns that into a signed-out UI.
+   */
   checkValidityOfPhpSessionCookie() {
     let phpSessId = this.getCookie("PHPSESSID");
     if(phpSessId == "") {
+      this.handleSessionInvalidated();
       //redirect to front page
       window.location.href = '/'
       return false;
     }
+
+    if(this.userIsAuthenticated) {
+      this.fetchSession().subscribe({
+        next: (session:UserSession) => this.importSession(session),
+        error: () => {} //transient socket trouble is not proof of an expired session
+      });
+    }
+
     return true;
   }
 }

@@ -134,6 +134,20 @@ if(!empty(getenv("TEST_USER_LOGIN_KEY")) && $_GET['login'] == getenv("TEST_USER_
 }
 
 
+//Session fixation defence. The id that carried this browser through the IdP
+//round-trip must not survive into the authenticated session: without this, an
+//attacker who can plant a PHPSESSID cookie (XSS, or any sibling host under the
+//base domain) knows the id the victim's identity will land on. Regenerate once,
+//on the anonymous -> authenticated transition, so the id stays stable across
+//subsequent page loads. This runs before the mongo write below, so phpSessionId
+//records the new id rather than the discarded one.
+if(!empty($_SESSION['username']) && empty($_SESSION['sessionIdRegenerated'])) {
+  session_regenerate_id(true);
+  $_SESSION['sessionIdRegenerated'] = true;
+  $sid = session_id();
+  addLog("Regenerated session id on authentication for ".$_SESSION['username'], "info");
+}
+
 addLog("Started session ".$sid."", "info");
 
 if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
