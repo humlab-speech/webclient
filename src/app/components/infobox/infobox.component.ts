@@ -12,8 +12,8 @@ import { ModalService } from '../../services/modal.service';
 export class InfoboxComponent implements OnInit {
 
   @Input() infobox: Infobox;
-  octraEnabled:boolean = false;
-  octraUrl:string = '';
+  trattEnabled:boolean = false;
+  trattUrl:string = '';
   userIsLoggedIn:boolean = false;
 
   constructor(
@@ -22,8 +22,8 @@ export class InfoboxComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.octraEnabled = environment.ENABLED_APPLICATIONS.includes('octra');
-    this.octraUrl = `https://octra.${window.location.hostname}`;
+    this.trattEnabled = environment.ENABLED_APPLICATIONS.includes('tratt');
+    this.trattUrl = `https://tratt.${window.location.hostname}`;
     this.userIsLoggedIn = !!this.userService.getSession()?.eppn;
 
     this.userService.sessionObs.subscribe((userSession) => {

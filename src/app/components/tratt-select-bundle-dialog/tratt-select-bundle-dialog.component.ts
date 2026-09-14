@@ -8,12 +8,12 @@ import { Router } from '@angular/router';
 import Cookies from 'js-cookie';
 
 @Component({
-  selector: 'app-octra-select-bundle-dialog',
-  templateUrl: './octra-select-bundle-dialog.component.html',
-  styleUrl: './octra-select-bundle-dialog.component.scss'
+  selector: 'app-tratt-select-bundle-dialog',
+  templateUrl: './tratt-select-bundle-dialog.component.html',
+  styleUrl: './tratt-select-bundle-dialog.component.scss'
 })
 
-export class OctraSelectBundleDialogComponent implements OnInit {
+export class TrattSelectBundleDialogComponent implements OnInit {
 
   @Input() project;
 
@@ -75,7 +75,7 @@ export class OctraSelectBundleDialogComponent implements OnInit {
     return this.sessionOptions.length > 0 && this.bundleOptions.length > 0;
   }
 
-  launchOctra(): void {
+  launchTratt(): void {
     this.bundleSelected();
   }
 
@@ -187,8 +187,8 @@ export class OctraSelectBundleDialogComponent implements OnInit {
     }
 
     /*
-    we should now launch octra via an url that looks like this:
-    https://octra.DOMAIN/visp-task/project/uz79uprps9osn3lz86jgo/session/kOtJ7gZl1Orydhp-0dPHf/bundle/same-goddamn-file.wav
+    we should now launch tratt via an url that looks like this:
+    https://tratt.DOMAIN/visp-task/project/uz79uprps9osn3lz86jgo/session/kOtJ7gZl1Orydhp-0dPHf/bundle/same-goddamn-file.wav
     */
 
     console.log(this.project.id, selectedSessionId, selectedBundle);
@@ -215,17 +215,17 @@ export class OctraSelectBundleDialogComponent implements OnInit {
 
       response.data.annotationFile;
 
-      //set octra task cookie
-      Cookies.set('octraTask', response.data.taskId, { domain: window.location.hostname, secure: true, sameSite: 'None' });
-      Cookies.set('octraTaskAnnotationFile', response.data.annotationFile, { domain: window.location.hostname, secure: true, sameSite: 'None' });
-      console.log("Re-routing to Octra");
+      //set tratt task cookie
+      Cookies.set('trattTask', response.data.taskId, { domain: window.location.hostname, secure: true, sameSite: 'None' });
+      Cookies.set('trattTaskAnnotationFile', response.data.annotationFile, { domain: window.location.hostname, secure: true, sameSite: 'None' });
+      console.log("Re-routing to Tratt");
       this.closeDialog();
-      this.router.navigate(['/octra']);
+      this.router.navigate(['/tratt']);
     });
-    
+
   }
 
   closeDialog() {
-    this.modalService.hideModal("octra-select-bundle-dialog");
+    this.modalService.hideModal("tratt-select-bundle-dialog");
   }
 }

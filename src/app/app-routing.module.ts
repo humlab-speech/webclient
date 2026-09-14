@@ -13,7 +13,7 @@ const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'app', component: ContainerSessionRenderComponent },
   { path: 'artic', component: ContainerSessionRenderComponent },
-  { path: 'octra', component: ContainerSessionRenderComponent },
+  { path: 'tratt', component: ContainerSessionRenderComponent },
   { path: 'about', component: AboutComponent },
   { path: 'om', component: AboutComponent },
   { path: 'DS/Login', redirectTo: '/', pathMatch: 'full' },

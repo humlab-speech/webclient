@@ -42,8 +42,8 @@ export class ContainerSessionRenderComponent implements OnInit {
         let emuWebAppUrl = window.location.protocol+"//artic."+window.location.hostname+window.location.search;
         iframe.setAttribute("src", emuWebAppUrl);
         break;
-      case "/octra":
-        this.setupOctra(iframe);
+      case "/tratt":
+        this.setupTratt(iframe);
         break;
     }
 
@@ -54,29 +54,29 @@ export class ContainerSessionRenderComponent implements OnInit {
     });
   }
 
-  setupOctra(iframe) {
+  setupTratt(iframe) {
     const DEBUG = false;
 
-    let octraTask = Cookies.get("octraTask");
-    if (DEBUG) console.log("Octra task from cookie:", octraTask);
-    let octraTaskAnnotationFile = Cookies.get("octraTaskAnnotationFile");
-    if (DEBUG) console.log("Octra task annotation file from cookie:", octraTaskAnnotationFile);
+    let trattTask = Cookies.get("trattTask");
+    if (DEBUG) console.log("Tratt task from cookie:", trattTask);
+    let trattTaskAnnotationFile = Cookies.get("trattTaskAnnotationFile");
+    if (DEBUG) console.log("Tratt task annotation file from cookie:", trattTaskAnnotationFile);
 
     // Use current origin so this works across domains/environments, including ports
-    const apiBase = window.location.protocol + "//octra." + window.location.host;
-    const taskUrl = `${apiBase}/api/v1/file/download/${octraTask}`;
-    if (!octraTask) {
-      console.warn('Octra task not found in cookies; download URL will be invalid.');
+    const apiBase = window.location.protocol + "//tratt." + window.location.host;
+    const taskUrl = `${apiBase}/api/v1/file/download/${trattTask}`;
+    if (!trattTask) {
+      console.warn('Tratt task not found in cookies; download URL will be invalid.');
     }
-    let octraUrlParams = `?embedded=true&audio_url=${encodeURIComponent(taskUrl)}.wav`;
-    if(octraTaskAnnotationFile) {
-      octraUrlParams += `&transcript=${encodeURIComponent(taskUrl)}_annot.json`;
+    let trattUrlParams = `?embedded=true&audio_url=${encodeURIComponent(taskUrl)}.wav`;
+    if(trattTaskAnnotationFile) {
+      trattUrlParams += `&transcript=${encodeURIComponent(taskUrl)}_annot.json`;
     }
-    let octraUrl = window.location.protocol+"//octra."+window.location.hostname + octraUrlParams;
+    let trattUrl = window.location.protocol+"//tratt."+window.location.hostname + trattUrlParams;
 
-    iframe.setAttribute("src", octraUrl);
+    iframe.setAttribute("src", trattUrl);
 
-    interface OctraWindowMessageEventData {
+    interface TrattWindowMessageEventData {
       status?: "success" | "changed" | "error";
       data?: {
         annotation: IFile; // IFile with annotation saved as AnnotJSON.
@@ -90,18 +90,18 @@ export class ContainerSessionRenderComponent implements OnInit {
       type: string;
       encoding: string;
     }
-    
-    window.addEventListener("message", (event) => {
-      const octraMessageData: OctraWindowMessageEventData = event.data;
 
-      if (octraMessageData?.status === "error" && octraMessageData?.error) {
+    window.addEventListener("message", (event) => {
+      const trattMessageData: TrattWindowMessageEventData = event.data;
+
+      if (trattMessageData?.status === "error" && trattMessageData?.error) {
         // something went wrong
-        const error = octraMessageData.error;
-        console.log("Octra error:", error);
-      } else if (octraMessageData?.status === "success") {
+        const error = trattMessageData.error;
+        console.log("Tratt error:", error);
+      } else if (trattMessageData?.status === "success") {
           // user clicked on "SAVE" button on the bottom
-          const annotation = octraMessageData.data.annotation; // annotJSON
-          if (DEBUG) console.log("Octra annotation saved:", annotation);
+          const annotation = trattMessageData.data.annotation; // annotJSON
+          if (DEBUG) console.log("Tratt annotation saved:", annotation);
 
           const annotationParsed = JSON.parse(annotation.content);
 
@@ -113,10 +113,10 @@ export class ContainerSessionRenderComponent implements OnInit {
             if (DEBUG) console.log('Task updated:', response);
           });
 
-        } else if (octraMessageData?.status === "changed") {
-          // user changed something in Octra
-          const annotation = octraMessageData.data.annotation; // annotJSON
-          if (DEBUG) console.log("Octra annotation changed:", annotation);
+        } else if (trattMessageData?.status === "changed") {
+          // user changed something in Tratt
+          const annotation = trattMessageData.data.annotation; // annotJSON
+          if (DEBUG) console.log("Tratt annotation changed:", annotation);
         }
     });
   }

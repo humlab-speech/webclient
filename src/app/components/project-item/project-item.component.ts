@@ -67,13 +67,13 @@ export class ProjectItemComponent implements OnInit {
         
         this.vispApplications.push(jupyterApp);
       }
-      if(vispAppName == "octra") {
-        let octraApp = new VispApp();
-        octraApp.name = "octra";
-        octraApp.title = "Octra";
-        octraApp.subtitle = "Transcription tool";
-        octraApp.icon = "app-icons/88x88-color/octra-icon.png";
-        this.vispApplications.push(octraApp);
+      if(vispAppName == "tratt") {
+        let trattApp = new VispApp();
+        trattApp.name = "tratt";
+        trattApp.title = "Tratt";
+        trattApp.subtitle = "Transcription tool";
+        trattApp.icon = "tratt-app-icon.svg";
+        this.vispApplications.push(trattApp);
       }
       if(vispAppName == "script") {
         let scriptApp = new VispApp();

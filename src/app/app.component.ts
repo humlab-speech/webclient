@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
 
   showBottomBanner: boolean = true;
 
-  private readonly toolRoutes: string[] = ['/app', '/artic', '/octra', '/spr'];
+  private readonly toolRoutes: string[] = ['/app', '/artic', '/tratt', '/spr'];
 
   constructor(private router: Router) {}
 

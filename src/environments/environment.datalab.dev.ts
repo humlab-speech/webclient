@@ -3,7 +3,7 @@ export const environment = {
     LOGO_IMAGE_PATH: "/assets/datalab-logo.png",
     API_ENDPOINT: "localtest.me",
     EMUDB_INTEGRATION: false,
-    ENABLED_APPLICATIONS: ["jupyter", "vscode", "octra", "labjs"],
+    ENABLED_APPLICATIONS: ["jupyter", "vscode", "tratt", "labjs"],
     BASE_DOMAIN: "localtest.me",
     GITLAB_API_ENDPOINT: "gitlab.localtest.me/api/v4",
     GITLAB_PERSONAL_ACCESS_TOKEN: null,

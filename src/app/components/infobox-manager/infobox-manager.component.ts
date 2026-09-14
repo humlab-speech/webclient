@@ -49,7 +49,7 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'tools',
             title: 'Tools',
-            body: 'OCTRA is available as an open browser-based transcription tool. It runs locally in your browser, so your audio files are not uploaded to VISP.'
+            body: 'TRATT is available as an open browser-based transcription tool. It runs locally in your browser, so your audio files are not uploaded to VISP.'
           }
         ]
       : [
