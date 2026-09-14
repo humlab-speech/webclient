@@ -92,7 +92,7 @@ export class AppctrlComponent implements OnInit {
 
   selectAppOptions() {
     //launch popup with app options
-    this.modalService.showModal("octra-select-bundle-dialog", this.project);
+    this.modalService.showModal("tratt-select-bundle-dialog", this.project);
   }
 
   launchProjectInApp() {
@@ -114,9 +114,9 @@ export class AppctrlComponent implements OnInit {
         this.launchEmuWebAppSession();
         this.systemService.setCurrentApplication("artic");
       break;
-      case "octra":
-        this.launchOctraSession();
-        this.systemService.setCurrentApplication("octra");
+      case "tratt":
+        this.launchTrattSession();
+        this.systemService.setCurrentApplication("tratt");
       break;
       case "jupyter":
         this.launchContainerSession("jupyter");
@@ -238,14 +238,14 @@ export class AppctrlComponent implements OnInit {
     }});
   }
 
-  launchOctraSession() {
+  launchTrattSession() {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
-    
+
     //set projectId cookie
     Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
-    this.router.navigate(['/octra'], { queryParams: {
+    this.router.navigate(['/tratt'], { queryParams: {
     }});
   }
 

@@ -459,7 +459,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
   }
 
   closeDialog() {
-    this.modalService.hideModal("octra-select-bundle-dialog");
+    this.modalService.hideModal("tratt-select-bundle-dialog");
   }
 
   showComment(bundle) {

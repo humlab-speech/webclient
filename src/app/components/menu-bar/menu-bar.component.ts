@@ -367,7 +367,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     const firstPathPart = this.getFirstPathPart(url);
 
     this.containerSessionViewActive = firstPathPart === 'app' || firstPathPart === 'artic';
-    this.showBackToDashboardButton = firstPathPart === 'app' || firstPathPart === 'artic' || firstPathPart === 'octra' || firstPathPart === 'admin';
+    this.showBackToDashboardButton = firstPathPart === 'app' || firstPathPart === 'artic' || firstPathPart === 'tratt' || firstPathPart === 'admin';
     this.isDashboardRoute = firstPathPart === '';
 
     this.updateHeroCollapseForStateChange();
