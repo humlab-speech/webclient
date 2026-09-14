@@ -48,6 +48,14 @@
   height: 18px;
 }
 
+// The Tratt icon has its own rounded-square background baked into the SVG
+// (unlike the other flat glyph icons), so it reads as too small at the
+// shared 18px size — size it up to fill the tile-icon container better.
+.tile-icon img.icon-lg {
+  width: 28px;
+  height: 28px;
+}
+
 .tile-copy {
   display: flex;
   flex-direction: column;

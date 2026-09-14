@@ -7,7 +7,7 @@
     (click)="vispApp.name === 'tratt' ? selectAppOptions() : launchProjectInApp()">
 
     <span class="tile-icon orange">
-      <img [src]="appIconPath" [alt]="vispApp.title + ' icon'">
+      <img [src]="appIconPath" [alt]="vispApp.title + ' icon'" [class.icon-lg]="vispApp.name === 'tratt'">
     </span>
 
     <span class="tile-copy">
