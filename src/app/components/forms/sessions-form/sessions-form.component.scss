@@ -165,6 +165,14 @@ li {
     margin-top: 1em;
 }
 
+.spr-import-status {
+    margin-top: 0.5em;
+}
+
+.spr-import-status-error {
+    color: $crimson;
+}
+
 input[type="checkbox"] {
     width: 1.5em;
     height: 1.5em;

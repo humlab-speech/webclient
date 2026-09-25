@@ -248,6 +248,13 @@
                                     <i>No files uploaded</i>
                                 </div>
                             </div>
+                            <ng-container *ngIf="session.value.dataSource == 'record'">
+                                <div *ngIf="getSprImportStatus(session.value.id) as importStatus" class="spr-import-status" [ngClass]="'spr-import-status-' + importStatus.state">
+                                    <i class="fa" aria-hidden="true" [ngClass]="{'fa-check-circle': importStatus.state == 'ok', 'fa-refresh fa-spin': importStatus.state == 'busy', 'fa-exclamation-circle': importStatus.state == 'error'}"></i>
+                                    {{ importStatus.label }}
+                                    <div *ngIf="importStatus.detail" class="help-text">{{ importStatus.detail }}</div>
+                                </div>
+                            </ng-container>
                         </div>
 
                     </div>

@@ -284,6 +284,41 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     return `session-location-map-${sessionId}`;
   }
 
+  /**
+   * Import status of a recording session's online recordings, as tracked by the
+   * session-manager (sessions[].sprImport). Null if nothing has been imported or
+   * queued yet. Reflects the project as it was when the dialog opened.
+   */
+  getSprImportStatus(sessionId:string):{ state:string, label:string, detail:string|null }|null {
+    const session = this.project?.sessions?.find(s => s.id == sessionId);
+    const sprImport = session?.sprImport;
+    if(!sprImport) {
+      return null;
+    }
+    const when = (date) => date ? new Date(date).toLocaleString() : null;
+    switch(sprImport.status) {
+      case "imported":
+        return {
+          state: "ok",
+          label: "Imported",
+          detail: sprImport.importedAt ? "Last imported " + when(sprImport.importedAt) : null,
+        };
+      case "pending":
+      case "importing":
+        return { state: "busy", label: "Importing new recordings…", detail: null };
+      case "failed":
+        return {
+          state: "error",
+          label: "Import failed",
+          detail: sprImport.nextRetryAt
+            ? "Retrying automatically " + when(sprImport.nextRetryAt) + "."
+            : "Please contact support. The recordings are kept and will be imported once the problem is fixed.",
+        };
+      default:
+        return null;
+    }
+  }
+
   getLocationQuery(sessionId:string):string {
     return this.locationSearchQueryBySessionId[sessionId] || "";
   }
