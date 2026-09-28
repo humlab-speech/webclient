@@ -234,7 +234,7 @@ export class ShepherdService {
 
     this.tour.addStep({
       id: 'save-project',
-      text: `Click the 'Save' button to create the project.`,
+      text: `Click the 'Create project' button to create the project.`,
       buttons: [
         {
           text: 'Abort',

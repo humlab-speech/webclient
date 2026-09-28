@@ -1,5 +1,5 @@
 
-import { Component, OnInit, Input, forwardRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, forwardRef, OnDestroy, ViewChild, TemplateRef } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -24,6 +24,8 @@ import { UserService } from 'src/app/services/user.service';
 import { nanoid } from 'nanoid';
 import { Clipboard } from '@angular/cdk/clipboard';
 import * as L from 'leaflet';
+import { CreatedSprScript } from '../spr-scripts-form/spr-scripts-form.component';
+import { sessionSources, fileOrigin } from '../../../models/SessionSources';
 
 export interface EmudbFormValues {
   sessions: [];
@@ -60,6 +62,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   @Input() projectManager: ProjectManagerComponent;
   @Input() project: Project|null;
   @Input() parentForm:any;
+  // The annotation structure belongs to this form, but the project dialog shows it among the project-wide settings
+  @ViewChild('annotationStructure', { static: true }) annotationStructureTemplate: TemplateRef<any>;
 
   form:FormGroup;
   subscriptions: Subscription[] = [];
@@ -88,6 +92,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   emuDbLoadingStatus:boolean = true;
   supportReOpeningSealedSprSession:boolean = false;
   isAddingSession:boolean = false;
+  scriptEditorSession:FormGroup|null = null; //session a new script is being created for, if any
   locationSearchQueryBySessionId: Record<string, string> = {};
   locationSearchResultsBySessionId: Record<string, NominatimSearchResult[]> = {};
   locationSearchInProgressBySessionId: Record<string, boolean> = {};
@@ -535,6 +540,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       }
       
       this.annotLevelForms.removeAt(index);
+      this.annotLevels.markAsDirty();
     }
   }
 
@@ -559,6 +565,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   deleteAnnotLevelLink(index) {
     if(window.confirm("Are you sure you wish to delete this annotation level link?")) {
       this.annotLevelLinkForms.removeAt(index);
+      this.annotLevelLinks.markAsDirty();
     }
   }
 
@@ -620,14 +627,19 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         timeOfRecording: null,
         placeOfRecording: "",
         dataSource: "upload",
+        uploadEnabled: true,
+        recordEnabled: false,
         new: true,
         collapsed: false,
         sprSessionSealed: false,
       }
     }
     else {
+      const sources = sessionSources(session);
+      session.uploadEnabled = sources.upload;
+      session.recordEnabled = sources.record;
       let sprSession = null;
-      if(session.dataSource == "record") {
+      if(session.recordEnabled) {
         sprSession = await new Promise((resolve, reject) => {
           this.projectService.fetchSprSession(session.id).subscribe({
             next: (cmdResponse:any) => {
@@ -654,7 +666,10 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       session.files.forEach(file => {
         files.push({
           name: file.name,
-          uploadComplete: true
+          uploadComplete: true,
+          // Already in the project, as opposed to files dropped in this dialog
+          stored: true,
+          origin: fileOrigin(file, session),
         });
       });
     }
@@ -681,6 +696,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0] : { value: null, label: "No script" };
 
     let dataSourceControl = new FormControl(session.dataSource);
+    let recordEnabledControl = new FormControl(session.recordEnabled);
 
     const sessionGroup = this.fb.group({
       new: new FormControl(session.new),
@@ -702,9 +718,11 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
         validators: [this.validateCoordinatesIfProvided.bind(this)],
         updateOn: 'blur'
       }),
-      dataSource: dataSourceControl, //upload or record
+      dataSource: dataSourceControl, //the source a session was created with; uploadEnabled/recordEnabled rule
+      uploadEnabled: new FormControl(session.uploadEnabled),
+      recordEnabled: recordEnabledControl,
       recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(dataSourceControl)),
+      sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(recordEnabledControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
       sprSessionSealed: new FormControl(session.sprSessionSealed),
@@ -867,23 +885,99 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
   }
 
-  toggleSessionCollapsed(sessionName) {
-    this.sessions.controls.forEach(group => {
-      let g = group as FormGroup;
-      if(sessionName == g.controls.name.value) {
-        const nextCollapsedState = !g.controls.collapsed.value;
-        g.controls.collapsed.setValue(nextCollapsedState);
-        if(!nextCollapsedState) {
-          setTimeout(() => {
-            const sessionId = String(g.controls.id.value);
-            const mapInstance = this.sessionMapBySessionId.get(sessionId);
-            if(mapInstance) {
-              mapInstance.invalidateSize();
-            }
-          }, 0);
+  toggleSessionCollapsed(session:FormGroup) {
+    const nextCollapsedState = !session.controls.collapsed.value;
+    session.controls.collapsed.setValue(nextCollapsedState);
+    if(!nextCollapsedState) {
+      setTimeout(() => {
+        const sessionId = String(session.controls.id.value);
+        const mapInstance = this.sessionMapBySessionId.get(sessionId);
+        if(mapInstance) {
+          mapInstance.invalidateSize();
         }
-      }
-    });
+      }, 0);
+    }
+  }
+
+  get visibleSessionCount():number {
+    return this.sessionForms.controls.filter(c => !c.get('deleted').value).length;
+  }
+
+  get scriptNames():string[] {
+    return this.sessionScriptOptions.map(option => option.label);
+  }
+
+  getScriptLabel(scriptId):string|null {
+    const option = this.sessionScriptOptions.find(o => o.value == scriptId);
+    return option ? option.label : null;
+  }
+
+  // The flag arrives as a boolean from the backend, but as a string from the <select>
+  isSealed(session:FormGroup):boolean {
+    const sealed = session.controls.sprSessionSealed.value;
+    return sealed === true || sealed === "true";
+  }
+
+  // Files already in the project; files dropped in this dialog are uploaded on save
+  storedFiles(session:FormGroup):any[] {
+    return session.controls.files.value.filter(f => f.stored);
+  }
+
+  newFiles(session:FormGroup):any[] {
+    return session.controls.files.value.filter(f => !f.stored);
+  }
+
+  fileCountLabel(session:FormGroup, origin:string):string {
+    const count = this.storedFiles(session).filter(f => f.origin == origin).length;
+    const noun = origin == "recording" ? "recording" : "file";
+    if(count == 0) {
+      return "No " + noun + "s";
+    }
+    return count + " " + noun + (count == 1 ? "" : "s");
+  }
+
+  isSourceEnabled(session:FormGroup, source:"upload"|"record"):boolean {
+    return !!session.controls[source + "Enabled"].value;
+  }
+
+  // Why a source can't be switched off right now, or null if it can
+  sourceLockReason(session:FormGroup, source:"upload"|"record"):string|null {
+    if(!this.isSourceEnabled(session, source)) {
+      return null;
+    }
+    const other = source == "upload" ? "record" : "upload";
+    if(!this.isSourceEnabled(session, other)) {
+      return "A session needs at least one way to add audio.";
+    }
+    const origin = source == "upload" ? "upload" : "recording";
+    if(this.storedFiles(session).some(f => f.origin == origin)) {
+      return source == "upload"
+        ? "Can't be turned off while the session has uploaded files."
+        : "Can't be turned off while the session has recordings.";
+    }
+    if(source == "upload" && this.newFiles(session).length > 0) {
+      return "Can't be turned off while files are waiting to be uploaded.";
+    }
+    // Recorded takes waiting for their import aren't in the file list yet
+    if(source == "record" && this.getSprImportStatus(session.controls.id.value)) {
+      return "Can't be turned off while the session has recordings.";
+    }
+    return null;
+  }
+
+  setSourceEnabled(session:FormGroup, source:"upload"|"record", enabled:boolean) {
+    if(!enabled && this.sourceLockReason(session, source)) {
+      return;
+    }
+    session.controls[source + "Enabled"].setValue(enabled);
+    session.controls[source + "Enabled"].markAsDirty();
+    if(session.controls.new.value) {
+      //kept for older server code, which knows a session by one source
+      const onlyRecording = session.controls.recordEnabled.value && !session.controls.uploadEnabled.value;
+      session.controls.dataSource.setValue(onlyRecording ? "record" : "upload");
+    }
+    //the script is only required when recording online
+    session.controls.sessionScript.updateValueAndValidity();
   }
 
   validateSessionNameUnique(control: AbstractControl): {[key: string]: any} | null  {
@@ -904,10 +998,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     return returnVal;
   }
 
-  validateSprScriptWithParent(dataSourceControl: AbstractControl): ValidatorFn {
+  validateSprScriptWithParent(recordEnabledControl: AbstractControl): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const isRecordingSession = dataSourceControl.value === "record";
-      if (isRecordingSession && control.value == null) {
+      if (recordEnabledControl.value && control.value == null) {
         return { 'sprScriptNotSelected': true };
       }
       return null;
@@ -981,13 +1074,30 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   }
   
   onRemove(file, session) {
-    this.fileUploadService.cancelUpload(file);
-    for(let key in session.value.files) {
-      if(session.value.files[key].name == file.name) {
-        session.value.files.splice(key, 1);
-      }
+    if(file.stored) {
+      //stored files are deleted through deleteBundle, never from the drop zone
+      return;
     }
-    //TODO: Remove the uploaded file from the server? - hah! as if...
+    this.fileUploadService.cancelUpload(file);
+    const index = session.value.files.indexOf(file);
+    if(index != -1) {
+      session.value.files.splice(index, 1);
+    }
+    this.deleteRemovedUpload(file, "emudb-sessions/" + session.controls.id.value, this.newFiles(session));
+  }
+
+  // The file is already on the server, and would be added on save, so remove it there too
+  deleteRemovedUpload(file, group:string, remainingFiles:any[]) {
+    // Dropped files the server stores under the same name share one file there
+    const storedName = FileUploadService.storedName(file.name);
+    if(remainingFiles.some(f => FileUploadService.storedName(f.name) == storedName)) {
+      return;
+    }
+    this.fileUploadService.deleteUpload(file, this.formContextId, group).then(deleted => {
+      if(!deleted) {
+        this.notifierService.notify("warning", "Could not remove " + file.name + " from the server. It will still be added to the session when you save.");
+      }
+    });
   }
 
   closeDialog() {
@@ -1048,13 +1158,23 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     console.log("submit");
   }
 
-  openSprScriptsDialog(project) {
-    //confirm
-    if(!window.confirm("Are you sure you wish to open the speech recorder scripts dialog? This will close the current dialog and you will lose any unsaved changes.")) {
-      return;
+  openScriptEditor(session:FormGroup) {
+    this.scriptEditorSession = session;
+  }
+
+  closeScriptEditor() {
+    this.scriptEditorSession = null;
+  }
+
+  async onScriptCreated(script:CreatedSprScript) {
+    const session = this.scriptEditorSession;
+    this.scriptEditorSession = null;
+    await this.fetchSprScripts();
+    if(session) {
+      session.controls.sessionScript.setValue(script.scriptId);
+      session.controls.sessionScript.markAsDirty();
     }
-    
-    this.projectManager.showSprScriptsDialog(project);
+    this.notifierService.notify("info", "Script '" + script.name + "' created and selected for this session.");
   }
 
 }

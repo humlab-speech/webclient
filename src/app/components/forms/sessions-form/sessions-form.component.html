@@ -1,364 +1,381 @@
 <div [formGroup]="form" class="form">
 
     <!--START OF SESSIONS-->
-    <h3 *ngIf="showSessions">
-        Recording sessions
-        <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="sessPopper" [popperTrigger]="'hover'"></i>-->
-        <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="'Recording sessions' are used to group all recordings from a speaker. If you are collecting longitudinal data, we recommend that you add a new recording session for each recording event. Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis."></i>
-    </h3>
-
-    <!--SESSIONS POPUP HELP-->
-    <!--
-    <popper-content #sessPopper>
-        <h4>Sessions</h4>
-        <p class="help-text">
-            'Sessions’ are used to group all recordings from a speaker. If you are collecting longitudinal data, we recommend that you add a new session for each recording session.
-        </p>
-        <br/>
-        <h4>Session metadata</h4>
-        <p class="help-text">
-            Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis.
-        </p>
-    </popper-content>
-    -->
-
-    <fieldset id="sessions-container" *ngIf="showSessions">
-
-        <!--
-        <div *ngIf="emuDbLoadingStatus" class="loading-indicator">
-            <img src="../../../assets/loading-indicator-4-dark.svg">&nbsp;Loading project
-        </div>
-        -->
-
-        <div *ngIf="sessions.length === 0">
-            No recording sessions available.
-        </div>
-
-        <div *ngIf="emuDbLoadingStatus">
-            <div class="loading-indicator">
-                <img src="../../../assets/loading-indicator-4-dark.svg">
-                &nbsp;Loading project
+    <section class="sessions-section" *ngIf="showSessions">
+        <div class="section-heading">
+            <span class="section-icon" aria-hidden="true"><i class="fa fa-microphone"></i></span>
+            <div class="section-heading-copy">
+                <h3 class="section-title">
+                    Recording sessions
+                    <span class="count-badge">{{ visibleSessionCount }}</span>
+                    <i class="fa fa-question-circle help-icon" aria-hidden="true" matTooltip="'Recording sessions' are used to group all recordings from a speaker. If you are collecting longitudinal data, we recommend that you add a new recording session for each recording event. Metadata contain important information about your audio files. Speakers' age and gender are used to calculate formant tracks, but you may also add other types of metadata (e.g., participant id, treatment condition, follow-up date, etc.). Metadata helps you organise your data and may facilitate later analysis."></i>
+                </h3>
+                <p class="section-subtitle">Group the recordings of one speaker or occasion. Upload audio files, or let the participant record online.</p>
             </div>
+            <button type="button" class="primary-btn add-session-btn" (click)="addSession()" [disabled]="isAddingSession">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Add session
+            </button>
         </div>
 
-        <div formArrayName="sessions">
-            <div *ngIf="sessions.pristine == false && sessions.status == 'INVALID'" >
-                <div class="form-error-msg" *ngIf="sessions.errors?.sessionNameNotUnique">
-                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                    That name is already taken
-                </div>
-            </div>
-            
-            <!--SESSION ITEM-->
-            <div class="section-container" *ngFor="let session of sessionForms.controls; let i=index" [formGroupName]="i">
-                <div *ngIf="!session.controls.deleted.value" [ngClass]="{ 'section-header-new': session.controls.new.value }" class="section-header-container" (click)="toggleSessionCollapsed(session.controls.name.value)">
+        <fieldset id="sessions-container">
 
-                    <div class="header-flex-container">
-                        <i *ngIf="session.controls.collapsed.value" class='fa fa-chevron-down'></i>
-                        <i *ngIf="!session.controls.collapsed.value" class='fa fa-chevron-up'></i>
-                        
-                        <h4 *ngIf="session.controls.new.value">New recording session</h4>
-                        <h4 *ngIf="!session.controls.new.value">{{ session.controls.name.value }}</h4>
-                    </div>
-                    
-                    <div class="itemDeleteBtn">
-                        <i (click)="deleteSession(i, $event)" class="fa fa-trash-o" aria-hidden="true"></i>
+            <div *ngIf="emuDbLoadingStatus" class="sessions-loading">
+                <img src="../../../assets/loading-indicator-4-dark.svg" alt="">
+                Loading recording sessions…
+            </div>
+
+            <div *ngIf="!emuDbLoadingStatus && visibleSessionCount === 0" class="empty-note sessions-empty">
+                No recording sessions yet. Add one to upload or record audio.
+            </div>
+
+            <div formArrayName="sessions" class="session-list">
+                <div *ngIf="sessions.pristine == false && sessions.status == 'INVALID'">
+                    <div class="form-error-msg" *ngIf="sessions.errors?.sessionNameNotUnique">
+                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        Two sessions have the same name. Session names must be unique.
                     </div>
                 </div>
 
-                <div *ngIf="!session.controls.deleted.value" class="section-content" [ngClass]="{'collapsed': session.controls.collapsed.value}">
-                    <div class="session-metadata-container">
+                <!--SESSION ITEM-->
+                <ng-container *ngFor="let session of sessionForms.controls; let i=index">
+                <div class="session-card" *ngIf="!session.controls.deleted.value" [formGroupName]="i"
+                    [class.session-card-open]="!session.controls.collapsed.value"
+                    [class.session-card-new]="session.controls.new.value">
 
-                        <div class="attribute-container">
-                            <h6>Recording session name</h6>
-                            <input class="session-name-input tutorial-session-name-input" placeholder="Recording session name" formControlName="name" />
-                        </div>
-                        
-                        <!-- NAME INPUT ERROR HANDLING -->
-                        <div *ngIf="session.controls.name.pristine == false && session.controls.name.status == 'INVALID'" >
-                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.sessionNameTaken">
-                                That name is already taken
-                            </div>
-                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.required">
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                Name is required
-                            </div>
-                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.minlength">
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                Mininum {{ session.controls.name.errors.minlength.requiredLength }} characters long
-                            </div>
-                            <div class="form-error-msg" *ngIf="session.controls.name.errors?.pattern">
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                Please avoid special characters in the name
-                            </div>
-                        </div>
+                    <div class="session-card-header" role="button" tabindex="0"
+                        [attr.aria-expanded]="!session.controls.collapsed.value"
+                        (click)="toggleSessionCollapsed(session)"
+                        (keydown.enter)="toggleSessionCollapsed(session)"
+                        (keydown.space)="$event.preventDefault(); toggleSessionCollapsed(session)">
 
+                        <i class="fa fa-chevron-right session-chevron" aria-hidden="true"></i>
+                        <span class="session-title">{{ session.controls.name.value || 'Unnamed session' }}</span>
 
-                        
+                        <span class="session-chips">
+                            <span class="chip chip-new" *ngIf="session.controls.new.value">New</span>
 
-                        
-
-                    </div>
-
-                    <!--
-                    <div *ngIf="session.value.dataSource == 'upload'">
-                    </div>
-                    -->
-
-                    <!--<div *ngIf="session.value.new">-->
-                    <div>
-                        <h5 *ngIf="session.value.new">
-                            Audio source
-                            <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="audioSourcePopper" [popperTrigger]="'hover'"></i>-->
-                            <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="If you already have audio files for this session, you can upload them here. Otherwise, you can create new recordings using our online tool."></i>
-                        </h5>
-                        <p *ngIf="session.value.new" class="help-text audio-source-help-text">
-                            A recording session can either be based on already recorded files, or files that will be
-                            recorded in the future via our online tool. Choosing online recording gives you a link to
-                            the recording session that you can share with your participant, and the audio will be
-                            automatically imported into your project when the recordings are done.
-                        </p>
-                        
-                        <div *ngIf="session.controls.files.status == 'INVALID'" >
-                            <div class="form-error-msg" *ngIf="session.controls.files.errors?.pattern">
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                You need to provide at least one file
-                            </div>
-                        </div>
-                    
-                        <div *ngIf="session.value.new" class="formControlGroupMargin">
-                            <mat-radio-group formControlName="dataSource" aria-label="Select an option">
-                                <mat-radio-button value="upload">Uploaded files</mat-radio-button>
-                                <br />
-                                <mat-radio-button value="record">Online recording</mat-radio-button>
-                            </mat-radio-group>
-                            <!--
-                            <popper-content #audioSourcePopper>
-                                <h4>Uploaded files</h4>
-                                <p class="help-text">
-                                    If you already have wav files for this session.
-                                </p>
-                                <br />
-                                <h4>Online recording</h4>
-                                <p class="help-text">
-                                    If you intend to create a new recording. This will give you a link which is used to initiate the recording session.<br/><br/>The session will exist as an empty session in your project until it is recorded.
-                                </p>
-                            </popper-content>
-                            -->
-                        </div>
-                        <ngx-dropzone class="tutorial-audio-dropzone" *ngIf="session.value.dataSource == 'upload'" [expandable]="true" (change)="onAudioUpload($event, session)">
-                            <ngx-dropzone-label>Drop your audio files here</ngx-dropzone-label>
-                            <ngx-dropzone-preview *ngFor="let f of session.value.files" [removable]="true" (removed)="onRemove(f, session)">
-                                <ngx-dropzone-label>
-                                    <i class="fa fa-file-audio-o" aria-hidden="true"></i>
-                                    &nbsp;{{ f.name }}
-                                    <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
-                                </ngx-dropzone-label>
-                                
-                            </ngx-dropzone-preview>
-                        </ngx-dropzone>
-
-                        
-                        <div *ngIf="session.value.dataSource == 'record'">
-                            
-                            <h6>
-                                Recording script
-                                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="recScriptPopper2" [popperTrigger]="'hover'"></i>-->
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="This is the the recording script, containing the instructions & prompts for the speaker."></i>
-                            </h6>
-
-                            <!--
-                            <popper-content #recScriptPopper2>
-                                <h4>Recording script</h4>
-                                <p class="help-text">
-                                    This is the the recording script, containing the instructions & prompts for the speaker.
-                                </p>
-                            </popper-content>
-                            -->
-                            <div class="recordingScriptContainer formControlGroupMargin">
-                                <select class="sessionScriptControl" formControlName="sessionScript">
-                                    <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.value.sessionScript === option.value ? true : null">{{ option.label }}</option>
-                                </select>
-                                <button [disabled]="false" (click)="openSprScriptsDialog(project)" class="small-inline-button">New script</button>
-                                    
-                                <div *ngIf="session.get('sessionScript').status === 'INVALID'">
-                                    <div class="form-error-msg" *ngIf="session.get('sessionScript').hasError('sprScriptNotSelected')">
-                                        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                        Please select a recording script.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <h6 for="recordingLink">Link for initiating recording session</h6>
-                            <div class="recordingLinkContainer">
-                                <input class="recordingLinkControl" formControlName="recordingLink" type="text" />
-                                <button class="small-inline-button" type="button" (click)="copyRecordingLink(session.controls.recordingLink.value)">
-                                    <i class="fa fa-files-o" aria-hidden="true"></i>
-                                    Copy
-                                </button>
-                            </div>
-
-                            <div>
-                                <br />
-                                <h6>
-                                    Recording session status
-                                    <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Indicates whether the recording session is open to receive recordings or sealed from future recordings. A recording session is automatically sealed once all the prompts are recorded."></i>
-                                </h6>
-                                <select *ngIf="supportReOpeningSealedSprSession" formControlName="sprSessionSealed">
-                                    <option value="false">Open</option>
-                                    <option value="true">Sealed</option>
-                                </select>
-                                <div *ngIf="!supportReOpeningSealedSprSession">
-                                    {{ session.value.sprSessionSealed ? 'Sealed' : 'Open' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        
-
-                        <div *ngIf="!session.value.new">
-                            <br />
-                            <h6>
-                                Files
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="These are the audio files we currently have stored for this session."></i>
-                            </h6>
-                            <table>
-                                <tr *ngFor="let file of session.value.files">
-                                    <td>{{ file.name }}</td>
-                                    <td>
-                                        <i class="fa fa-download tooltip-zone-dark button" (click)="downloadBundle(project.id, session.value.id, file.name)" aria-hidden="true"></i>
-                                    </td>
-                                    <td>
-                                        <i class="fa fa-trash-o tooltip-zone-dark button" (click)="deleteBundle(project.id, session.value.id, file.name)" aria-hidden="true"></i>
-                                    </td>
-                                </tr>
-                            </table>
-                            <!--
-                            <button class="small-button">
-                                <i class="fa fa-trash-o tooltip-zone-dark button" (click)="deleteAllBundles(project.id, session.value.id)" aria-hidden="true"></i>
-                                Delete all
-                            </button>
-                            -->
-                            <br />
-                            <div *ngIf="session.value.files.length == 0">
-                                <div *ngIf="session.value.dataSource == 'record'">
-                                    <i>No files recorded</i>
-                                </div>
-                                <div *ngIf="session.value.dataSource == 'upload'">
-                                    <i>No files uploaded</i>
-                                </div>
-                            </div>
-                            <ng-container *ngIf="session.value.dataSource == 'record'">
-                                <div *ngIf="getSprImportStatus(session.value.id) as importStatus" class="spr-import-status" [ngClass]="'spr-import-status-' + importStatus.state">
-                                    <i class="fa" aria-hidden="true" [ngClass]="{'fa-check-circle': importStatus.state == 'ok', 'fa-refresh fa-spin': importStatus.state == 'busy', 'fa-exclamation-circle': importStatus.state == 'error'}"></i>
-                                    {{ importStatus.label }}
-                                    <div *ngIf="importStatus.detail" class="help-text">{{ importStatus.detail }}</div>
-                                </div>
+                            <ng-container *ngIf="isSourceEnabled(session, 'record')">
+                                <span class="chip" *ngIf="getScriptLabel(session.controls.sessionScript.value) as scriptLabel" [title]="'Recording script: ' + scriptLabel">
+                                    <i class="fa fa-file-text-o" aria-hidden="true"></i>{{ scriptLabel }}
+                                </span>
+                                <ng-container *ngIf="!session.controls.new.value">
+                                    <span class="chip" title="Recorded online">
+                                        <i class="fa fa-microphone" aria-hidden="true"></i>{{ fileCountLabel(session, 'recording') }}
+                                    </span>
+                                    <ng-container *ngIf="getSprImportStatus(session.controls.id.value) as importStatus">
+                                        <span class="chip chip-busy" *ngIf="importStatus.state == 'busy'">
+                                            <i class="fa fa-refresh fa-spin" aria-hidden="true"></i>Importing
+                                        </span>
+                                        <span class="chip chip-error" *ngIf="importStatus.state == 'error'">
+                                            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>Import failed
+                                        </span>
+                                    </ng-container>
+                                </ng-container>
                             </ng-container>
-                        </div>
 
+                            <span class="chip" *ngIf="isSourceEnabled(session, 'upload') && !session.controls.new.value" title="Uploaded">
+                                <i class="fa fa-upload" aria-hidden="true"></i>{{ fileCountLabel(session, 'upload') }}
+                            </span>
+
+                            <ng-container *ngIf="isSourceEnabled(session, 'record') && !session.controls.new.value">
+                                <span class="status-pill status-sealed" *ngIf="isSealed(session)" title="Every prompt has been recorded. The recording link no longer accepts new recordings.">
+                                    <i class="fa fa-lock" aria-hidden="true"></i>Sealed
+                                </span>
+                                <span class="status-pill status-open" *ngIf="!isSealed(session)" title="The recording link accepts recordings until every prompt has been recorded.">
+                                    <span class="status-dot" aria-hidden="true"></span>Open
+                                </span>
+                            </ng-container>
+                        </span>
                     </div>
 
+                    <div class="session-card-body" [ngClass]="{'collapsed': session.controls.collapsed.value}">
 
-                    <br />
+                        <!--NAME-->
+                        <div class="field">
+                            <label [for]="'session-name-' + session.controls.id.value">Session name</label>
+                            <input [id]="'session-name-' + session.controls.id.value" class="text-input session-name-input tutorial-session-name-input" placeholder="Recording session name" formControlName="name" />
+                            <span class="field-hint" *ngIf="!session.controls.new.value">Session names can't be changed once the session has been created.</span>
 
-                    <details (toggle)="onAdvancedDetailsToggle(session, $event)">
-                        <summary>Advanced</summary>
-                        
-                        <div class="attribute-container">
-                            <h6>
-                                Recording session type
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="The recording session either consists of uploaded audio files, or files recorded directly from the online tool. The recording session type is selected when the session is created and cannot be changed later."></i>
-                            </h6>
-                            <div *ngIf="session.value.dataSource == 'record'">Recording</div>
-                            <div *ngIf="session.value.dataSource == 'upload'">Upload</div>
-                        </div>
-
-                        <!--SESSION METADATA-->
-                        <div class="attribute-container">
-                            <h6>Speaker gender</h6>
-                            <select formControlName="speakerGender">
-                                <option value="null">Unspecified</option>
-                                <option value="Female">Female</option>
-                                <option value="Male">Male</option>
-                            </select>
-                        </div>
-
-                        <div class="attribute-container">
-                            <h6>
-                                Speaker age
-                                <!--<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" [popper]="speakerAgePopper" [popperTrigger]="'hover'"></i>-->
-                                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="35 is used as a default to signify a middle-aged person since the voice does not change much between youth and old age."></i>
-                            </h6>
-                            <input class="session-age-input" style="width:2em;" placeholder="Speaker age" formControlName="speakerAge">
-
-                            <div *ngIf="session.controls.speakerAge.pristine == false && session.controls.speakerAge.status == 'INVALID'" >
-                                <div class="form-error-msg" *ngIf="session.controls.speakerAge.errors?.pattern">
+                            <div *ngIf="session.controls.name.pristine == false && session.controls.name.status == 'INVALID'">
+                                <div class="form-error-msg" *ngIf="session.controls.name.errors?.sessionNameTaken">
                                     <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                    Speaker age needs to be a number
+                                    That name is already taken
+                                </div>
+                                <div class="form-error-msg" *ngIf="session.controls.name.errors?.required">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Name is required
+                                </div>
+                                <div class="form-error-msg" *ngIf="session.controls.name.errors?.minlength">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Minimum {{ session.controls.name.errors.minlength.requiredLength }} characters long
+                                </div>
+                                <div class="form-error-msg" *ngIf="session.controls.name.errors?.pattern">
+                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                    Please avoid special characters in the name
                                 </div>
                             </div>
                         </div>
 
-                        <div class="attribute-container">
-                            <h6>Time of recording</h6>
-                            <input type="datetime-local" formControlName="timeOfRecording">
+                        <!--AUDIO SOURCES: each can be switched on independently; switching one on shows its part of the form-->
+                        <div class="field">
+                            <span class="field-label">
+                                How audio gets into this session
+                                <i class="fa fa-question-circle help-icon" aria-hidden="true" matTooltip="Upload audio files you already have, let a participant record online through a link, or both. A source can't be switched off while the session holds audio from it."></i>
+                            </span>
+
+                            <!--UPLOAD-->
+                            <div class="source-panel" [class.source-panel-on]="isSourceEnabled(session, 'upload')">
+                                <label class="source-panel-header">
+                                    <span class="source-icon" aria-hidden="true"><i class="fa fa-upload"></i></span>
+                                    <span class="source-copy">
+                                        <strong>Upload files</strong>
+                                        <span>Add WAV recordings you already have.</span>
+                                    </span>
+                                    <span class="source-switch" [title]="sourceLockReason(session, 'upload') || ''">
+                                        <input type="checkbox" role="switch" class="source-switch-input" data-source="upload"
+                                            [checked]="isSourceEnabled(session, 'upload')"
+                                            [disabled]="!!sourceLockReason(session, 'upload')"
+                                            (change)="setSourceEnabled(session, 'upload', $any($event.target).checked)">
+                                        <span class="source-switch-track" aria-hidden="true"></span>
+                                    </span>
+                                </label>
+                                <div class="source-panel-body" *ngIf="isSourceEnabled(session, 'upload')">
+                                    <ngx-dropzone class="audio-dropzone tutorial-audio-dropzone" [expandable]="true" (change)="onAudioUpload($event, session)">
+                                        <ngx-dropzone-label>
+                                            <i class="fa fa-cloud-upload dropzone-icon" aria-hidden="true"></i><br>
+                                            Drop WAV files here, or click to browse
+                                        </ngx-dropzone-label>
+                                        <!--Only files added in this dialog; stored files are listed below-->
+                                        <ngx-dropzone-preview *ngFor="let f of newFiles(session)" [removable]="true" (removed)="onRemove(f, session)">
+                                            <ngx-dropzone-label>
+                                                <i class="fa fa-file-audio-o" aria-hidden="true"></i>
+                                                &nbsp;{{ f.name }}
+                                                <img *ngIf="f.uploadComplete == false" class="loading-indicator" src="assets/loading-indicator.svg">
+                                            </ngx-dropzone-label>
+                                        </ngx-dropzone-preview>
+                                    </ngx-dropzone>
+                                    <span class="field-hint" *ngIf="newFiles(session).length > 0">These files are added to the session when you save.</span>
+                                    <span class="field-hint source-lock-hint" *ngIf="sourceLockReason(session, 'upload') as lockReason">
+                                        <i class="fa fa-lock" aria-hidden="true"></i>{{ lockReason }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!--ONLINE RECORDING-->
+                            <div class="source-panel" [class.source-panel-on]="isSourceEnabled(session, 'record')">
+                                <label class="source-panel-header">
+                                    <span class="source-icon" aria-hidden="true"><i class="fa fa-microphone"></i></span>
+                                    <span class="source-copy">
+                                        <strong>Record online</strong>
+                                        <span>A participant records in the browser through a link. Recordings are imported automatically.</span>
+                                    </span>
+                                    <span class="source-switch" [title]="sourceLockReason(session, 'record') || ''">
+                                        <input type="checkbox" role="switch" class="source-switch-input" data-source="record"
+                                            [checked]="isSourceEnabled(session, 'record')"
+                                            [disabled]="!!sourceLockReason(session, 'record')"
+                                            (change)="setSourceEnabled(session, 'record', $any($event.target).checked)">
+                                        <span class="source-switch-track" aria-hidden="true"></span>
+                                    </span>
+                                </label>
+                                <div class="source-panel-body" *ngIf="isSourceEnabled(session, 'record')">
+
+                                    <div class="completed-banner" *ngIf="!session.controls.new.value && isSealed(session)">
+                                        <span class="status-pill status-sealed">
+                                            <i class="fa fa-lock" aria-hidden="true"></i>Sealed
+                                        </span>
+                                        <span class="completed-banner-text">
+                                            Every prompt has been recorded, so the recording link no longer accepts new recordings.
+                                        </span>
+                                        <select *ngIf="supportReOpeningSealedSprSession" class="text-input completed-banner-select" formControlName="sprSessionSealed">
+                                            <option value="false">Open</option>
+                                            <option value="true">Sealed</option>
+                                        </select>
+                                    </div>
+
+                                    <div *ngIf="getSprImportStatus(session.controls.id.value) as importStatus" class="spr-import-status" [ngClass]="'spr-import-status-' + importStatus.state">
+                                        <i class="fa" aria-hidden="true" [ngClass]="{'fa-check-circle': importStatus.state == 'ok', 'fa-refresh fa-spin': importStatus.state == 'busy', 'fa-exclamation-circle': importStatus.state == 'error'}"></i>
+                                        <span>
+                                            {{ importStatus.label }}
+                                            <span *ngIf="importStatus.detail" class="spr-import-detail">{{ importStatus.detail }}</span>
+                                        </span>
+                                    </div>
+
+                                    <div class="field">
+                                        <label [for]="'session-script-' + session.controls.id.value">
+                                            Recording script
+                                        </label>
+                                        <span class="field-hint">The prompts the participant reads aloud during the session.</span>
+                                        <div class="input-with-action recordingScriptContainer">
+                                            <select [id]="'session-script-' + session.controls.id.value" class="text-input sessionScriptControl" formControlName="sessionScript">
+                                                <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.value.sessionScript === option.value ? true : null">{{ option.label }}</option>
+                                            </select>
+                                            <button type="button" class="outline-btn" (click)="openScriptEditor(session)">
+                                                <i class="fa fa-plus" aria-hidden="true"></i>
+                                                New script
+                                            </button>
+                                        </div>
+                                        <span class="field-hint" *ngIf="sessionScriptOptions.length == 0">You don't have any scripts yet. Create one to start recording.</span>
+                                        <div *ngIf="session.get('sessionScript').status === 'INVALID'">
+                                            <div class="form-error-msg" *ngIf="session.get('sessionScript').hasError('sprScriptNotSelected')">
+                                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                                Please select a recording script.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="field">
+                                        <label [for]="'session-link-' + session.controls.id.value">Recording link</label>
+                                        <span class="field-hint" *ngIf="!session.controls.new.value">Send this to the participant to start recording.</span>
+                                        <span class="field-hint" *ngIf="session.controls.new.value">Send this to the participant. It starts working once the project has been saved.</span>
+                                        <div class="input-with-action recordingLinkContainer">
+                                            <input [id]="'session-link-' + session.controls.id.value" class="text-input recordingLinkControl" formControlName="recordingLink" type="text" readonly />
+                                            <button type="button" class="outline-btn" (click)="copyRecordingLink(session.controls.recordingLink.value)">
+                                                <i class="fa fa-files-o" aria-hidden="true"></i>
+                                                Copy link
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <span class="field-hint source-lock-hint" *ngIf="sourceLockReason(session, 'record') as lockReason">
+                                        <i class="fa fa-lock" aria-hidden="true"></i>{{ lockReason }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="attribute-container">
-                            <h6>Place of recording</h6>
-                            <div class="location-search-grid">
-                                <input
-                                    [value]="getLocationQuery(session.controls.id.value)"
-                                    (input)="onLocationInputChange(session, $any($event.target).value)"
-                                    (keyup.enter)="searchLocation(session)"
-                                    placeholder="Address or latitude, longitude">
-                                <button type="button" class="small-inline-button" (click)="searchLocation(session)" [disabled]="isLocationSearchInProgress(session.controls.id.value)">
-                                    {{ isLocationSearchInProgress(session.controls.id.value) ? 'Searching...' : 'Search' }}
-                                </button>
-                            </div>
-                            <ul *ngIf="hasLocationSearchResults(session.controls.id.value)" class="location-search-results">
-                                <li *ngFor="let locationResult of getLocationSearchResults(session.controls.id.value)">
-                                    <button type="button" class="location-result-btn" (click)="selectLocationSearchResult(session, locationResult)">
-                                        {{ locationResult.display_name }}
+                        <!--STORED FILES, from every source-->
+                        <div class="field" *ngIf="!session.controls.new.value">
+                            <span class="field-label">
+                                Audio in this session
+                                <i class="fa fa-question-circle help-icon" aria-hidden="true" matTooltip="These are the audio files we currently have stored for this session, uploaded or recorded online."></i>
+                            </span>
+                            <ul class="file-list" *ngIf="storedFiles(session).length > 0">
+                                <li class="file-row" *ngFor="let file of storedFiles(session)">
+                                    <i class="fa file-icon" aria-hidden="true" [ngClass]="file.origin == 'recording' ? 'fa-microphone' : 'fa-upload'"></i>
+                                    <span class="file-name">{{ file.name }}</span>
+                                    <span class="file-origin">{{ file.origin == 'recording' ? 'Recorded' : 'Uploaded' }}</span>
+                                    <button type="button" class="icon-btn" (click)="downloadBundle(project.id, session.value.id, file.name)" title="Download" aria-label="Download">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="icon-btn icon-btn-danger" (click)="deleteBundle(project.id, session.value.id, file.name)" title="Delete" aria-label="Delete">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
                                     </button>
                                 </li>
                             </ul>
-                            <div class="session-location-map" [id]="getLocationMapElementId(session.controls.id.value)"></div>
+                            <div class="empty-note" *ngIf="storedFiles(session).length == 0">
+                                No audio yet.
+                            </div>
                         </div>
-                    </details>
 
+                        <!--SESSION METADATA-->
+                        <details class="session-details" (toggle)="onAdvancedDetailsToggle(session, $event)">
+                            <summary>
+                                <i class="fa fa-chevron-right details-chevron" aria-hidden="true"></i>
+                                Speaker and recording details
+                            </summary>
 
+                            <div class="details-grid">
+                                <div class="field">
+                                    <label>Speaker gender</label>
+                                    <select class="text-input" formControlName="speakerGender">
+                                        <option value="null">Unspecified</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                    </select>
+                                </div>
 
+                                <div class="field">
+                                    <label>
+                                        Speaker age
+                                        <i class="fa fa-question-circle help-icon" aria-hidden="true" matTooltip="35 is used as a default to signify a middle-aged person since the voice does not change much between youth and old age."></i>
+                                    </label>
+                                    <input class="text-input session-age-input" placeholder="Speaker age" formControlName="speakerAge" inputmode="numeric">
+                                    <div *ngIf="session.controls.speakerAge.pristine == false && session.controls.speakerAge.status == 'INVALID'">
+                                        <div class="form-error-msg" *ngIf="session.controls.speakerAge.errors?.pattern">
+                                            <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                                            Speaker age needs to be a number
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <div class="field">
+                                    <label>Time of recording</label>
+                                    <input class="text-input" type="datetime-local" formControlName="timeOfRecording">
+                                </div>
+                            </div>
 
+                            <div class="field">
+                                <label>Place of recording</label>
+                                <div class="input-with-action location-search-grid">
+                                    <input class="text-input"
+                                        [value]="getLocationQuery(session.controls.id.value)"
+                                        (input)="onLocationInputChange(session, $any($event.target).value)"
+                                        (keydown.enter)="$event.preventDefault(); searchLocation(session)"
+                                        placeholder="Address or latitude, longitude">
+                                    <button type="button" class="outline-btn" (click)="searchLocation(session)" [disabled]="isLocationSearchInProgress(session.controls.id.value)">
+                                        <i class="fa fa-search" aria-hidden="true"></i>
+                                        {{ isLocationSearchInProgress(session.controls.id.value) ? 'Searching…' : 'Search' }}
+                                    </button>
+                                </div>
+                                <ul *ngIf="hasLocationSearchResults(session.controls.id.value)" class="location-search-results">
+                                    <li *ngFor="let locationResult of getLocationSearchResults(session.controls.id.value)">
+                                        <button type="button" class="location-result-btn" (click)="selectLocationSearchResult(session, locationResult)">
+                                            {{ locationResult.display_name }}
+                                        </button>
+                                    </li>
+                                </ul>
+                                <div class="session-location-map" [id]="getLocationMapElementId(session.controls.id.value)"></div>
+                            </div>
+                        </details>
+
+                        <div class="session-card-footer">
+                            <button type="button" class="text-btn text-btn-danger" (click)="deleteSession(i, $event)">
+                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                {{ session.controls.new.value ? 'Remove session' : 'Delete session' }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                </ng-container>
             </div>
-        </div>
-        
-        <!--ADD SESSION BUTTON-->
-        <button class="small-button form-add-button" (click)="addSession()" [disabled]="isAddingSession">
-            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-            &nbsp;Add recording session
-        </button>
+        </fieldset>
+    </section>
 
-    </fieldset>
+    <!--Creating a script happens on top of this form, so nothing entered here is lost-->
+    <app-spr-scripts-form *ngIf="scriptEditorSession"
+        [sessionName]="scriptEditorSession.controls.name.value"
+        [existingScriptNames]="scriptNames"
+        (created)="onScriptCreated($event)"
+        (cancelled)="closeScriptEditor()"></app-spr-scripts-form>
+
     <!--END OF SESSIONS-->
 
 
     <!--START OF ANNOTATION STRUCTURE-->
-    <details>
-        <summary class="annotation-summary">
-            <h3 *ngIf="showAnnotLevels" class="annotation-header">
-                Annotation structure
-                <i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Here, you define the annotation levels and their relationship to one another. The default structure is Word and Phonetic, and their relationship is one-to-many, meaning that one word may consist of several phonemes. An annotation level can be of type ITEM, SEGMENT or EVENT. An ITEM level is timeless and contains labels only. A SEGMENT level has a start time and a duration. An EVENT level contains a single time point only. In the standard case, Phonetics have a label, a start time and a duration, while Words only contain labels. You may add or remove annotations levels. If you do, make sure you also add/remove the links between them."></i>
-            </h3>
+    <!--Rendered by the project dialog in its "Project setup" list. It carries its own [formGroup]: the one on the
+        wrapping div is only bound when this component's view is checked, after the dialog has rendered this template-->
+    <ng-template #annotationStructure>
+    <details class="setup-row annotation-details" *ngIf="showAnnotLevels" [formGroup]="form">
+        <summary class="setup-row-summary">
+            <i class="fa fa-chevron-right details-chevron" aria-hidden="true"></i>
+            <span class="setup-row-icon" aria-hidden="true"><i class="fa fa-sitemap"></i></span>
+            <span class="setup-row-copy">
+                <span class="setup-row-title">
+                    Annotation structure
+                    <i class="fa fa-question-circle help-icon" aria-hidden="true" matTooltip="Here, you define the annotation levels and their relationship to one another. The default structure is Word and Phonetic, and their relationship is one-to-many, meaning that one word may consist of several phonemes. An annotation level can be of type ITEM, SEGMENT or EVENT. An ITEM level is timeless and contains labels only. A SEGMENT level has a start time and a duration. An EVENT level contains a single time point only. In the standard case, Phonetics have a label, a start time and a duration, while Words only contain labels. You may add or remove annotations levels. If you do, make sure you also add/remove the links between them."></i>
+                </span>
+                <span class="setup-row-subtitle">Levels and links used in Artic and R. For advanced users.</span>
+            </span>
+            <span class="setup-row-badge" title="The annotation structure is defined once for the whole EMU database, so it is shared by every session, including ones added later.">
+                <i class="fa fa-th-large" aria-hidden="true"></i>Applies to all sessions
+            </span>
         </summary>
 
 
         <div class="annotation-container">
-            <p>
-                Here you can define a different annotation structure to use when working with your data in Artic or R. For advanced users only.
+            <p class="annotation-intro">
+                Here you can define a different annotation structure to use when working with your data in Artic or R.
             </p>
     
             <!--
@@ -432,7 +449,7 @@
                 </div>
     
                 <!--ADD ANNOTATION LEVEL BUTTON-->
-                <button class="small-button form-add-button" (click)="addAnnotLevel()">
+                <button class="small-button form-add-button" type="button" (click)="addAnnotLevel(); annotLevels.markAsDirty()">
                     <i class="fa fa-plus-circle" aria-hidden="true"></i>
                     &nbsp;Add annotation level
                 </button>
@@ -498,7 +515,7 @@
                 </div>
     
                 <!--ADD ANNOTATION LINK BUTTON-->
-                <button class="small-button form-add-button" (click)="addAnnotLevelLink()">
+                <button class="small-button form-add-button" type="button" (click)="addAnnotLevelLink(); annotLevelLinks.markAsDirty()">
                     <i class="fa fa-plus-circle" aria-hidden="true"></i>
                     &nbsp;Add annotation level link
                 </button>
@@ -506,8 +523,6 @@
             </fieldset>
         </div>
 
-        
-
-
     </details>
+    </ng-template>
 </div>

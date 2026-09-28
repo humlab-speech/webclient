@@ -505,12 +505,16 @@ export class ProjectService {
         progressPercentage: 0
       });
 
-      this.systemService.wsSubject.subscribe((data:any) => {
+      const wsSubscription = this.systemService.wsSubject.subscribe((data:any) => {
         if(data.type == "cmd-result" && data.cmd == "saveProject") {
           let progress = this.parseProgress(data.progress);
           if(progress.currentStep == progress.totalSteps) {
-            if(!data.result) {
+            wsSubscription.unsubscribe();
+            if(data.result === false) {
+              // Not saved: error out, so the dialog stays open with the user's changes
               this.notifierService.notify("error", data.message);
+              subscriber.error(new Error(data.message));
+              return;
             }
             subscriber.next({
               msg: "Project saved",

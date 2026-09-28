@@ -101,6 +101,16 @@ export class DocumentationFormComponent implements ControlValueAccessor, OnDestr
         this.docFiles.value.splice(keyNum, 1);
       }
     }
+    // The file is already on the server, and would be copied into the project on save
+    const storedName = FileUploadService.storedName(file.name);
+    if(this.docFiles.value.some(f => FileUploadService.storedName(f.name) == storedName)) {
+      return; //another dropped file shares its stored copy
+    }
+    this.fileUploadService.deleteUpload(file, this.context.formContextId, "docs").then(deleted => {
+      if(!deleted) {
+        this.notifierService.notify("warning", "Could not remove " + file.name + " from the server. It will still be added to the project when you save.");
+      }
+    });
   }
 
 }

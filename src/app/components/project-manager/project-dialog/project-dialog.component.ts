@@ -117,7 +117,7 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
 
     //If there's a project associated with this dialog, load it in a container so we have access to it
     if(this.project != null) {
-      this.dialogTitle = "Edit project "+this.project.name;
+      this.dialogTitle = this.project.name;
       
       this.form.addControl("id", new FormControl(this.project.id));
       this.form.addControl("annotationLevels", new FormControl(this.project.annotationLevels));
@@ -166,7 +166,7 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
     }
     else {
       this.showLoadingIndicator = false;
-      this.submitBtnLabel = "Save";
+      this.submitBtnLabel = this.project ? "Save changes" : "Create project";
       this.submitBtnEnabledLockout = false;
     }
   }
@@ -288,15 +288,25 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
     delete mergedForm.annotationLevels;
     delete mergedForm.annotationLinks;
     
-    this.projectService.saveProject(mergedForm).subscribe((data:any) => {
-      this.setTaskProgressPercentage(data.progressPercentage, "submitBtn", data.msg);
+    this.projectService.saveProject(mergedForm).subscribe({
+      next: (data:any) => {
+        this.setTaskProgressPercentage(data.progressPercentage, "submitBtn", data.msg);
 
-      if(data.progressPercentage == 100) {
-        this.projectService.fetchProjects(true).subscribe(msg => {
-          this.setLoadingStatus(false);
-          this.closeCreateProjectDialog();
-        });
-      }
+        if(data.progressPercentage == 100) {
+          this.projectService.fetchProjects(true).subscribe(msg => {
+            this.setLoadingStatus(false);
+            this.closeCreateProjectDialog();
+          });
+        }
+      },
+      error: () => {
+        // The service has shown the reason; let the user fix it and save again
+        this.setLoadingStatus(false);
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.style.background = "";
+        submitBtn.style.color = "";
+        this.validateForm();
+      },
     });
   }
 
@@ -322,6 +332,47 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
     if(msg != null) {
       this.submitBtnLabel = msg;
     }
+  }
+
+  /**
+   * Whether closing now would throw away anything the user has done. Uploaded
+   * files, new sessions and deleted sessions don't mark the forms dirty, so
+   * they are checked separately.
+   */
+  get hasUnsavedChanges():boolean {
+    if(this.form.dirty || this.emudbFormComponent?.form?.dirty) {
+      return true;
+    }
+    if(this.docsFormComponent?.docFiles?.value?.length > 0) {
+      return true;
+    }
+    const sessions = this.emudbFormComponent?.sessionForms?.controls || [];
+    return sessions.some(session => {
+      if(session.get('deleted').value) {
+        return true;
+      }
+      // Files dropped in this dialog are only added to the session on save
+      if(session.get('files').value.some(file => !file.stored)) {
+        return true;
+      }
+      if(session.get('new').value) {
+        //a new project always starts out with one empty session
+        return this.project != null || session.get('files').value.length > 0;
+      }
+      return false;
+    });
+  }
+
+  cancel() {
+    if(this.isLoading) {
+      this.notifierService.notify('warning', "Please wait for the current task to finish before closing the dialog.");
+      return;
+    }
+    const question = this.project ? "Discard your unsaved changes to this project?" : "Discard this new project?";
+    if(this.hasUnsavedChanges && !window.confirm(question)) {
+      return;
+    }
+    this.closeCreateProjectDialog();
   }
 
   closeCreateProjectDialog() {
