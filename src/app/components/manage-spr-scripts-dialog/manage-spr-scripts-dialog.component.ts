@@ -2,19 +2,14 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ProjectManagerComponent } from '../project-manager/project-manager.component';
 import { Project } from "../../models/Project";
 import { ProjectService } from '../../services/project.service';
-import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
 import { NotifierService } from 'angular-notifier';
-import {
-  Validators,
-  FormBuilder,
-  FormGroup,
-  FormControl,
-  FormArray
-} from '@angular/forms';
-import { HttpHeaders } from '@angular/common/http';
-import { HttpClient } from '@angular/common/http';
-import { nanoid } from "nanoid";
+import { CreatedSprScript, EditableSprScript } from '../forms/spr-scripts-form/spr-scripts-form.component';
+
+interface ManagedSprScript extends EditableSprScript {
+  owner?: string;
+  ownerId?: string;
+}
 
 @Component({
   selector: 'app-manage-spr-scripts-dialog',
@@ -26,185 +21,120 @@ export class ManageSprScriptsDialogComponent implements OnInit {
   @Input() projectManager: ProjectManagerComponent;
   @Input() project: Project;
 
-  submitBtnLabel:string = "Save";
-  submitBtnEnabled:boolean = false;
-  showLoadingIndicator:boolean = false;
-  form:FormGroup;
-  sessions:any = [];
-  scripts:FormArray;
+  scripts: ManagedSprScript[] = [];
+  scriptsLoaded:boolean = false;
+  editorOpen:boolean = false;
+  scriptInEdit: ManagedSprScript = null;
 
-  constructor(private fb:FormBuilder, 
-    private projectService:ProjectService, 
-    private systemService:SystemService, 
-    private http:HttpClient, 
+  constructor(
+    private projectService:ProjectService,
     private notifierService: NotifierService,
     private userService:UserService
     ) { }
 
   ngOnInit(): void {
     this.project = this.projectManager.projectInEdit ? this.projectManager.projectInEdit : null;
+    this.fetchScripts();
+  }
 
-    this.scripts = this.fb.array([]);
-    this.form = this.fb.group({
-      scripts: this.scripts
-    });
-
+  fetchScripts() {
+    this.scriptsLoaded = false;
     let user = this.userService.getSession();
     this.projectService.fetchSprScripts(user.username).subscribe((response:any) => {
-      response.result.forEach((script) => {
-        this.addScript(script);
-      });
-      
-      this.form.valueChanges.subscribe((newValues) => {
-        this.submitBtnEnabled = this.form.valid;
-      });
+      this.scripts = response.result.map((script) => this.toManagedScript(script));
+      this.scriptsLoaded = true;
     });
   }
 
   canEditScript(script) {
     let user = this.userService.getSession();
-    return user.id == script.ownerId;
+    return (script.owner && script.owner == user.username) || (script.ownerId && script.ownerId == user.id);
   }
 
-  addScript(script = null) {
+  addScript() {
+    this.scriptInEdit = null;
+    this.editorOpen = true;
+  }
 
-    if(script != null && !this.canEditScript(script)) {
-      //if this is not 'my' script, and just a shared script, don't add it
+  editScript(script:ManagedSprScript) {
+    if(!this.canEditScript(script)) {
+      return;
+    }
+    this.scriptInEdit = {
+      ...script,
+      prompts: script.prompts.map(prompt => ({ ...prompt })),
+    };
+    this.editorOpen = true;
+  }
+
+  closeEditor() {
+    this.editorOpen = false;
+    this.scriptInEdit = null;
+  }
+
+  onScriptSaved(script:CreatedSprScript) {
+    const wasEditing = this.scriptInEdit != null;
+    this.closeEditor();
+    this.fetchScripts();
+    this.notifierService.notify("info", "Script '" + script.name + "' " + (wasEditing ? "saved." : "created."));
+  }
+
+  deleteSprScript(script:ManagedSprScript, event:Event = null) {
+    event?.stopPropagation();
+    if(!this.canEditScript(script)) {
+      return;
+    }
+    if(!confirm("Are you sure you want to delete this script? This will also make any recording sessions using this script unusable for new recordings.")) {
       return;
     }
 
-    let newScript = script == null ? true : false;
-
-    const scripts = this.form.get('scripts') as FormArray;
-    let scriptFg = this.fb.group({
-      scriptId: new FormControl(script != null ? script.scriptId : nanoid()),
-      collapsed: new FormControl(!newScript),
-      new: new FormControl(newScript),
-      name: new FormControl({ value: script != null ? script.name : "", disabled: false }, [
-        Validators.required,
-        Validators.minLength(3),
-        Validators.pattern("[a-zA-Z0-9 \\\-_]*")
-      ]),
-      sharing: new FormControl(script != null ? script.sharing : "none"),
-      prompts: this.fb.array([])
+    this.projectService.deleteSprScript(script.scriptId).subscribe((response:any) => {
+      if(response.type == "cmd-result" && response.result != "OK") {
+        this.notifierService.notify("error", "Failed to delete script.");
+        return;
+      }
+      this.scripts = this.scripts.filter(existing => existing.scriptId != script.scriptId);
+      this.notifierService.notify("info", "Script deleted.");
     });
-
-    if(newScript) {
-      scripts.insert(0, scriptFg);
-    }
-    else {
-      scripts.push(scriptFg);
-    }
-    
-    
-    //if this is a new script, add a prompt
-    if(scriptFg.controls.new.value) {
-      this.addPrompt(scriptFg);
-    }
-
-    //if this is an existing script, add the prompts
-    if(script != null) {
-
-      if(script.sections.length == 0) {
-        script.sections.push({
-          groups: []
-        });
-      }
-      if(script.sections[0].groups.length == 0) {
-        script.sections[0].groups.push({
-          promptItems: []
-        });
-      }
-
-      script.sections[0].groups[0].promptItems.forEach((prompt) => {
-        this.addPrompt(scriptFg, prompt);
-      });
-    }
-
-  }
-
-  addPrompt(script:FormGroup, prompt = null) {
-
-    let promptsFormArray = script.controls.prompts as FormArray;
-    let itemCode = "prompt_"+(promptsFormArray.length + 1);
-
-    promptsFormArray.push(new FormGroup({
-      name: new FormControl(prompt ? prompt.itemcode : itemCode, [
-          Validators.required,
-          Validators.minLength(3),
-          Validators.pattern("[a-zA-Z0-9 \\\-_]*")
-      ]),
-      itemcode: new FormControl(prompt ? prompt.itemcode : itemCode),
-      value: new FormControl(prompt ? prompt.mediaitems[0].text : "", [
-          /*
-          Validators.required,
-          Validators.minLength(3),
-          Validators.pattern("[a-zA-Z0-9 \\\-_]*")
-          */
-        ])
-    }));
   }
 
   closeDialog() {
     this.projectManager.dashboard.modalActive = false;
   }
 
-  get scriptForms() {
-    return this.form.get('scripts') as FormArray;
+  get existingScriptNames():string[] {
+    return this.scripts.map(script => script.name);
   }
 
-  deleteSprScript(i, event) {
-    const scripts = this.form.get('scripts') as FormArray;
-    let script = scripts.controls[i] as FormGroup;
-
-    //confirm deletion if not new
-    if(!script.controls.new.value) {
-      if(!confirm("Are you sure you want to delete this script? This will also make any recording sessions using this script unusable for new recordings.")) {
-        return;
-      }
-    }
-
-    //delete from server
-    if(!script.controls.new.value) {
-      this.projectService.deleteSprScript(script.controls.scriptId.value).subscribe((response:any) => {
-        if(response.type == "cmd-result" && response.result != "OK") {
-          this.notifierService.notify("error", "Failed to delete script.");
-        }
-      });
-    }
-
-    scripts.removeAt(i);
+  get editorContextLabel():string {
+    return this.scriptInEdit ? "Edit recording script" : "New recording script";
   }
 
-  saveForm() {
-    //set all controls to touched
-    this.form.markAllAsTouched();
-
-    //check that form is valid
-    if(!this.form.valid) {
-      this.notifierService.notify("error", "Form is not ready to be submitted. Please check for any errors.");
-      return;
-    }
-
-    let user = this.userService.getSession();
-
-    this.projectService.saveSprScripts(user.username, this.form.value.scripts).subscribe((response) => {
-      console.log(response);
-      this.projectManager.dashboard.modalActive = false;
-      this.notifierService.notify("info", "Scripts saved successfully.");
-    });
-
+  get editorSaveButtonLabel():string {
+    return this.scriptInEdit ? "Save script" : "Create script";
   }
 
-  toggleSectionCollapsed(sectionName) {
-    this.scripts.controls.forEach(group => {
-      let g = group as FormGroup;
-      if(sectionName == g.controls.name.value) {
-        g.controls.collapsed.setValue(!g.controls.collapsed.value);
-      }
-    });
+  get editorFooterNote():string {
+    return this.scriptInEdit ? "Changes are saved right away and apply to future recording sessions." : "The script is saved right away and added to your recorder scripts.";
+  }
+
+  promptCount(script:ManagedSprScript):number {
+    return script.prompts.filter(prompt => String(prompt.value || "").trim() != "").length;
+  }
+
+  private toManagedScript(script:any):ManagedSprScript {
+    const promptItems = script.sections?.[0]?.groups?.[0]?.promptItems || [];
+    return {
+      scriptId: script.scriptId,
+      name: script.name,
+      sharing: script.sharing || "none",
+      owner: script.owner,
+      ownerId: script.ownerId,
+      prompts: promptItems.map((prompt, index) => ({
+        itemcode: prompt.itemcode || "prompt_" + (index + 1),
+        value: prompt.mediaitems?.[0]?.text || "",
+      })),
+    };
   }
   
 }
-
-

@@ -16,100 +16,66 @@
             </div>
         </div>
 
-        <div class="scripts-dialog-content" [formGroup]="form">
+        <div class="scripts-dialog-content">
             <div class="actions-row">
-                <button class="small-button form-add-button add-script-btn" (click)="addScript()">
+                <button type="button" class="small-button form-add-button add-script-btn" (click)="addScript()">
                     <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                    &nbsp;Add script
+                    Add script
                 </button>
             </div>
 
-            <div formArrayName="scripts" class="scripts-list">
-
-                <div class="section-container script-card" *ngFor="let script of scriptForms.controls; let i=index" [formGroupName]="i">
-                    <div [ngClass]="{ 'section-header-new': script.controls.new.value }" class="section-header-container script-card-header" (click)="toggleSectionCollapsed(script.controls.name.value)">
-
-                        <h5 *ngIf="script.controls.new.value">New script</h5>
-                        <h5 *ngIf="!script.controls.new.value">Script {{ script.controls.name.value }}</h5>
-
-                        <div class="itemDeleteBtn">
-                            <i (click)="deleteSprScript(i, $event)" class="fa fa-trash-o" aria-hidden="true"></i>
-                        </div>
-                    </div>
-
-                    <div class="section-content script-card-content" [ngClass]="{'collapsed': script.controls.collapsed.value}">
-                        <div class="script-metadata-container">
-
-                            <div class="attribute-container">
-                                <label>Script name</label>
-                                <input placeholder="Script name" formControlName="name" />
-
-                            </div>
-
-                            <div class="attribute-container sharing-row">
-                                <label>Shared<i class="fa fa-question-circle tooltip-zone-dark" aria-hidden="true" matTooltip="Shared scripts are available to anyone to be used in their projects, but can still only be edited by you."></i></label>
-                                <select formControlName="sharing">
-                                    <option value="none">No</option>
-                                    <option value="all">Yes</option>
-                                </select>
-                            </div>
-
-                            <!-- NAME INPUT ERROR HANDLING -->
-                            <div *ngIf="script.controls.name.touched == true && script.controls.name.status == 'INVALID'" >
-                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.scriptNameTaken">
-                                    That name is already taken
-                                </div>
-                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.required">
-                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                    Name is required
-                                </div>
-                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.minlength">
-                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                    Mininum {{ script.controls.name.errors.minlength.requiredLength }} characters long
-                                </div>
-                                <div class="form-error-msg" *ngIf="script.controls.name.errors?.pattern">
-                                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                    Please avoid special characters in the name
-                                </div>
-                            </div>
-
-                            <h3 class="prompts-title">Prompts</h3>
-
-                            <div formArrayName="prompts">
-                                <div class="section-container prompt-card" *ngFor="let prompt of script.get('prompts').controls; let j=index" [formGroupName]="j">
-                                    <div class="attribute-container">
-                                        <label>Prompt #{{ j+1 }}</label>
-                                        <input class="prompt-value-input" placeholder="Prompt value" formControlName="value" />
-                                        <div *ngIf="prompt.controls.value.touched == true && prompt.controls.value.status == 'INVALID'" >
-                                            <div class="form-error-msg" *ngIf="prompt.controls.value.errors?.required">
-                                                <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
-                                                Value is required
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="small-button form-add-button add-prompt-btn" (click)="addPrompt(script)">
-                                <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                                &nbsp;Add prompt
-                            </button>
-
-                        </div>
-
-                    </div>
-                </div>
-
+            <div class="scripts-loading" *ngIf="!scriptsLoaded">
+                <i class="fa fa-circle-o-notch fa-spin" aria-hidden="true"></i>
+                Loading scripts
             </div>
 
-            <button id="saveScriptsBtn" [ngClass]="{'disabled': !submitBtnEnabled}" [disabled]="!submitBtnEnabled" (click)="saveForm()">
-                <img *ngIf="showLoadingIndicator" src="../../../../assets/loading-indicator-4-light.svg">
-                <i *ngIf="!showLoadingIndicator" class="fa fa-save" aria-hidden="true"></i>
-                &nbsp;
-                {{ submitBtnLabel }}
-            </button>
+            <div class="empty-scripts" *ngIf="scriptsLoaded && scripts.length == 0">
+                <h3>No recorder scripts yet</h3>
+                <p>Create a script to define prompts for online recording sessions.</p>
+            </div>
 
+            <div class="scripts-list" *ngIf="scriptsLoaded && scripts.length > 0">
+                <div class="script-card" *ngFor="let script of scripts" [ngClass]="{'readonly-script': !canEditScript(script)}">
+                    <div class="script-card-main">
+                        <div class="script-card-title-row">
+                            <h3>{{ script.name }}</h3>
+                            <span class="script-chip" [ngClass]="{'script-chip-shared': script.sharing == 'all'}">
+                                <i class="fa" [ngClass]="script.sharing == 'all' ? 'fa-users' : 'fa-lock'" aria-hidden="true"></i>
+                                {{ script.sharing == 'all' ? 'Shared' : 'Only me' }}
+                            </span>
+                            <span class="script-chip script-chip-readonly" *ngIf="!canEditScript(script)">Read only</span>
+                        </div>
+                        <div class="script-card-meta">
+                            <span>{{ promptCount(script) }} {{ promptCount(script) == 1 ? 'prompt' : 'prompts' }}</span>
+                        </div>
+                        <ol class="script-preview" *ngIf="promptCount(script) > 0">
+                            <li *ngFor="let prompt of script.prompts.slice(0, 3)">{{ prompt.value }}</li>
+                        </ol>
+                        <div class="script-card-note" *ngIf="promptCount(script) > 3">
+                            {{ promptCount(script) - 3 }} more {{ promptCount(script) - 3 == 1 ? 'prompt' : 'prompts' }}
+                        </div>
+                    </div>
+
+                    <div class="script-card-actions">
+                        <button type="button" class="icon-action-btn" (click)="editScript(script)" [disabled]="!canEditScript(script)" aria-label="Edit script" title="Edit script">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="icon-action-btn danger-action" (click)="deleteSprScript(script, $event)" [disabled]="!canEditScript(script)" aria-label="Delete script" title="Delete script">
+                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
+
+    <app-spr-scripts-form *ngIf="editorOpen"
+        [script]="scriptInEdit"
+        [existingScriptNames]="existingScriptNames"
+        [contextLabel]="editorContextLabel"
+        [saveButtonLabel]="editorSaveButtonLabel"
+        [footerNote]="editorFooterNote"
+        (saved)="onScriptSaved($event)"
+        (cancelled)="closeEditor()"></app-spr-scripts-form>
 </div>

@@ -1,1 +1,87 @@
-<p>spr-scripts-form works!</p>
+<div class="script-sheet-backdrop" (click)="cancel()">
+    <div class="script-sheet" role="dialog" aria-modal="true" aria-labelledby="script-sheet-title" (click)="$event.stopPropagation()" (keydown.escape)="cancel()">
+
+        <div class="script-sheet-header">
+            <button type="button" class="sheet-back-btn" (click)="cancel()" aria-label="Back to the project">
+                <i class="fa fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <div class="sheet-header-copy">
+                <span class="sheet-eyebrow">
+                    {{ contextLabel }}<ng-container *ngIf="sessionName"> · for {{ sessionName }}</ng-container>
+                </span>
+                <h3 id="script-sheet-title">{{ name.value?.trim() || 'Untitled script' }}</h3>
+            </div>
+        </div>
+
+        <div class="script-sheet-body" [formGroup]="form">
+
+            <div class="sheet-field">
+                <label for="new-script-name">Script name</label>
+                <input id="new-script-name" class="sheet-input script-name-input" formControlName="name" placeholder="e.g. Vowel words, list A" autocomplete="off" (keydown.enter)="$event.preventDefault(); focusPrompt(0)">
+                <div class="sheet-error" *ngIf="name.invalid && (name.touched || submitted)">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    <span *ngIf="name.errors?.required">Give the script a name.</span>
+                    <span *ngIf="name.errors?.minlength">Use at least {{ name.errors.minlength.requiredLength }} characters.</span>
+                    <span *ngIf="name.errors?.pattern">Use only letters, numbers, spaces, - and _.</span>
+                    <span *ngIf="name.errors?.scriptNameTaken">You already have a script with this name.</span>
+                </div>
+            </div>
+
+            <div class="sheet-field">
+                <span class="sheet-label">Visibility</span>
+                <div class="segmented" role="radiogroup">
+                    <label class="segment" [class.segment-active]="form.value.sharing == 'none'">
+                        <input type="radio" formControlName="sharing" value="none">
+                        <i class="fa fa-lock" aria-hidden="true"></i> Only me
+                    </label>
+                    <label class="segment" [class.segment-active]="form.value.sharing == 'all'">
+                        <input type="radio" formControlName="sharing" value="all">
+                        <i class="fa fa-users" aria-hidden="true"></i> Shared with everyone
+                    </label>
+                </div>
+                <span class="sheet-hint">Shared scripts can be used in anyone's projects, but only you can edit them.</span>
+            </div>
+
+            <div class="sheet-field">
+                <div class="prompts-heading">
+                    <span class="sheet-label">Prompts</span>
+                    <span class="prompt-count">{{ promptCount }} {{ promptCount == 1 ? 'prompt' : 'prompts' }}</span>
+                </div>
+                <span class="sheet-hint">What participants read aloud, one per recording. Press Enter for a new prompt, or paste a list with one prompt per line.</span>
+
+                <ol class="prompt-list" formArrayName="prompts">
+                    <li class="prompt-row" *ngFor="let prompt of prompts.controls; let i = index">
+                        <span class="prompt-number">{{ i + 1 }}</span>
+                        <input class="sheet-input prompt-input" [formControlName]="i" placeholder="Prompt text" autocomplete="off"
+                            (keydown.enter)="onPromptEnter(i, $event)"
+                            (keydown.backspace)="onPromptBackspace(i, $event)"
+                            (paste)="onPromptPaste(i, $event)">
+                        <button type="button" class="prompt-remove-btn" (click)="removePrompt(i)" aria-label="Remove prompt" title="Remove prompt">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                </ol>
+
+                <button type="button" class="sheet-add-btn" (click)="addPrompt()">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Add prompt
+                </button>
+                <div class="sheet-error" *ngIf="prompts.invalid && submitted">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    Add at least one prompt.
+                </div>
+            </div>
+        </div>
+
+        <div class="script-sheet-footer">
+            <span class="sheet-footer-note">
+                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                {{ footerNote }}
+            </span>
+            <button type="button" class="sheet-btn sheet-btn-secondary" (click)="cancel()" [disabled]="isSaving">Cancel</button>
+            <button type="button" class="sheet-btn sheet-btn-primary" (click)="save()" [disabled]="isSaving">
+                <i class="fa" [ngClass]="isSaving ? 'fa-circle-o-notch fa-spin' : 'fa-check'" aria-hidden="true"></i>
+                {{ isSaving ? savingButtonLabel : saveButtonLabel }}
+            </button>
+        </div>
+    </div>
+</div>

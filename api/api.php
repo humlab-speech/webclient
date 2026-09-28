@@ -215,6 +215,11 @@ class Application {
                 $this->addLog("POST: /api/v1/upload", "debug");
                 $apiResponse = $this->handleUpload();
             }
+            $matchResult = $this->restMatchPath($reqPath, "/api/v1/upload/delete");
+            if($matchResult['matched']) {
+                $this->addLog("POST: /api/v1/upload/delete", "debug");
+                $apiResponse = $this->handleUploadDelete();
+            }
             
             $matchResult = $this->restMatchPath($reqPath, "/api/v1/operations/session/please");
             if($matchResult['matched']) {
@@ -553,10 +558,18 @@ class Application {
             return new ApiResponse(400, "Invalid JSON in file metadata");
         }
         
-        $fileName = $this->sanitize($fileMeta->filename);
-        $group = $this->sanitize($fileMeta->group);
-        $context = $this->sanitize($fileMeta->context);
-    
+        // These become parts of the target path, so they are checked, not just
+        // sanitized: sanitize() keeps "/" and ".", which would let "../" escape
+        // the user's upload directory.
+        $fileName = $this->uploadFileName($fileMeta->filename ?? null);
+        $group = $fileMeta->group ?? null;
+        $context = $fileMeta->context ?? null;
+        $targetDir = $this->uploadDir($context, $group);
+        if($fileName === null || $targetDir === null) {
+            $this->addLog("Refused upload with an invalid file name, group or context", "warn");
+            return new ApiResponse(400, "Invalid file name or upload destination.");
+        }
+
         $this->addLog("Received upload file with filename '".$fileName."'");
         $this->addLog("Post-sanitization filename: ".$fileName, "debug");
         $this->addLog("Post-sanitization group name: ".$group, "debug");
@@ -567,7 +580,6 @@ class Application {
             return new ApiResponse(400, "File upload failed. Error code: " . $_FILES['fileData']['error']);
         }
     
-        $targetDir = "/tmp/uploads/".$_SESSION['username']."/".$context."/".$group;
         $dirOk = $this->createDirectory($targetDir);
         if (!$dirOk || !is_writable($targetDir)) {
             $this->addLog("Upload directory is not writable: ".$targetDir, "error");
@@ -611,6 +623,115 @@ class Application {
           rmdir($dir); 
         } 
       }
+
+    /**
+     * The staging directory for one upload group of one form, or null if the
+     * context or group isn't one the webclient sends. The username comes from
+     * the session, never from the request, so a user can only reach their own
+     * uploads.
+     */
+    function uploadDir($context, $group) {
+        $idPattern = '/^[A-Za-z0-9_-]{1,64}$/'; // nanoid()s: form contexts and session ids
+        if(!is_string($context) || !preg_match($idPattern, $context)) {
+            return null;
+        }
+        if(!is_string($group)) {
+            return null;
+        }
+        if($group !== "docs") {
+            $parts = explode("/", $group);
+            if(count($parts) != 2 || $parts[0] !== "emudb-sessions" || !preg_match($idPattern, $parts[1])) {
+                return null;
+            }
+        }
+        $username = $_SESSION['username'] ?? "";
+        if(!is_string($username) || $username === "" || $username === "." || $username === ".."
+            || strpbrk($username, "/\\\0") !== false) {
+            return null;
+        }
+        return "/tmp/uploads/".$username."/".$context."/".$group;
+    }
+
+    // The name an upload is stored under, or null if it can't be a plain file name
+    function uploadFileName($fileName) {
+        if(!is_string($fileName)) {
+            return null;
+        }
+        $name = $this->sanitize($fileName);
+        if($name === "" || $name[0] === "." || strlen($name) > 255 || strpbrk($name, "/\\\0") !== false) {
+            return null;
+        }
+        return $name;
+    }
+
+    // Whether a browser request comes from this site. Requests without an
+    // Origin header (older browsers, same-origin GETs) are let through; they
+    // still need the session cookie.
+    function isSameOriginRequest() {
+        if(empty($_SERVER['HTTP_ORIGIN'])) {
+            return true;
+        }
+        $originHost = parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
+        if(!is_string($originHost)) {
+            return false;
+        }
+        $ownHosts = [parse_url("http://".($_SERVER['HTTP_HOST'] ?? ""), PHP_URL_HOST), getenv("BASE_DOMAIN")];
+        foreach($ownHosts as $host) {
+            if(is_string($host) && $host !== "" && strcasecmp($originHost, $host) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Deletes a file uploaded in the project dialog but removed before saving,
+     * so that session-manager doesn't import it. Only the signed-in user's own
+     * unsaved uploads are reachable: the path is built from their session's
+     * username, and uploads leave this staging area once the project is saved,
+     * so stored project data can't be touched.
+     */
+    function handleUploadDelete() {
+        // A cross-site form can't send a JSON body without a CORS preflight,
+        // which this API never answers, so a forged request can't get here.
+        if(stripos($_SERVER['CONTENT_TYPE'] ?? "", "application/json") !== 0) {
+            return new ApiResponse(415, "Expected a JSON body.");
+        }
+        if(!$this->isSameOriginRequest()) {
+            $this->addLog("Refused cross-origin upload deletion from ".$_SERVER['HTTP_ORIGIN'], "warn");
+            return new ApiResponse(403, "Cross-origin requests are not allowed.");
+        }
+
+        $body = json_decode(file_get_contents("php://input"));
+        if(!is_object($body)) {
+            return new ApiResponse(400, "Invalid JSON body.");
+        }
+        $dir = $this->uploadDir($body->context ?? null, $body->group ?? null);
+        $name = $this->uploadFileName($body->filename ?? null);
+        if($dir === null || $name === null) {
+            $this->addLog("Refused upload deletion with an invalid file name, group or context", "warn");
+            return new ApiResponse(400, "Invalid file name or upload location.");
+        }
+
+        $path = $dir."/".$name;
+        if(is_link($path) || !is_file($path)) {
+            return new ApiResponse(404, "No such upload.");
+        }
+        // The checks above already rule out leaving the user's upload area;
+        // confirm it on the resolved path anyway before deleting anything.
+        $userRoot = realpath("/tmp/uploads/".$_SESSION['username']);
+        $realPath = realpath($path);
+        if($userRoot === false || $realPath === false || strpos($realPath, $userRoot."/") !== 0) {
+            $this->addLog("Refused upload deletion outside the user's upload directory: ".$path, "warn");
+            return new ApiResponse(403, "Not allowed.");
+        }
+        if(!unlink($realPath)) {
+            $this->addLog("Could not delete upload ".$realPath, "error");
+            return new ApiResponse(500, "Could not delete the upload.");
+        }
+        $this->addLog("Deleted upload ".$realPath." removed before saving", "info");
+        return new ApiResponse(200, "Upload deleted.");
+    }
 
     function handleZipArchive($archiveFile, $targetDir) {
         $this->addLog("File ".$archiveFile." is zipped, unzipping", "debug");

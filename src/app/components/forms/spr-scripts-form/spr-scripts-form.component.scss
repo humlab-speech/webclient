@@ -1,0 +1,335 @@
+// Stacked sheet that sits on top of the project dialog. The dialog underneath
+// stays mounted, so nothing the user has typed there is lost.
+
+.script-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(16, 30, 52, 0.42);
+    animation: backdrop-in 0.15s ease-out;
+}
+
+.script-sheet {
+    display: flex;
+    flex-direction: column;
+    width: min(640px, 100%);
+    max-height: min(760px, calc(100vh - 2rem));
+    border-radius: 18px;
+    border: 1px solid #d8dfe8;
+    background: #ffffff;
+    color: #1c2b40;
+    box-shadow: 0 24px 60px rgba(19, 39, 67, 0.38);
+    overflow: hidden;
+    animation: sheet-in 0.18s ease-out;
+}
+
+@keyframes backdrop-in {
+    from { opacity: 0; }
+}
+
+@keyframes sheet-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.99); }
+}
+
+.script-sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 1.25rem;
+    background: #243e6a;
+    color: #ffffff;
+}
+
+.sheet-back-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 0.9rem;
+    box-shadow: none;
+}
+
+.sheet-back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
+.sheet-header-copy {
+    min-width: 0;
+}
+
+.sheet-eyebrow {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.script-sheet-header h3 {
+    margin: 0.15rem 0 0;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    background: none;
+}
+
+.script-sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.25rem;
+}
+
+.sheet-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.sheet-field > label,
+.sheet-label {
+    color: #1c2b40;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.sheet-hint {
+    color: #5b6b80;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.sheet-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0 0.8rem;
+    border: 1px solid #ccd6e3;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1c2b40;
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+.sheet-input:focus {
+    outline: 0;
+    border-color: #5f87bd;
+    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+}
+
+.sheet-error {
+    color: #b3261e;
+    font-size: 0.8rem;
+}
+
+/* Visibility toggle */
+
+.segmented {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 3px;
+    border-radius: 11px;
+    background: #eef2f7;
+    border: 1px solid #dde4ed;
+}
+
+.segment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    color: #4a5a70;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.segment input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.segment:focus-within {
+    outline: 2px solid #5f87bd;
+    outline-offset: 1px;
+}
+
+.segment-active {
+    background: #ffffff;
+    color: #1c2b40;
+    box-shadow: 0 1px 3px rgba(19, 39, 67, 0.16);
+}
+
+/* Prompts */
+
+.prompts-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.prompt-count {
+    color: #5b6b80;
+    font-size: 0.78rem;
+}
+
+.prompt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.prompt-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    background: none;
+}
+
+.prompt-number {
+    flex: none;
+    width: 1.8rem;
+    color: #7a889b;
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.prompt-remove-btn {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #8593a6;
+    font-size: 0.85rem;
+    box-shadow: none;
+}
+
+.prompt-remove-btn:hover {
+    background: #fbeaea;
+    color: #b3261e;
+    box-shadow: none;
+}
+
+.sheet-add-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.25rem 0 0 2.3rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px dashed #b9c7d9;
+    border-radius: 9px;
+    background: transparent;
+    color: #24497e;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.sheet-add-btn:hover {
+    background: #f1f5fb;
+    box-shadow: none;
+}
+
+/* Footer */
+
+.script-sheet-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #e3e8ef;
+    background: #f8fafc;
+}
+
+.sheet-footer-note {
+    flex: 1;
+    min-width: 0;
+    color: #5b6b80;
+    font-size: 0.78rem;
+}
+
+.sheet-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.5rem;
+    padding: 0 1.1rem;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.sheet-btn-secondary {
+    border: 1px solid #ccd6e3;
+    background: #ffffff;
+    color: #1c2b40;
+}
+
+.sheet-btn-secondary:hover {
+    background: #f1f5fb;
+    box-shadow: none;
+}
+
+.sheet-btn-primary {
+    border: 1px solid transparent;
+    background: #b95a2c;
+    color: #ffffff;
+}
+
+.sheet-btn-primary:hover {
+    background: #a24c22;
+    box-shadow: none;
+}
+
+.sheet-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+@media (max-width: 560px) {
+    .script-sheet-footer {
+        flex-wrap: wrap;
+    }
+
+    .sheet-footer-note {
+        flex-basis: 100%;
+    }
+}
