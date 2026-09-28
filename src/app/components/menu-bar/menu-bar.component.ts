@@ -328,6 +328,11 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     return this.showDashboardHero && !this.userIsAuthenticated;
   }
 
+  get showUserActions():boolean {
+    // Search and notifications only mean something to a user who can reach projects.
+    return this.userIsAuthenticated && this.userIsAuthorized;
+  }
+
   get canCreateProjects():boolean {
     // Creating a project is a system-level action, reserved for sysadmins.
     return this.userService.userIsSysAdmin();
