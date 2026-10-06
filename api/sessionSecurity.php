@@ -51,3 +51,53 @@ function sessionValidationPayload(array $session): string
     return json_encode($payload);
 }
 
+
+/**
+ * Whether a NON-idempotent request may be trusted as same-site.
+ *
+ * The PHP API authenticates by cookie, so a page on another origin could
+ * otherwise perform state-changing requests (upload/delete/session commit)
+ * with the victim's credentials. Browsers today always attach Origin to
+ * cross-origin POSTs (fetch/XHR *and* form posts), so a present-but-wrong
+ * Origin is a hard no. Missing Origin is tolerated only when the request is
+ * demonstrably not a cross-site browser request: Sec-Fetch-Site of
+ * same-origin/none, or - as a legacy-user-agent fallback - no Sec-Fetch-Site
+ * at all. The origin may be the base domain itself or any subdomain of it
+ * (artic.*, recorder.* post to this API).
+ *
+ * Pure over $_SERVER/env data so api/tests/run-tests.php covers it.
+ */
+function requestOriginOk(array $server, string $baseDomain): bool
+{
+    $ownHosts = [];
+    if ($baseDomain !== "") {
+        $ownHosts[] = strtolower($baseDomain);
+    }
+    if (!empty($server['HTTP_HOST'])) {
+        $host = parse_url("http://" . $server['HTTP_HOST'], PHP_URL_HOST);
+        if (is_string($host)) {
+            $ownHosts[] = strtolower($host);
+        }
+    }
+
+    if (!empty($server['HTTP_ORIGIN'])) {
+        $originHost = parse_url($server['HTTP_ORIGIN'], PHP_URL_HOST);
+        if (!is_string($originHost)) {
+            return false;
+        }
+        $originHost = strtolower($originHost);
+        foreach ($ownHosts as $own) {
+            if ($originHost === $own || str_ends_with($originHost, "." . $own)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $secFetchSite = strtolower((string)($server['HTTP_SEC_FETCH_SITE'] ?? ""));
+    if ($secFetchSite !== "") {
+        return in_array($secFetchSite, ["same-origin", "none"], true);
+    }
+    // No Origin and no Sec-Fetch-Site: a user agent predating both.
+    return true;
+}

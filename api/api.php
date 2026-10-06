@@ -105,6 +105,19 @@ class Application {
 
         $reqMethod = $_SERVER['REQUEST_METHOD'];
 
+        // CSRF: the session cookie authenticates every /api/v1 handler, so one
+        // cross-site page could otherwise upload files, delete them or commit
+        // sessions as the signed-in user. The gate used to guard only the
+        // upload-deletion handler; it now runs for every non-idempotent method
+        // before any handler is reached. Idempotent GETs keep the lax
+        // missing-Origin tolerance (they change nothing and still need the
+        // cookie).
+        if(!in_array($reqMethod, ["GET", "HEAD", "OPTIONS"], true) && !$this->isSameOriginRequest()) {
+            $this->addLog("Refused cross-origin ".$reqMethod." ".$reqPath." from ".($_SERVER['HTTP_ORIGIN'] ?? "(no origin, Sec-Fetch-Site: ".($_SERVER['HTTP_SEC_FETCH_SITE'] ?? "absent").")"), "warn");
+            $ar = new ApiResponse(403, array('message' => 'Cross-origin requests are not allowed.'));
+            return $ar->toJSON();
+        }
+
         //PUBLIC METHODS
         if($reqMethod == "GET") {
             switch($reqPath) {
@@ -674,24 +687,11 @@ class Application {
         return $name;
     }
 
-    // Whether a browser request comes from this site. Requests without an
-    // Origin header (older browsers, same-origin GETs) are let through; they
-    // still need the session cookie.
+    // Whether a browser request comes from this site. The rules (and the
+    // handling of a missing Origin) live in requestOriginOk() so the shared
+    // dispatch gate and this per-handler call cannot drift apart.
     function isSameOriginRequest() {
-        if(empty($_SERVER['HTTP_ORIGIN'])) {
-            return true;
-        }
-        $originHost = parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
-        if(!is_string($originHost)) {
-            return false;
-        }
-        $ownHosts = [parse_url("http://".($_SERVER['HTTP_HOST'] ?? ""), PHP_URL_HOST), getenv("BASE_DOMAIN")];
-        foreach($ownHosts as $host) {
-            if(is_string($host) && $host !== "" && strcasecmp($originHost, $host) == 0) {
-                return true;
-            }
-        }
-        return false;
+        return requestOriginOk($_SERVER, (string)getenv("BASE_DOMAIN"));
     }
 
     /**
@@ -704,12 +704,10 @@ class Application {
     function handleUploadDelete() {
         // A cross-site form can't send a JSON body without a CORS preflight,
         // which this API never answers, so a forged request can't get here.
+        // The origin check itself moved to the shared dispatch gate (it covers
+        // every non-idempotent handler there, not just this one).
         if(stripos($_SERVER['CONTENT_TYPE'] ?? "", "application/json") !== 0) {
             return new ApiResponse(415, "Expected a JSON body.");
-        }
-        if(!$this->isSameOriginRequest()) {
-            $this->addLog("Refused cross-origin upload deletion from ".$_SERVER['HTTP_ORIGIN'], "warn");
-            return new ApiResponse(403, "Cross-origin requests are not allowed.");
         }
 
         $body = json_decode(file_get_contents("php://input"));

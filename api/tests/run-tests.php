@@ -71,7 +71,28 @@ check("loginAllowed survives (authorization state)", ($payload['loginAllowed'] ?
 // "[]" signal, even if some other session keys were set.
 check("session without identity -> []", sessionValidationPayload(['loginCount' => 3]) === "[]");
 
+
+// --- requestOriginOk --------------------------------------------------------
+$BASE = "visp.example.edu";
+$ok = function (array $server) use ($BASE) { return requestOriginOk($server, $BASE); };
+
+check("cross-origin POST refused", $ok(["HTTP_ORIGIN" => "https://evil.example", "HTTP_HOST" => "visp.example.edu"]) === false);
+check("same-origin POST allowed", $ok(["HTTP_ORIGIN" => "https://visp.example.edu", "HTTP_HOST" => "visp.example.edu"]) === true);
+check("subdomain (artic/recorder) POST allowed", $ok(["HTTP_ORIGIN" => "https://artic.visp.example.edu", "HTTP_HOST" => "visp.example.edu"]) === true);
+check("lookalike suffix refused", $ok(["HTTP_ORIGIN" => "https://visp.example.edu.attacker.test", "HTTP_HOST" => "visp.example.edu"]) === false);
+check("missing Origin + cross-site Sec-Fetch-Site refused", $ok(["HTTP_HOST" => "visp.example.edu", "HTTP_SEC_FETCH_SITE" => "cross-site"]) === false);
+check("missing Origin + same-origin Sec-Fetch-Site allowed", $ok(["HTTP_HOST" => "visp.example.edu", "HTTP_SEC_FETCH_SITE" => "same-origin"]) === true);
+check("missing Origin + none (address bar / non-fetch) allowed", $ok(["HTTP_HOST" => "visp.example.edu", "HTTP_SEC_FETCH_SITE" => "none"]) === true);
+check("missing both headers (legacy UA) allowed", $ok(["HTTP_HOST" => "visp.example.edu"]) === true);
+check("dev: Host without BASE_DOMAIN matches Host", $ok(["HTTP_ORIGIN" => "http://localhost:8081", "HTTP_HOST" => "localhost:8081", "HTTP_SEC_FETCH_SITE" => "same-origin"]) === true);
+
+// The empty session-manager validation call must keep working: it is a GET,
+// sent without Origin/Sec-Fetch-Site headers over the docker network - the
+// dispatch gate exempts GET, and even if reached, no-Origin-without-SFS is ok.
+check("session-manager style call (no headers) still passes", $ok(["HTTP_HOST" => "apache"]) === true);
+
 // --- result -----------------------------------------------------------------
-echo $failures === 0 ? "\nALL TESTS PASSED\n" : "\n$failures FAILURE(S)\n";
+
+// --- result -----------------------------------------------------------------
+echo $failures === 0 ? "\nALL TESTS PASSED\n" : "\n$failures FAILURE(S)\n\n";
 exit($failures === 0 ? 0 : 1);
-?>
