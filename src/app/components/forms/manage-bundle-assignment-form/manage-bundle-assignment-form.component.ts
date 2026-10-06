@@ -450,6 +450,14 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
       projectId: this.project.id,
       bundleLists: bundleLists
     }).then((data:WebSocketMessage) => {
+      if(data?.result === false) {
+        // A refused save must not look like a saved one. The backend refuses to
+        // write a list whose owner the caller may not name, and used to have the
+        // dialog close over that refusal.
+        this.submitBtnEnabled = true;
+        this.notifierService.notify("error", "Could not save the bundle assignment: " + (data.message || "not authorized"));
+        return;
+      }
       this.notifierService.notify("info", "Bundle assignment lists saved");
       this.submitBtnEnabled = true;
 
