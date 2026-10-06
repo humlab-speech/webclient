@@ -41,6 +41,30 @@ check("HTTP_HOST never changes any cookie attribute", $a === $b);
 [$d, $s] = cookieParams(["BASE_DOMAIN" => false, "HTTP_PROTOCOL" => false]);
 check("missing env: no domain leak, Secure default", $d === "" && $s === true);
 
+// Explicit vector table for the exact contract src/index.php (the SPA shell
+// that mints the domain-wide PHPSESSID, now via cookieParams) relies on:
+// BASE_DOMAIN set -> ".domain"; empty -> ""; HTTP_PROTOCOL=http -> secure=false;
+// unset -> true; httpOnly always true.
+$cookieVectors = [
+    ["BASE_DOMAIN" => "visp.example.edu"],
+    ["BASE_DOMAIN" => "visp.example.edu", "HTTP_PROTOCOL" => "http"],
+    ["BASE_DOMAIN" => ""],
+    ["BASE_DOMAIN" => "", "HTTP_PROTOCOL" => "https"],
+    ["HTTP_PROTOCOL" => "http"],
+    ["HTTP_PROTOCOL" => "https"],
+];
+foreach ($cookieVectors as $i => $v) {
+    [$vd, $vs, $vh] = cookieParams($v);
+    $base = array_key_exists('BASE_DOMAIN', $v) ? trim((string) $v['BASE_DOMAIN']) : "";
+    $proto = array_key_exists('HTTP_PROTOCOL', $v) ? strtolower(trim((string) $v['HTTP_PROTOCOL'])) : "https";
+    $wantDomain = $base !== "" ? "." . $base : "";
+    $wantSecure = $proto !== "http";
+    check("cookieParams vector #$i domain matches BASE_DOMAIN", $vd === $wantDomain);
+    check("cookieParams vector #$i secure follows HTTP_PROTOCOL", $vs === $wantSecure);
+    check("cookieParams vector #$i httpOnly always true", $vh === true);
+}
+
+
 // --- sessionValidationPayload ----------------------------------------------
 check("empty session serializes to [] (the contract session-manager parses)", sessionValidationPayload([]) === "[]");
 

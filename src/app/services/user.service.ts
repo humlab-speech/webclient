@@ -306,19 +306,11 @@ export class UserService {
     this.sessionObs.next(this.session);
   }
 
-  getCookie(name:string) {
-    let parts = document.cookie.split(";");
-    for(let i = 0; i < parts.length; i++) {
-      let part = parts[i];
-      if(part.indexOf(name) != -1) {
-        return part.split("=")[1];
-      }
-    }
-    return "";
-  }
-
   fetchSession():Observable<UserSession> {
-    let phpSessId = this.getCookie("PHPSESSID");
+    // The session cookie is HttpOnly now (index.php/api.php set it via
+    // cookieParams), so document.cookie no longer exposes PHPSESSID. The id
+    // this request needs is already stamped into window.visp by the PHP shell.
+    let phpSessId = (window as any).visp?.phpSessionId ?? "";
     this.bootstrapLoadingStatus$.next("getSession:start");
 
     return new Observable<UserSession>((observer) => {

@@ -4,11 +4,33 @@ require __DIR__ . '/vendor/autoload.php';
 use MongoDB\Client;
 use MongoDB\BSON\UTCDateTime;
 
-//$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : false;
-$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".visp.local";
-//if we are running on visp.local set cookie secure to false
-$secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
-$httpOnly = false;
+// Cookie scope must come from the deployment environment (BASE_DOMAIN /
+// HTTP_PROTOCOL, both passed via the quadlet EnvironmentFile), never from the
+// client-controlled Host: header: a crafted Host: used to flow straight into
+// the Set-Cookie domain= of the domain-wide PHPSESSID this shell mints (and
+// could force Secure=false). api.php was fixed via cookieParams(); this file
+// is the other place that starts a session and must use the same helper.
+// Probe both layouts: the built dist/ tree (index.php beside api/) and the dev
+// source mount (src/index.php with api/ one level up). Fail closed - a
+// host-only, Secure, HttpOnly cookie - if the helper is somehow unavailable.
+$sessionSecurity = null;
+foreach ([__DIR__ . '/api/sessionSecurity.php', __DIR__ . '/../api/sessionSecurity.php'] as $candidate) {
+    if (file_exists($candidate)) {
+        $sessionSecurity = $candidate;
+        break;
+    }
+}
+if ($sessionSecurity === null) {
+    $domain = "";
+    $secure = true;
+    $httpOnly = true;
+} else {
+    require_once $sessionSecurity;
+    [$domain, $secure, $httpOnly] = cookieParams([
+        "BASE_DOMAIN" => getenv("BASE_DOMAIN"),
+        "HTTP_PROTOCOL" => getenv("HTTP_PROTOCOL"),
+    ]);
+}
 
 session_set_cookie_params(60*60*2, "/", $domain, $secure, $httpOnly);
 
