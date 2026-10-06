@@ -748,8 +748,24 @@ class Application {
             if(!$unsafe) {
                 // A ".." is only dangerous as a whole path segment; "my..take.wav"
                 // is a file name uploadFileName() accepts, and must stay accepted.
-                foreach(preg_split("#[/\\\\]+#", $name) as $segment) {
+                $segments = preg_split("#[/\\\\]+#", $name);
+                foreach($segments as $segment) {
                     if($segment === "..") { $unsafe = true; break; }
+                }
+                // The name an entry actually ends up stored under is the last
+                // segment (a zipped folder is flattened below), and that name is
+                // never passed through uploadFileName() - so the two rules that
+                // make a name usable have to be applied here, or the archive
+                // leaves behind something no one can name again: a dot-prefixed or
+                // oversized file that the delete endpoint refuses (400), that
+                // recursive-copy skips, and that container-agent then refuses the
+                // whole save for.
+                if(!$unsafe) {
+                    $stored = end($segments);
+                    // A trailing empty segment is a directory entry ("folder/"),
+                    // which is how a zipped folder arrives; it stores no file, so
+                    // the file-name rules do not apply to it.
+                    $unsafe = $stored !== "" && ($stored[0] === "." || strlen($stored) > 255);
                 }
             }
             if($unsafe) {
@@ -771,7 +787,15 @@ class Application {
                 unlink($targetDir."/".$archiveFile);
                 return false;
             }
-            $zip->extractTo($targetDir."/");
+            if(!$zip->extractTo($targetDir."/")) {
+                // A partial extract used to be reported as a stored upload: the
+                // caller answers 200 either way, and the sender never learns which
+                // takes are missing.
+                $zip->close();
+                unlink($targetDir."/".$archiveFile);
+                $this->addLog("Could not extract the uploaded archive completely", "error");
+                return false;
+            }
             $zip->close();
             
             $dir = array_diff(scandir($targetDir), array('..', '.'));
