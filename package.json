@@ -11,7 +11,6 @@
     "visp-pdf-server-build": "ng build --configuration=visp-pdf-server --output-path dist",
     "visp-local-build": "ng build --configuration=visp.dev --output-path dist",
     "test": "ng test",
-    "e2e": "ng e2e",
     "devbuild": "ng build --output-path dist --watch",
     "visp-dev": "npm run php:vendor && ng build --configuration=visp.dev --output-path dist --watch",
     "datalab-dev": "ng build --configuration=datalab.dev --output-path dist --watch",
@@ -59,7 +58,6 @@
     "karma-coverage": "^2.2.0",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.0.0",
-    "protractor": "~7.0.0",
     "ts-node": "~9.1.1",
     "typescript": "~5.4.0"
   }
