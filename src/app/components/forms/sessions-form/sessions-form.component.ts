@@ -25,7 +25,7 @@ import { nanoid } from 'nanoid';
 import { Clipboard } from '@angular/cdk/clipboard';
 import * as L from 'leaflet';
 import { CreatedSprScript } from '../spr-scripts-form/spr-scripts-form.component';
-import { sessionSources, fileOrigin } from '../../../models/SessionSources';
+import { sessionSources, fileOrigin, sessionHasRecordings } from '../../../models/SessionSources';
 
 export interface EmudbFormValues {
   sessions: [];
@@ -69,6 +69,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   subscriptions: Subscription[] = [];
   sessions:FormArray;
   sessionScriptOptions:any = [];
+  // Ids of sessions that already hold recordings, and therefore keep the recording
+  // script those takes were made with (see sessionScriptIsLocked).
+  private sessionsWithRecordings = new Set<string>();
   annotLevels:FormArray;
   annotLevelLinks:FormArray;
   annotLevelTypes = [
@@ -693,7 +696,13 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       return null;
     }
 
+    // A new script can be offered as the default; an existing session is never
+    // guessed at, see the sessionScript control below.
     let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0] : { value: null, label: "No script" };
+    const initialScript = session.new ? defaultScript.value : (session.sessionScript ?? null);
+    if(!session.new && sessionHasRecordings(session)) {
+      this.sessionsWithRecordings.add(String(session.id));
+    }
 
     let dataSourceControl = new FormControl(session.dataSource);
     let recordEnabledControl = new FormControl(session.recordEnabled);
@@ -722,7 +731,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       uploadEnabled: new FormControl(session.uploadEnabled),
       recordEnabled: recordEnabledControl,
       recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(recordEnabledControl)),
+      // An existing session starts with the script it is stored with, or with none
+      // at all: seeding it with "the first script in the list" and waiting for the
+      // lookup meant a save that happened first, or a deleted script, quietly
+      // re-pointed a session that may already have recordings at another script -
+      // and every script numbers its prompts from prompt_1, whose take may already
+      // be recorded in this session. Sessions with recordings can't be re-pointed
+      // at all (the backend refuses the save); see sessionScriptIsLocked below.
+      sessionScript: new FormControl( initialScript, this.validateSprScriptWithParent(recordEnabledControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
       sprSessionSealed: new FormControl(session.sprSessionSealed),
@@ -738,7 +754,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
           resolve(sprScript);
         }
         else {
-          sessionGroup.controls.sessionScript.setValue(defaultScript.value);
+          // Keep what the session is stored with (or nothing) rather than guessing.
+          sessionGroup.controls.sessionScript.setValue(initialScript);
           resolve(null);
         }
       });
@@ -910,6 +927,19 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   getScriptLabel(scriptId):string|null {
     const option = this.sessionScriptOptions.find(o => o.value == scriptId);
     return option ? option.label : null;
+  }
+
+  /**
+   * Whether the session's recording script can still be changed. Item codes name the
+   * recorded takes, so once a session holds recordings its script is what they were
+   * recorded with: pointing it at another script (which numbers its prompts from
+   * prompt_1) would have the next participant record over takes belonging to other
+   * prompts. The backend refuses such a save; locking the control says so before the
+   * user tries. A take recorded while this dialog was open is not known here, and is
+   * caught by that same refusal.
+   */
+  sessionScriptIsLocked(session:any):boolean {
+    return this.sessionsWithRecordings.has(String(session?.controls?.id?.value));
   }
 
   // The flag arrives as a boolean from the backend, but as a string from the <select>

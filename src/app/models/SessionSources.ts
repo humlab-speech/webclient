@@ -20,3 +20,12 @@ export function fileOrigin(file:any, session:any):FileOrigin {
   }
   return session?.dataSource === "record" ? "recording" : "upload";
 }
+
+// Whether a session already holds recordings. Item codes name the recorded takes, so
+// such a session keeps the recording script they were made with — see
+// SessionsFormComponent.sessionScriptIsLocked and session-manager's
+// validateSessionScriptChanges, which is what actually refuses the save.
+export function sessionHasRecordings(session:any):boolean {
+  return Array.isArray(session?.files) &&
+    session.files.some((file:any) => fileOrigin(file, session) === "recording");
+}
