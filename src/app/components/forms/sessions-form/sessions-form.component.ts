@@ -778,6 +778,15 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
   }
 
+  /** Stored bundles hold audio a colleague may already be working with, so only
+   *  project admins and sysadmins get offered the delete at all - the backend
+   *  refuses anyone else (canDeleteProject in ApiServer.deleteBundle), and a
+   *  refused click would look like a broken button. This reads the flag the
+   *  backend derived from that same check; it is convenience, not a boundary. */
+  canDeleteBundles(project:any):boolean {
+    return project?.userProjectPermissions?.deleteBundles === true;
+  }
+
   deleteAllBundles(projectId, sessionId) {
     //confirm deletion
     if(!window.confirm("Are you sure you wish to delete all the audio files in this session?")) {
