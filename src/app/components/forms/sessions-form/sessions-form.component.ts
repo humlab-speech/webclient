@@ -788,22 +788,23 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.sessions.controls.forEach(session => {
       let sessionFormGroup = session as FormGroup;
       if(sessionFormGroup.controls.id.value == sessionId) {
-        sessionFormGroup.controls.files.value.forEach(file => {
+        const filesFormArray = sessionFormGroup.get('files') as FormArray;
+        filesFormArray.value.forEach(file => {
           this.projectService.deleteBundle(projectId, sessionId, file.name).subscribe((data:any) => {
             if(data.result === false) {
               this.notifierService.notify("error", "Could not delete file "+file.name);
+              return;
+            }
+            // Drop only what the backend really deleted. Clearing the whole list up
+            // front made the session look emptied while the files stayed on disk and
+            // reappeared the next time the dialog was opened - and with deleteBundle
+            // now refused for researchers, that was the normal outcome for them.
+            const at = filesFormArray.controls.findIndex(control => control.value?.name == file.name);
+            if(at >= 0) {
+              filesFormArray.removeAt(at);
             }
           });
         });
-      }
-    });
-    
-    //clear the form
-    this.sessions.controls.forEach(session => {
-      let sessionFormGroup = session as FormGroup;
-      if (sessionFormGroup.controls.id.value == sessionId) {
-        const filesFormArray = sessionFormGroup.get('files') as FormArray;
-        filesFormArray.clear();
       }
     });
   }
@@ -939,7 +940,17 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
    * caught by that same refusal.
    */
   sessionScriptIsLocked(session:any):boolean {
-    return this.sessionsWithRecordings.has(String(session?.controls?.id?.value));
+    if(!this.sessionsWithRecordings.has(String(session?.controls?.id?.value))) {
+      return false;
+    }
+    // Unless the script it would lock onto is actually there. A session can hold
+    // recordings whose script has since been deleted, or predate the link entirely;
+    // locking the control then would leave a required "select a recording script"
+    // error with no control to clear it with, and block the whole project save. The
+    // backend still refuses an outright change while takes exist, so letting the user
+    // pick here is not a data-loss hole - it is the only way out.
+    const current = session?.controls?.sessionScript?.value;
+    return current != null && this.sessionScriptOptions.some(option => option.value == current);
   }
 
   // The flag arrives as a boolean from the backend, but as a string from the <select>
