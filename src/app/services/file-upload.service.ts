@@ -104,7 +104,16 @@ export class FileUploadService {
     for(const c of strip) {
       clean = clean.split(c).join("");
     }
-    return clean.trim().replace(/\s+/g, "_");
+    // Trim and collapse exactly like api.php does (byte-wise, ASCII only): its
+    // trim() set is " \t\n\r\0\x0B" and preg_replace('/\s+/') without /u is
+    // " \t\n\r\f\v". JS's .trim() and /\s+/ additionally eat U+00A0 and the
+    // Unicode spaces, which made "a\u00a0b.pdf" and "a b.pdf" the same key here
+    // while api.php stored them as two different files: the second was then
+    // treated as a duplicate, and deleting one skipped the server-side delete of
+    // the other, so a removed upload survived and was imported on the next save.
+    return clean
+      .replace(/^[\t\n\r\0\x0B ]+|[\t\n\r\0\x0B ]+$/g, "")
+      .replace(/[ \t\n\r\f\v]+/g, "_");
   }
 
   /**
