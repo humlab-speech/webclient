@@ -52,6 +52,11 @@ export class SprScriptsFormComponent implements OnInit {
   isSaving: boolean = false;
   submitted: boolean = false;
   private originalName: string = "";
+  // Item codes name the recorded takes (<itemcode>.wav), so they belong to the
+  // prompt: they travel with it, are never renumbered and never reused.
+  private itemcodes: string[] = [];
+  private usedItemcodes = new Set<string>();
+  private itemcodeSeq = 0;
 
   constructor(
     private elementRef: ElementRef,
@@ -63,6 +68,8 @@ export class SprScriptsFormComponent implements OnInit {
   ngOnInit(): void {
     this.originalName = String(this.script?.name || "").trim();
     const initialPrompts = this.script?.prompts?.length ? this.script.prompts : [{ value: "" }];
+    this.itemcodes = initialPrompts.map((prompt, i) => String(prompt.itemcode || "prompt_" + (i + 1)));
+    this.itemcodes.forEach(code => this.usedItemcodes.add(code));
     this.form = new FormGroup({
       name: new FormControl(this.script?.name || "", [
         Validators.required,
@@ -102,14 +109,26 @@ export class SprScriptsFormComponent implements OnInit {
     return hasPrompt ? null : { noPrompts: true };
   }
 
+  newItemcode(): string {
+    let code = "";
+    while(code == "" || this.usedItemcodes.has(code)) {
+      this.itemcodeSeq++;
+      code = "prompt_" + this.itemcodeSeq;
+    }
+    this.usedItemcodes.add(code);
+    return code;
+  }
+
   addPrompt(afterIndex: number = this.prompts.length - 1, value = "") {
     this.prompts.insert(afterIndex + 1, new FormControl(value));
+    this.itemcodes.splice(afterIndex + 1, 0, this.newItemcode());
     this.focusPrompt(afterIndex + 1);
   }
 
   removePrompt(index: number) {
     if(this.prompts.length > 1) {
       this.prompts.removeAt(index);
+      this.itemcodes.splice(index, 1);
       this.focusPrompt(Math.max(0, index - 1));
     }
     else {
@@ -149,6 +168,7 @@ export class SprScriptsFormComponent implements OnInit {
     lines.forEach(line => {
       insertAt++;
       this.prompts.insert(insertAt, new FormControl(line));
+      this.itemcodes.splice(insertAt, 0, this.newItemcode());
     });
     this.focusPrompt(insertAt);
   }
@@ -178,10 +198,10 @@ export class SprScriptsFormComponent implements OnInit {
       scriptId: this.script?.scriptId || nanoid(),
       name: String(this.name.value).trim(),
       sharing: this.form.value.sharing,
-      prompts: this.prompts.value
-        .map(v => String(v || "").trim())
-        .filter(v => v != "")
-        .map((value, i) => ({ name: "prompt_" + (i + 1), itemcode: "prompt_" + (i + 1), value: value })),
+      prompts: this.prompts.controls
+        .map((control, i) => ({ code: this.itemcodes[i] || this.newItemcode(), value: String(control.value || "").trim() }))
+        .filter(prompt => prompt.value != "")
+        .map(prompt => ({ name: prompt.code, itemcode: prompt.code, value: prompt.value })),
     };
 
     this.isSaving = true;
