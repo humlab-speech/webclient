@@ -654,7 +654,13 @@ class Application {
      * uploads.
      */
     function uploadDir($context, $group) {
-        $idPattern = '/^[A-Za-z0-9_-]{1,64}$/'; // nanoid()s: form contexts and session ids
+        // nanoid()s: form contexts and session ids. The pattern is safe for
+        // session ids because a session's id is generated with nanoid() in the
+        // dialog, never derived from its display name - names may contain
+        // spaces and ids may not (checked against the live projects collection
+        // on 2026-10-06: zero ids violate this). Do NOT widen the pattern to
+        // accommodate a name: fix the id source instead if that ever changes.
+        $idPattern = '/^[A-Za-z0-9_-]{1,64}$/';
         if(!is_string($context) || !preg_match($idPattern, $context)) {
             return null;
         }
