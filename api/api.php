@@ -602,7 +602,9 @@ class Application {
     
         // Handle specific file types (e.g., zip)
         if ($fileType === "application/x-zip-compressed" || $fileType === "application/zip") {
-            $this->handleZipArchive($fileName, $targetDir);
+            if(!$this->handleZipArchive($fileName, $targetDir)) {
+                return new ApiResponse(400, "The uploaded archive was rejected.");
+            }
         }
     
         // Return success response
@@ -733,11 +735,42 @@ class Application {
         return new ApiResponse(200, "Upload deleted.");
     }
 
+    // Entry names inside an uploaded zip are attacker-controlled and extractTo()
+    // writes them relative to the upload directory, so "../x" walks straight out of
+    // it - into another user's uploads, or anywhere the container can write. One
+    // directory level is legitimate (a zipped folder is flattened below), so only an
+    // absolute path, a backslash, a NUL or any ".." is refused. The whole archive is
+    // refused rather than quietly dropping entries the sender expects back.
+    function zipEntriesAreSafe($zip) {
+        for($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            $unsafe = $name === "" || $name[0] === "/" || strpbrk($name, "\0\\") !== false;
+            if(!$unsafe) {
+                // A ".." is only dangerous as a whole path segment; "my..take.wav"
+                // is a file name uploadFileName() accepts, and must stay accepted.
+                foreach(preg_split("#[/\\\\]+#", $name) as $segment) {
+                    if($segment === "..") { $unsafe = true; break; }
+                }
+            }
+            if($unsafe) {
+                $this->addLog("Refused zip archive, unsafe entry name: ".$name, "warn");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Returns whether the upload may be reported as stored.
     function handleZipArchive($archiveFile, $targetDir) {
         $this->addLog("File ".$archiveFile." is zipped, unzipping", "debug");
         $zip = new ZipArchive();
         $result = $zip->open($targetDir."/".$archiveFile); //might contain multiple files
         if($result === true) {
+            if(!$this->zipEntriesAreSafe($zip)) {
+                $zip->close();
+                unlink($targetDir."/".$archiveFile);
+                return false;
+            }
             $zip->extractTo($targetDir."/");
             $zip->close();
             
@@ -780,6 +813,7 @@ class Application {
             
             //Delete original zip file
             unlink($targetDir."/".$archiveFile);
+            return true;
         }
         else {
             //Failed
@@ -814,8 +848,7 @@ class Application {
                     $this->addLog("ZipArchive: Seek error.", "error");
                     break;
             }
-            
-            
+            return false;
         }
     }
 
