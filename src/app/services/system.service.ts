@@ -7,6 +7,15 @@ import Cookies from 'js-cookie';
 import { nanoid } from 'nanoid';
 import { WebSocketMessage } from '../models/WebSocketMessage';
 
+// The signed-out detection predicate, exported so the spec and the onmessage
+// handler cannot drift: the server (session-manager denyAccess) emits the
+// denial reason BOTH at top level and under data, and either position must
+// fire. Matching only one of them was how the signed-out UI silently stopped
+// firing for a whole release. See session-denial.spec.ts.
+export function isSessionDenialFrame(data: any): boolean {
+  return data?.reason === "authentication" || data?.data?.reason === "authentication";
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -276,8 +285,11 @@ export class SystemService {
 
         // Watch every reply, not just the ones a caller is awaiting: a command
         // whose promise nobody handles must still be able to surface an expired
-        // session.
-        if(data?.data?.reason === "authentication") {
+        // session. The server sends the denial reason at top level AND under
+        // data (session-manager denyAccess); accept either position - asserting
+        // on only one was how the signed-out UI silently stopped firing.
+        // (session-denial.spec.ts pins this shape.)
+        if(isSessionDenialFrame(data)) {
           this.sessionInvalidated$.next();
         }
 
