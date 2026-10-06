@@ -355,14 +355,11 @@ export class UserService {
    * null once it isn't, and importSession turns that into a signed-out UI.
    */
   checkValidityOfPhpSessionCookie() {
-    let phpSessId = this.getCookie("PHPSESSID");
-    if(phpSessId == "") {
-      this.handleSessionInvalidated();
-      //redirect to front page
-      window.location.href = '/'
-      return false;
-    }
-
+    // The session cookie is HttpOnly now, so its value is not readable here -
+    // and reading it never proved anything anyway: the cookie outlives the
+    // server-side session, and a stolen id looks just as good. The getSession
+    // round-trip below is the liveness check: it answers null once the PHP
+    // session is gone, and importSession brings the UI down.
     if(this.userIsAuthenticated) {
       this.fetchSession().subscribe({
         next: (session:UserSession) => this.importSession(session),

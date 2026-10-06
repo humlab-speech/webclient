@@ -5,12 +5,16 @@ require_once __DIR__ . '/ApiResponse.class.php';
 
 use MongoDB\Client;
 
-// Use the same domain as index.php (.visp.local with leading dot) so that signOut()'s
-// setcookie() call clears the same cookie that was set on login.
-$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".visp.local";
-//if we are running on visp.local set cookie secure to false
-$secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
-$httpOnly = false;
+// Cookie scope comes from the deployment environment (BASE_DOMAIN /
+// HTTP_PROTOCOL, both passed via the quadlet EnvironmentFile), never from the
+// client-controlled Host: header: that let a crafted request pin the cookie
+// attributes onto an attacker host. Dev (HTTP_PROTOCOL=http) is the only
+// insecure-cookie mode, and it is an explicit setting, not a host comparison.
+require_once __DIR__ . '/sessionSecurity.php';
+[$domain, $secure, $httpOnly] = cookieParams([
+    "BASE_DOMAIN" => getenv("BASE_DOMAIN"),
+    "HTTP_PROTOCOL" => getenv("HTTP_PROTOCOL"),
+]);
 $accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true";
 
 session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
@@ -91,7 +95,11 @@ class Application {
                 }
             }
 
-            $apiResponse = new ApiResponse(200, json_encode($_SESSION));
+            // Allow-list, not raw $_SESSION: the document copy in the session
+            // carried personalAccessToken (a long-lived GitLab token) and
+            // phpSessionId, which this endpoint has no business serving. The
+            // session-manager refetches the user by eppn anyway.
+            $apiResponse = new ApiResponse(200, sessionValidationPayload($_SESSION));
             return $apiResponse->toJSON();
         }
 
@@ -912,6 +920,24 @@ class Application {
     }
     
     function signOut() {
+        // Invalidate server-side, not just in the browser: the users document
+        // keeps phpSessionId as the lookup handle (see the restore-by-phpSessionId
+        // path above), and nothing cleared it on logout - the session was
+        // resurrectable from a stolen id until PHP's own garbage collection
+        // happened to expire the session file.
+        $sessionId = session_id();
+        if($sessionId !== "" && $sessionId !== "0") {
+            try {
+                $database = $this->getMongoDb();
+                $database->selectCollection('users')->updateOne(
+                    ['phpSessionId' => $sessionId],
+                    ['$set' => ['phpSessionId' => null]]
+                );
+            } catch (Throwable $e) {
+                // Logout must still proceed with the cookie cleared.
+                $this->addLog("Could not clear phpSessionId on sign-out: ".$e->getMessage(), "error");
+            }
+        }
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -921,7 +947,13 @@ class Application {
             );
         }
         session_destroy();
-        header("Location: https://".$_SERVER['HTTP_HOST']);
+        // Redirect to the configured base domain, not to Host:.
+        $baseDomain = getenv("BASE_DOMAIN");
+        $secure = strtolower((string)getenv("HTTP_PROTOCOL")) !== "http";
+        $redirect = $baseDomain !== false && $baseDomain !== ""
+            ? ($secure ? "https://" : "http://").$baseDomain
+            : "/";
+        header("Location: ".$redirect);
         
         return false;
     }
