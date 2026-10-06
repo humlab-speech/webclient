@@ -12,8 +12,12 @@ export class FileUploadService {
   zipBeforeUpload = false;
   pendingUploads:any = [];
   statusStream:Subject<any>;
-  // Uploads in flight, so that removing a file can wait for its upload to land
-  private uploadPromises = new WeakMap<object, Promise<any>>();
+  // Uploads in flight, so that removing a file can wait for the upload that made
+  // its stored copy. The per-destination sequence number stops a delete from
+  // removing a copy that a newer upload of the same name has taken over.
+  private uploadPromises = new WeakMap<object, { key:string, seq:number, promise:Promise<any> }>();
+  private lastUploadSeq = new Map<string, number>();
+  private uploadSeq = 0;
 
   constructor(private http:HttpClient) {
     this.statusStream = new Subject<any>();
@@ -68,6 +72,11 @@ export class FileUploadService {
       formData.append("fileData", file);
     }
 
+    // Where api.php will store this upload
+    const uploadKey = context + "/" + group + "/" + FileUploadService.storedName(file.name);
+    const uploadSeq = ++this.uploadSeq;
+    this.lastUploadSeq.set(uploadKey, uploadSeq);
+
     const uploadPromise = new Promise((resolve, reject) => {
       this.http.post<any>("/api/v1/upload", formData).subscribe({
         next: (data) => {
@@ -83,7 +92,7 @@ export class FileUploadService {
         }
       });
     });
-    this.uploadPromises.set(file, uploadPromise);
+    this.uploadPromises.set(file, { key: uploadKey, seq: uploadSeq, promise: uploadPromise });
     return uploadPromise as Promise<any>;
   }
 
@@ -111,7 +120,15 @@ export class FileUploadService {
     this.statusStream.next("uploads-in-progress");
     try {
       // A file removed while still uploading is deleted once its upload has landed
-      await this.uploadPromises.get(file)?.catch(() => null);
+      const upload = this.uploadPromises.get(file);
+      if(upload) {
+        await upload.promise.catch(() => null);
+        if(this.lastUploadSeq.get(upload.key) !== upload.seq) {
+          // The same file was dropped again in the meantime, so that upload owns
+          // the stored copy now: deleting would throw away a file to be imported.
+          return true;
+        }
+      }
       const response:any = await firstValueFrom(this.http.post("/api/v1/upload/delete", {
         context: context,
         group: group,
