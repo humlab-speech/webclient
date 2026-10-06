@@ -22,6 +22,51 @@ export interface CreatedSprScript {
   name: string;
 }
 
+// Item codes name the recorded takes (<itemcode>.wav in the session's upload dir),
+// so they belong to the prompt rather than to its position: adding, removing or
+// pasting prompts must not renumber them, and a number this script already used
+// must not come back into service - the recorder would record over the older take,
+// and importing the new one replaces that bundle, annotations included.
+// Same pattern the recorder itself enforces (wsrng-server src/main.js).
+export const ITEM_CODE_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
+
+/**
+ * The code list for a loaded script: codes that are usable are kept exactly as
+ * saved, everything else (a script saved before item codes existed, a code the
+ * recorder would reject, or a duplicate of an earlier prompt) gets a fresh number
+ * above the highest one this script ever used. `seq` is where numbering continues.
+ */
+export function normalizeItemcodes(prompts: SprScriptPrompt[]): { codes: string[], seq: number, used: string[] } {
+  const loaded = prompts.map(p => String(p.itemcode || "").trim());
+  const used = new Set<string>(loaded.filter(c => c != ""));
+  let seq = 0;
+  loaded.forEach(code => {
+    const numbered = /^prompt_(\d+)$/.exec(code);
+    if (numbered) {
+      seq = Math.max(seq, parseInt(numbered[1], 10));
+    }
+  });
+  const nextFresh = () => {
+    while (used.has("prompt_" + (seq + 1))) {
+      seq++;
+    }
+    seq++;
+    used.add("prompt_" + seq);
+    return "prompt_" + seq;
+  };
+  const seen = new Set<string>();
+  const codes = loaded.map(code => {
+    if (code != "" && ITEM_CODE_PATTERN.test(code) && !seen.has(code)) {
+      seen.add(code);
+      return code;
+    }
+    const fresh = nextFresh();
+    seen.add(fresh);
+    return fresh;
+  });
+  return { codes, seq, used: Array.from(used) };
+}
+
 /**
  * Creates or edits a single speech recorder script in place, on top of whichever dialog
  * needs one, so the user never has to leave (and lose) the form they are in.
@@ -53,7 +98,9 @@ export class SprScriptsFormComponent implements OnInit {
   submitted: boolean = false;
   private originalName: string = "";
   // Item codes name the recorded takes (<itemcode>.wav), so they belong to the
-  // prompt: they travel with it, are never renumbered and never reused.
+  // prompt: they travel with it, are not renumbered when prompts are added,
+  // removed or pasted, and are never re-used below the highest number this
+  // script already carries (see normalizeItemcodes).
   private itemcodes: string[] = [];
   private usedItemcodes = new Set<string>();
   private itemcodeSeq = 0;
@@ -68,8 +115,10 @@ export class SprScriptsFormComponent implements OnInit {
   ngOnInit(): void {
     this.originalName = String(this.script?.name || "").trim();
     const initialPrompts = this.script?.prompts?.length ? this.script.prompts : [{ value: "" }];
-    this.itemcodes = initialPrompts.map((prompt, i) => String(prompt.itemcode || "prompt_" + (i + 1)));
-    this.itemcodes.forEach(code => this.usedItemcodes.add(code));
+    const itemcodes = normalizeItemcodes(initialPrompts);
+    this.itemcodes = itemcodes.codes;
+    this.itemcodeSeq = itemcodes.seq;
+    itemcodes.used.forEach(code => this.usedItemcodes.add(code));
     this.form = new FormGroup({
       name: new FormControl(this.script?.name || "", [
         Validators.required,
