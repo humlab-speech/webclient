@@ -31,7 +31,7 @@ export interface CreatedSprScript {
 // must not come back into service - the recorder would record over the older take,
 // and importing the new one replaces that bundle, annotations included.
 // Same pattern the recorder itself enforces (wsrng-server src/main.js).
-export const ITEM_CODE_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
+const ITEM_CODE_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
 
 /**
  * The code list for a loaded script: codes that are usable are kept exactly as
@@ -42,7 +42,7 @@ export const ITEM_CODE_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
  * highest prompt stays retired instead of coming back on the next edit. `seq` is
  * where numbering continues and is sent back on save.
  */
-export function normalizeItemcodes(prompts: SprScriptPrompt[], persistedSeq: number = 0): { codes: string[], seq: number, used: string[] } {
+function normalizeItemcodes(prompts: SprScriptPrompt[], persistedSeq: number): { codes: string[], seq: number, used: string[] } {
   const loaded = prompts.map(p => String(p.itemcode || "").trim());
   const used = new Set<string>(loaded.filter(c => c != ""));
   let seq = Math.max(0, Number(persistedSeq) || 0);
@@ -256,7 +256,7 @@ export class SprScriptsFormComponent implements OnInit {
       sharing: this.form.value.sharing,
       itemcodeSeq: this.itemcodeSeq,
       prompts: this.prompts.controls
-        .map((control, i) => ({ code: this.itemcodes[i] || this.newItemcode(), value: String(control.value || "").trim() }))
+        .map((control, i) => ({ code: this.itemcodes[i], value: String(control.value || "").trim() }))
         .filter(prompt => prompt.value != "")
         .map(prompt => ({ name: prompt.code, itemcode: prompt.code, value: prompt.value })),
     };
