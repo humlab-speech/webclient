@@ -1,0 +1,153 @@
+<?php
+// Pure, dependency-free helpers for session and cookie security.
+// Deliberately free of DB/Apache side effects so api/tests/run-tests.php
+// (no composer needed) can cover them.
+
+/**
+ * Session cookie scope, derived from the deployment environment - never from
+ * the client-controlled Host: header, which let a crafted request push our
+ * cookie attributes onto an attacker host or force Secure=false.
+ *
+ * Returns [domain, secure, httpOnly]:
+ *  - domain: ".".$BASE_DOMAIN when configured (host-wide over the deployment),
+ *    else "" - a host-only cookie, which is always safe.
+ *  - secure: tied to HTTP_PROTOCOL, the explicit per-mode flag the quadlets
+ *    set (https in prod, http in dev). This is the dev escape hatch: an
+ *    environment setting, not a hostname comparison.
+ *  - httpOnly: shields the PHPSESSID cookie from JavaScript on every
+ *    OTHER origin/subdomain - notably app.*, which serves iframe content -
+ *    so script injected there cannot read it. It does not hide the session
+ *    id from same-origin script: index.php deliberately exposes it as
+ *    window.visp.phpSessionId (user.service.ts reads it there), so
+ *    same-origin XSS can still see the id. That residual is known and
+ *    documented, not fixed here. (The old client-side PHPSESSID peek from
+ *    document.cookie was a liveness pre-check that the cookie value could
+ *    never actually prove; the getSession round-trip is the real check.)
+ */
+function cookieParams(array $env): array
+{
+    $baseDomain = isset($env['BASE_DOMAIN']) ? trim((string) $env['BASE_DOMAIN']) : "";
+    $domain = $baseDomain !== "" ? "." . $baseDomain : "";
+    $protocol = isset($env['HTTP_PROTOCOL']) ? strtolower(trim((string) $env['HTTP_PROTOCOL'])) : "https";
+    return [$domain, $protocol !== "http", true];
+}
+
+/**
+ * The window.visp object for src/index.php's <script> block, as JSON.
+ *
+ * The template used to echo the session values raw into a JS string
+ * context, so a value that closed the quote or the script tag - coming
+ * over a Shibboleth attribute (givenName, sn, eppn, ...) or the login
+ * query - broke the shell or ran as script. json_encode with
+ * JSON_HEX_TAG|AMP|APOS|QUOT forces every < > & ' " into \u escapes, so
+ * no value can close the string or the surrounding tag; the decoded
+ * values are identical.
+ *
+ * The field set and types are the contract the SPA reads (user.service
+ * bootstraps eppn/loginAllowed/phpSessionId, the whole object is also
+ * sent as authenticateUser data): the 12 identity fields stay quoted
+ * strings (absent -> "", matching the old template's empty echo, and a
+ * false from getenv() stringifies to ""), loginAllowed stays a real
+ * bool, system_role stays a string, loginCount and
+ * lastLoginDurationSeconds stay int|null.
+ */
+function vispShellJson(array $session, string $sid): string
+{
+    $str = function (string $key) use ($session): string {
+        return isset($session[$key]) ? (string) $session[$key] : "";
+    };
+    $visp = [
+        'projectName' => $str('projectName'),
+        'username' => $str('username'),
+        'eppn' => $str('eppn'),
+        'firstName' => $str('firstName'),
+        'lastName' => $str('lastName'),
+        'fullName' => $str('fullName'),
+        'email' => $str('email'),
+        'phpSessionId' => $sid,
+        'shibSessionId' => $str('shibSessionId'),
+        'shibSessionExpires' => $str('shibSessionExpires'),
+        'shibSessionInactivity' => $str('shibSessionInactivity'),
+        'shibIdentityProvider' => $str('shibIdentityProvider'),
+        'loginAllowed' => isset($session['loginAllowed']) ? (bool) $session['loginAllowed'] : false,
+        'system_role' => isset($session['system_role']) ? $session['system_role'] : 'user',
+        'loginCount' => isset($session['loginCount']) ? (int) $session['loginCount'] : null,
+        'lastLoginDurationSeconds' => isset($session['lastLoginDurationSeconds']) && is_numeric($session['lastLoginDurationSeconds']) ? (int) $session['lastLoginDurationSeconds'] : null,
+    ];
+    return json_encode($visp, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
+
+/**
+ * The fields the session-manager needs in order to validate a PHP session.
+ * It immediately refetches the full user document from MongoDB by eppn, so
+ * serving raw $_SESSION only leaked what it never uses: notably
+ * personalAccessToken (a long-lived GitLab token) and phpSessionId.
+ *
+ * An unauthenticated (or identity-less) session must serialize to exactly
+ * "[]" - that is the shape session-manager treats as "User not identified".
+ */
+function sessionValidationPayload(array $session): string
+{
+    if (empty($session['username']) && empty($session['eppn'])) {
+        return json_encode([]);
+    }
+    $allowed = ['id', 'username', 'eppn', 'firstName', 'lastName', 'email', 'loginAllowed', 'system_role'];
+    $payload = [];
+    foreach ($allowed as $key) {
+        if (array_key_exists($key, $session)) {
+            $payload[$key] = $session[$key];
+        }
+    }
+    return json_encode($payload);
+}
+
+
+/**
+ * Whether a NON-idempotent request may be trusted as same-site.
+ *
+ * The PHP API authenticates by cookie, so a page on another origin could
+ * otherwise perform state-changing requests (upload/delete/session commit)
+ * with the victim's credentials. Browsers today always attach Origin to
+ * cross-origin POSTs (fetch/XHR *and* form posts), so a present-but-wrong
+ * Origin is a hard no. Missing Origin is tolerated only when the request is
+ * demonstrably not a cross-site browser request: Sec-Fetch-Site of
+ * same-origin/none, or - as a legacy-user-agent fallback - no Sec-Fetch-Site
+ * at all. The origin may be the base domain itself or any subdomain of it
+ * (artic.*, recorder.* post to this API).
+ *
+ * Pure over $_SERVER/env data so api/tests/run-tests.php covers it.
+ */
+function requestOriginOk(array $server, string $baseDomain): bool
+{
+    $ownHosts = [];
+    if ($baseDomain !== "") {
+        $ownHosts[] = strtolower($baseDomain);
+    }
+    if (!empty($server['HTTP_HOST'])) {
+        $host = parse_url("http://" . $server['HTTP_HOST'], PHP_URL_HOST);
+        if (is_string($host)) {
+            $ownHosts[] = strtolower($host);
+        }
+    }
+
+    if (!empty($server['HTTP_ORIGIN'])) {
+        $originHost = parse_url($server['HTTP_ORIGIN'], PHP_URL_HOST);
+        if (!is_string($originHost)) {
+            return false;
+        }
+        $originHost = strtolower($originHost);
+        foreach ($ownHosts as $own) {
+            if ($originHost === $own || str_ends_with($originHost, "." . $own)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $secFetchSite = strtolower((string)($server['HTTP_SEC_FETCH_SITE'] ?? ""));
+    if ($secFetchSite !== "") {
+        return in_array($secFetchSite, ["same-origin", "none"], true);
+    }
+    // No Origin and no Sec-Fetch-Site: a user agent predating both.
+    return true;
+}

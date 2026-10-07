@@ -207,14 +207,15 @@
                                         </label>
                                         <span class="field-hint">The prompts the participant reads aloud during the session.</span>
                                         <div class="input-with-action recordingScriptContainer">
-                                            <select [id]="'session-script-' + session.controls.id.value" class="text-input sessionScriptControl" formControlName="sessionScript">
+                                            <select [id]="'session-script-' + session.controls.id.value" class="text-input sessionScriptControl" formControlName="sessionScript" [attr.disabled]="sessionScriptIsLocked(session) ? true : null">
                                                 <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.value.sessionScript === option.value ? true : null">{{ option.label }}</option>
                                             </select>
-                                            <button type="button" class="outline-btn" (click)="openScriptEditor(session)">
+                                            <button type="button" class="outline-btn" *ngIf="!sessionScriptIsLocked(session)" (click)="openScriptEditor(session)">
                                                 <i class="fa fa-plus" aria-hidden="true"></i>
                                                 New script
                                             </button>
                                         </div>
+                                        <span class="field-hint" *ngIf="sessionScriptIsLocked(session)">This session already has recordings, so it keeps the script they were recorded with. Recordings made with another script need a new session.</span>
                                         <span class="field-hint" *ngIf="sessionScriptOptions.length == 0">You don't have any scripts yet. Create one to start recording.</span>
                                         <div *ngIf="session.get('sessionScript').status === 'INVALID'">
                                             <div class="form-error-msg" *ngIf="session.get('sessionScript').hasError('sprScriptNotSelected')">
@@ -258,7 +259,7 @@
                                     <button type="button" class="icon-btn" (click)="downloadBundle(project.id, session.value.id, file.name)" title="Download" aria-label="Download">
                                         <i class="fa fa-download" aria-hidden="true"></i>
                                     </button>
-                                    <button type="button" class="icon-btn icon-btn-danger" (click)="deleteBundle(project.id, session.value.id, file.name)" title="Delete" aria-label="Delete">
+                                    <button *ngIf="canDeleteBundles(project)" type="button" class="icon-btn icon-btn-danger" (click)="deleteBundle(project.id, session.value.id, file.name)" title="Delete" aria-label="Delete">
                                         <i class="fa fa-trash-o" aria-hidden="true"></i>
                                     </button>
                                 </li>

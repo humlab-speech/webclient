@@ -128,6 +128,7 @@ export class ManageSprScriptsDialogComponent implements OnInit {
       scriptId: script.scriptId,
       name: script.name,
       sharing: script.sharing || "none",
+      itemcodeSeq: Number(script.itemcodeSeq) || 0,
       owner: script.owner,
       ownerId: script.ownerId,
       prompts: promptItems.map((prompt, index) => ({

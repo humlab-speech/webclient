@@ -15,11 +15,62 @@ export interface EditableSprScript {
   name?: string;
   sharing?: string;
   prompts?: SprScriptPrompt[];
+  // Highest item-code number this script has ever handed out (kept by the backend,
+  // see saveSprScripts). Codes below it stay retired even if no prompt carries them.
+  itemcodeSeq?: number;
 }
 
 export interface CreatedSprScript {
   scriptId: string;
   name: string;
+}
+
+// Item codes name the recorded takes (<itemcode>.wav in the session's upload dir),
+// so they belong to the prompt rather than to its position: adding, removing or
+// pasting prompts must not renumber them, and a number this script already used
+// must not come back into service - the recorder would record over the older take,
+// and importing the new one replaces that bundle, annotations included.
+// Same pattern the recorder itself enforces (wsrng-server src/main.js).
+const ITEM_CODE_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
+
+/**
+ * The code list for a loaded script: codes that are usable are kept exactly as
+ * saved, everything else (a script saved before item codes existed, a code the
+ * recorder would reject, or a duplicate of an earlier prompt) gets a fresh number
+ * above every number this script has already used. `persistedSeq` is the backend's
+ * high-water mark for the script, so a number freed by deleting (or emptying) the
+ * highest prompt stays retired instead of coming back on the next edit. `seq` is
+ * where numbering continues and is sent back on save.
+ */
+function normalizeItemcodes(prompts: SprScriptPrompt[], persistedSeq: number): { codes: string[], seq: number, used: string[] } {
+  const loaded = prompts.map(p => String(p.itemcode || "").trim());
+  const used = new Set<string>(loaded.filter(c => c != ""));
+  let seq = Math.max(0, Number(persistedSeq) || 0);
+  loaded.forEach(code => {
+    const numbered = /^prompt_(\d+)$/.exec(code);
+    if (numbered) {
+      seq = Math.max(seq, parseInt(numbered[1], 10));
+    }
+  });
+  const nextFresh = () => {
+    while (used.has("prompt_" + (seq + 1))) {
+      seq++;
+    }
+    seq++;
+    used.add("prompt_" + seq);
+    return "prompt_" + seq;
+  };
+  const seen = new Set<string>();
+  const codes = loaded.map(code => {
+    if (code != "" && ITEM_CODE_PATTERN.test(code) && !seen.has(code)) {
+      seen.add(code);
+      return code;
+    }
+    const fresh = nextFresh();
+    seen.add(fresh);
+    return fresh;
+  });
+  return { codes, seq, used: Array.from(used) };
 }
 
 /**
@@ -52,6 +103,14 @@ export class SprScriptsFormComponent implements OnInit {
   isSaving: boolean = false;
   submitted: boolean = false;
   private originalName: string = "";
+  // Item codes name the recorded takes (<itemcode>.wav), so they belong to the
+  // prompt: they travel with it, are not renumbered when prompts are added,
+  // removed or pasted, and are never re-used below the highest number this
+  // script already carries, nor one the backend has already counted (see
+  // normalizeItemcodes).
+  private itemcodes: string[] = [];
+  private usedItemcodes = new Set<string>();
+  private itemcodeSeq = 0;
 
   constructor(
     private elementRef: ElementRef,
@@ -63,6 +122,10 @@ export class SprScriptsFormComponent implements OnInit {
   ngOnInit(): void {
     this.originalName = String(this.script?.name || "").trim();
     const initialPrompts = this.script?.prompts?.length ? this.script.prompts : [{ value: "" }];
+    const itemcodes = normalizeItemcodes(initialPrompts, Number(this.script?.itemcodeSeq) || 0);
+    this.itemcodes = itemcodes.codes;
+    this.itemcodeSeq = itemcodes.seq;
+    itemcodes.used.forEach(code => this.usedItemcodes.add(code));
     this.form = new FormGroup({
       name: new FormControl(this.script?.name || "", [
         Validators.required,
@@ -102,14 +165,26 @@ export class SprScriptsFormComponent implements OnInit {
     return hasPrompt ? null : { noPrompts: true };
   }
 
+  newItemcode(): string {
+    let code = "";
+    while(code == "" || this.usedItemcodes.has(code)) {
+      this.itemcodeSeq++;
+      code = "prompt_" + this.itemcodeSeq;
+    }
+    this.usedItemcodes.add(code);
+    return code;
+  }
+
   addPrompt(afterIndex: number = this.prompts.length - 1, value = "") {
     this.prompts.insert(afterIndex + 1, new FormControl(value));
+    this.itemcodes.splice(afterIndex + 1, 0, this.newItemcode());
     this.focusPrompt(afterIndex + 1);
   }
 
   removePrompt(index: number) {
     if(this.prompts.length > 1) {
       this.prompts.removeAt(index);
+      this.itemcodes.splice(index, 1);
       this.focusPrompt(Math.max(0, index - 1));
     }
     else {
@@ -149,6 +224,7 @@ export class SprScriptsFormComponent implements OnInit {
     lines.forEach(line => {
       insertAt++;
       this.prompts.insert(insertAt, new FormControl(line));
+      this.itemcodes.splice(insertAt, 0, this.newItemcode());
     });
     this.focusPrompt(insertAt);
   }
@@ -178,10 +254,11 @@ export class SprScriptsFormComponent implements OnInit {
       scriptId: this.script?.scriptId || nanoid(),
       name: String(this.name.value).trim(),
       sharing: this.form.value.sharing,
-      prompts: this.prompts.value
-        .map(v => String(v || "").trim())
-        .filter(v => v != "")
-        .map((value, i) => ({ name: "prompt_" + (i + 1), itemcode: "prompt_" + (i + 1), value: value })),
+      itemcodeSeq: this.itemcodeSeq,
+      prompts: this.prompts.controls
+        .map((control, i) => ({ code: this.itemcodes[i], value: String(control.value || "").trim() }))
+        .filter(prompt => prompt.value != "")
+        .map(prompt => ({ name: prompt.code, itemcode: prompt.code, value: prompt.value })),
     };
 
     this.isSaving = true;

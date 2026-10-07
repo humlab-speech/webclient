@@ -25,7 +25,7 @@ import { nanoid } from 'nanoid';
 import { Clipboard } from '@angular/cdk/clipboard';
 import * as L from 'leaflet';
 import { CreatedSprScript } from '../spr-scripts-form/spr-scripts-form.component';
-import { sessionSources, fileOrigin } from '../../../models/SessionSources';
+import { sessionSources, fileOrigin, sessionHasRecordings } from '../../../models/SessionSources';
 
 export interface EmudbFormValues {
   sessions: [];
@@ -69,6 +69,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   subscriptions: Subscription[] = [];
   sessions:FormArray;
   sessionScriptOptions:any = [];
+  // Ids of sessions that already hold recordings, and therefore keep the recording
+  // script those takes were made with (see sessionScriptIsLocked).
+  private sessionsWithRecordings = new Set<string>();
   annotLevels:FormArray;
   annotLevelLinks:FormArray;
   annotLevelTypes = [
@@ -693,7 +696,13 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       return null;
     }
 
+    // A new script can be offered as the default; an existing session is never
+    // guessed at, see the sessionScript control below.
     let defaultScript = this.sessionScriptOptions.length > 0 ? this.sessionScriptOptions[0] : { value: null, label: "No script" };
+    const initialScript = session.new ? defaultScript.value : (session.sessionScript ?? null);
+    if(!session.new && sessionHasRecordings(session)) {
+      this.sessionsWithRecordings.add(String(session.id));
+    }
 
     let dataSourceControl = new FormControl(session.dataSource);
     let recordEnabledControl = new FormControl(session.recordEnabled);
@@ -722,7 +731,14 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       uploadEnabled: new FormControl(session.uploadEnabled),
       recordEnabled: recordEnabledControl,
       recordingLink: new FormControl({value: this.getRecordingSessionLink(session.id), disabled: true}), //"https://"+window.location.hostname+"/spr/session/"+session.sessionId
-      sessionScript: new FormControl( defaultScript.value, this.validateSprScriptWithParent(recordEnabledControl)),
+      // An existing session starts with the script it is stored with, or with none
+      // at all: seeding it with "the first script in the list" and waiting for the
+      // lookup meant a save that happened first, or a deleted script, quietly
+      // re-pointed a session that may already have recordings at another script -
+      // and every script numbers its prompts from prompt_1, whose take may already
+      // be recorded in this session. Sessions with recordings can't be re-pointed
+      // at all (the backend refuses the save); see sessionScriptIsLocked below.
+      sessionScript: new FormControl( initialScript, this.validateSprScriptWithParent(recordEnabledControl)),
       files: this.fb.array(files),
       collapsed: new FormControl(session.collapsed),
       sprSessionSealed: new FormControl(session.sprSessionSealed),
@@ -738,7 +754,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
           resolve(sprScript);
         }
         else {
-          sessionGroup.controls.sessionScript.setValue(defaultScript.value);
+          // Keep what the session is stored with (or nothing) rather than guessing.
+          sessionGroup.controls.sessionScript.setValue(initialScript);
           resolve(null);
         }
       });
@@ -761,6 +778,15 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     }
   }
 
+  /** Stored bundles hold audio a colleague may already be working with, so only
+   *  project admins and sysadmins get offered the delete at all - the backend
+   *  refuses anyone else (canDeleteProject in ApiServer.deleteBundle), and a
+   *  refused click would look like a broken button. This reads the flag the
+   *  backend derived from that same check; it is convenience, not a boundary. */
+  canDeleteBundles(project:any):boolean {
+    return project?.userProjectPermissions?.deleteBundles === true;
+  }
+
   deleteAllBundles(projectId, sessionId) {
     //confirm deletion
     if(!window.confirm("Are you sure you wish to delete all the audio files in this session?")) {
@@ -771,22 +797,23 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.sessions.controls.forEach(session => {
       let sessionFormGroup = session as FormGroup;
       if(sessionFormGroup.controls.id.value == sessionId) {
-        sessionFormGroup.controls.files.value.forEach(file => {
+        const filesFormArray = sessionFormGroup.get('files') as FormArray;
+        filesFormArray.value.forEach(file => {
           this.projectService.deleteBundle(projectId, sessionId, file.name).subscribe((data:any) => {
             if(data.result === false) {
               this.notifierService.notify("error", "Could not delete file "+file.name);
+              return;
+            }
+            // Drop only what the backend really deleted. Clearing the whole list up
+            // front made the session look emptied while the files stayed on disk and
+            // reappeared the next time the dialog was opened - and with deleteBundle
+            // now refused for researchers, that was the normal outcome for them.
+            const at = filesFormArray.controls.findIndex(control => control.value?.name == file.name);
+            if(at >= 0) {
+              filesFormArray.removeAt(at);
             }
           });
         });
-      }
-    });
-    
-    //clear the form
-    this.sessions.controls.forEach(session => {
-      let sessionFormGroup = session as FormGroup;
-      if (sessionFormGroup.controls.id.value == sessionId) {
-        const filesFormArray = sessionFormGroup.get('files') as FormArray;
-        filesFormArray.clear();
       }
     });
   }
@@ -910,6 +937,29 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
   getScriptLabel(scriptId):string|null {
     const option = this.sessionScriptOptions.find(o => o.value == scriptId);
     return option ? option.label : null;
+  }
+
+  /**
+   * Whether the session's recording script can still be changed. Item codes name the
+   * recorded takes, so once a session holds recordings its script is what they were
+   * recorded with: pointing it at another script (which numbers its prompts from
+   * prompt_1) would have the next participant record over takes belonging to other
+   * prompts. The backend refuses such a save; locking the control says so before the
+   * user tries. A take recorded while this dialog was open is not known here, and is
+   * caught by that same refusal.
+   */
+  sessionScriptIsLocked(session:any):boolean {
+    if(!this.sessionsWithRecordings.has(String(session?.controls?.id?.value))) {
+      return false;
+    }
+    // Unless the script it would lock onto is actually there. A session can hold
+    // recordings whose script has since been deleted, or predate the link entirely;
+    // locking the control then would leave a required "select a recording script"
+    // error with no control to clear it with, and block the whole project save. The
+    // backend still refuses an outright change while takes exist, so letting the user
+    // pick here is not a data-loss hole - it is the only way out.
+    const current = session?.controls?.sessionScript?.value;
+    return current != null && this.sessionScriptOptions.some(option => option.value == current);
   }
 
   // The flag arrives as a boolean from the backend, but as a string from the <select>

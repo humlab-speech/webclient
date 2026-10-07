@@ -21,6 +21,10 @@ export class Project {
         createInviteCodes?:boolean;
         manageProjectMembers?:boolean;
         editProjectFiles?:boolean;
+        /** Bundles hold stored audio: deleting one needs ProjectAdmin/SysAdmin,
+         *  like deleting the project. Derived server-side from that same check,
+         *  because a Researcher may add bundles but must not remove them. */
+        deleteBundles?:boolean;
     };
     spokenLanguage?:string;
     recordingDevice?:string;
