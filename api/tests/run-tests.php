@@ -65,6 +65,40 @@ foreach ($cookieVectors as $i => $v) {
 }
 
 
+// --- vispShellJson (src/index.php's window.visp block) ----------------------
+// The shell used to raw-echo session values (Shibboleth attributes, login
+// query params) into a JS string context. Now the whole object is built by
+// this helper: values must survive the round-trip byte-identical, and no
+// character may appear that could close the string or the <script> tag.
+$hostile = [
+    'projectName' => false, // getenv() miss - the old raw echo rendered ""
+    'eppn' => 'testuser@example.com',
+    'username' => 'testuser_at_example_dot_com',
+    'fullName' => 'Evil"; alert(1); var x="</script><script>alert(2)</script>',
+    'email' => "a'b&c\"d",
+    'shibSessionExpires' => "1758780000", // header-supplied, must stay a quoted string
+    'loginAllowed' => true,
+    'system_role' => 'sys_admin',
+    'loginCount' => "7",
+];
+$json = vispShellJson($hostile, 'sess42');
+$shell = json_decode($json, true);
+check("visp shell: value quoting/closing the script tag round-trips intact", $shell['fullName'] === $hostile['fullName']);
+check("visp shell: value with quotes and ampersand round-trips intact", $shell['email'] === "a'b&c\"d");
+check("visp shell: no raw < > & ' in the emitted JSON", preg_match('#[<>&\']#', $json) === 0);
+check("visp shell: loginAllowed stays a real boolean", ($shell['loginAllowed'] ?? null) === true);
+check("visp shell: system_role stays a string", ($shell['system_role'] ?? null) === 'sys_admin');
+check("visp shell: loginCount numeric string becomes int", ($shell['loginCount'] ?? null) === 7 && is_int($shell['loginCount']));
+check("visp shell: absent lastLoginDurationSeconds stays null", array_key_exists('lastLoginDurationSeconds', $shell) && $shell['lastLoginDurationSeconds'] === null);
+check("visp shell: phpSessionId carries the sid", ($shell['phpSessionId'] ?? null) === 'sess42');
+check("visp shell: getenv() miss renders empty string", ($shell['projectName'] ?? 'x') === "");
+check("visp shell: header-supplied shib value stays a string", ($shell['shibSessionExpires'] ?? null) === "1758780000" && is_string($shell['shibSessionExpires']));
+$anon = json_decode(vispShellJson([], 'sid0'), true);
+check("visp shell: anonymous session keeps every field", is_array($anon) && count($anon) === 16);
+check("visp shell: anonymous eppn key present and empty (SPA checks 'eppn' in visp)", array_key_exists('eppn', $anon) && $anon['eppn'] === "");
+check("visp shell: anonymous loginAllowed false, both counts null", $anon['loginAllowed'] === false && $anon['loginCount'] === null && $anon['lastLoginDurationSeconds'] === null);
+
+
 // --- sessionValidationPayload ----------------------------------------------
 check("empty session serializes to [] (the contract session-manager parses)", sessionValidationPayload([]) === "[]");
 

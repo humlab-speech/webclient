@@ -28,6 +28,51 @@ function cookieParams(array $env): array
 }
 
 /**
+ * The window.visp object for src/index.php's <script> block, as JSON.
+ *
+ * The template used to echo the session values raw into a JS string
+ * context, so a value that closed the quote or the script tag - coming
+ * over a Shibboleth attribute (givenName, sn, eppn, ...) or the login
+ * query - broke the shell or ran as script. json_encode with
+ * JSON_HEX_TAG|AMP|APOS|QUOT forces every < > & ' " into \u escapes, so
+ * no value can close the string or the surrounding tag; the decoded
+ * values are identical.
+ *
+ * The field set and types are the contract the SPA reads (user.service
+ * bootstraps eppn/loginAllowed/phpSessionId, the whole object is also
+ * sent as authenticateUser data): the 12 identity fields stay quoted
+ * strings (absent -> "", matching the old template's empty echo, and a
+ * false from getenv() stringifies to ""), loginAllowed stays a real
+ * bool, system_role stays a string, loginCount and
+ * lastLoginDurationSeconds stay int|null.
+ */
+function vispShellJson(array $session, string $sid): string
+{
+    $str = function (string $key) use ($session): string {
+        return isset($session[$key]) ? (string) $session[$key] : "";
+    };
+    $visp = [
+        'projectName' => $str('projectName'),
+        'username' => $str('username'),
+        'eppn' => $str('eppn'),
+        'firstName' => $str('firstName'),
+        'lastName' => $str('lastName'),
+        'fullName' => $str('fullName'),
+        'email' => $str('email'),
+        'phpSessionId' => $sid,
+        'shibSessionId' => $str('shibSessionId'),
+        'shibSessionExpires' => $str('shibSessionExpires'),
+        'shibSessionInactivity' => $str('shibSessionInactivity'),
+        'shibIdentityProvider' => $str('shibIdentityProvider'),
+        'loginAllowed' => isset($session['loginAllowed']) ? (bool) $session['loginAllowed'] : false,
+        'system_role' => isset($session['system_role']) ? $session['system_role'] : 'user',
+        'loginCount' => isset($session['loginCount']) ? (int) $session['loginCount'] : null,
+        'lastLoginDurationSeconds' => isset($session['lastLoginDurationSeconds']) && is_numeric($session['lastLoginDurationSeconds']) ? (int) $session['lastLoginDurationSeconds'] : null,
+    ];
+    return json_encode($visp, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
+
+/**
  * The fields the session-manager needs in order to validate a PHP session.
  * It immediately refetches the full user document from MongoDB by eppn, so
  * serving raw $_SESSION only leaked what it never uses: notably

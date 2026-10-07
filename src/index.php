@@ -272,6 +272,36 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
 
 //addLog(print_r($_SESSION, true), "debug");
 
+// Build the window.visp bootstrap object after every mutation of $_SESSION
+// above (login data, regenerated session id). Escaping happens in
+// vispShellJson(); if the helper is somehow unavailable, do NOT fall back to
+// raw echoing into a JS context - inline the same escaped builder instead.
+if (function_exists('vispShellJson')) {
+    $vispJson = vispShellJson($_SESSION, $sid);
+} else {
+    $shellStr = function (string $key): string {
+        return isset($_SESSION[$key]) ? (string) $_SESSION[$key] : "";
+    };
+    $vispJson = json_encode([
+        'projectName' => $shellStr('projectName'),
+        'username' => $shellStr('username'),
+        'eppn' => $shellStr('eppn'),
+        'firstName' => $shellStr('firstName'),
+        'lastName' => $shellStr('lastName'),
+        'fullName' => $shellStr('fullName'),
+        'email' => $shellStr('email'),
+        'phpSessionId' => $sid,
+        'shibSessionId' => $shellStr('shibSessionId'),
+        'shibSessionExpires' => $shellStr('shibSessionExpires'),
+        'shibSessionInactivity' => $shellStr('shibSessionInactivity'),
+        'shibIdentityProvider' => $shellStr('shibIdentityProvider'),
+        'loginAllowed' => isset($_SESSION['loginAllowed']) ? (bool) $_SESSION['loginAllowed'] : false,
+        'system_role' => isset($_SESSION['system_role']) ? $_SESSION['system_role'] : 'user',
+        'loginCount' => isset($_SESSION['loginCount']) ? (int) $_SESSION['loginCount'] : null,
+        'lastLoginDurationSeconds' => isset($_SESSION['lastLoginDurationSeconds']) && is_numeric($_SESSION['lastLoginDurationSeconds']) ? (int) $_SESSION['lastLoginDurationSeconds'] : null,
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
+
 //include("./index.html");
 ?>
 <!doctype html>
@@ -287,24 +317,7 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <script>
-    window.visp = {
-      projectName: "<?php echo $_SESSION['projectName']; ?>",
-      username: "<?php echo $_SESSION['username']; ?>",
-      eppn: "<?php echo $_SESSION['eppn']; ?>",
-      firstName: "<?php echo $_SESSION['firstName']; ?>",
-      lastName: "<?php echo $_SESSION['lastName']; ?>",
-      fullName: "<?php echo $_SESSION['fullName']; ?>",
-      email: "<?php echo $_SESSION['email']; ?>",
-      phpSessionId: "<?php echo $sid; ?>",
-      shibSessionId: "<?php echo $_SESSION['shibSessionId']; ?>",
-      shibSessionExpires: "<?php echo $_SESSION['shibSessionExpires']; ?>",
-      shibSessionInactivity: "<?php echo $_SESSION['shibSessionInactivity']; ?>",
-      shibIdentityProvider: "<?php echo $_SESSION['shibIdentityProvider']; ?>",
-      loginAllowed: <?php echo json_encode(isset($_SESSION['loginAllowed']) ? (bool)$_SESSION['loginAllowed'] : false); ?>,
-      system_role: <?php echo json_encode(isset($_SESSION['system_role']) ? $_SESSION['system_role'] : 'user'); ?>,
-      loginCount: <?php echo json_encode(isset($_SESSION['loginCount']) ? (int)$_SESSION['loginCount'] : null); ?>,
-      lastLoginDurationSeconds: <?php echo json_encode(isset($_SESSION['lastLoginDurationSeconds']) && is_numeric($_SESSION['lastLoginDurationSeconds']) ? (int)$_SESSION['lastLoginDurationSeconds'] : null); ?>,
-    };
+    window.visp = <?php echo $vispJson; ?>;
   </script>
 </head>
 <body>
