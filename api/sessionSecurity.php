@@ -14,10 +14,15 @@
  *  - secure: tied to HTTP_PROTOCOL, the explicit per-mode flag the quadlets
  *    set (https in prod, http in dev). This is the dev escape hatch: an
  *    environment setting, not a hostname comparison.
- *  - httpOnly: the session id never needs to be readable from JavaScript.
- *    (The old client-side PHPSESSID peek was a liveness pre-check that the
- *    cookie value could never actually prove; the getSession round-trip is
- *    the real check.)
+ *  - httpOnly: shields the PHPSESSID cookie from JavaScript on every
+ *    OTHER origin/subdomain - notably app.*, which serves iframe content -
+ *    so script injected there cannot read it. It does not hide the session
+ *    id from same-origin script: index.php deliberately exposes it as
+ *    window.visp.phpSessionId (user.service.ts reads it there), so
+ *    same-origin XSS can still see the id. That residual is known and
+ *    documented, not fixed here. (The old client-side PHPSESSID peek from
+ *    document.cookie was a liveness pre-check that the cookie value could
+ *    never actually prove; the getSession round-trip is the real check.)
  */
 function cookieParams(array $env): array
 {
