@@ -16,10 +16,10 @@
   margin: 0;
   padding: 0;
   border-radius: 26px;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
   overflow: hidden auto;
-  background: #ffffff !important;
+  background: var(--v-surface) !important;
 }
 
 .members-dialog-header {
@@ -29,7 +29,7 @@
   gap: 1rem;
   margin: 0;
   padding: 1.45rem 1.5rem;
-  background: linear-gradient(135deg, #243e6a 0%, #284a80 70%, #2f548d 100%);
+  background: linear-gradient(135deg, var(--v-card-head) 0%, var(--v-card-head) 70%, var(--v-card-head) 100%);
   color: #fff;
 }
 
@@ -83,7 +83,7 @@
 
 .members-dialog-content {
   padding: 1.35rem 1.5rem 1.5rem;
-  background: #f8fafd;
+  background: var(--v-surface-2);
 }
 
 .member-invite-panel {
@@ -93,21 +93,21 @@
   gap: 1rem;
   margin-bottom: 0.95rem;
   padding: 0.95rem 1rem;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--v-surface);
   box-shadow: 0 8px 20px rgba(31, 56, 93, 0.06);
 }
 
 .member-invite-panel h3 {
   margin: 0;
-  color: #1c3660;
+  color: var(--v-text);
   font-size: 1rem;
 }
 
 .member-invite-panel p {
   margin: 0.25rem 0 0;
-  color: #6d7c98;
+  color: var(--v-muted);
   font-size: 0.9rem;
 }
 
@@ -118,10 +118,10 @@
   gap: 0.45rem;
   min-height: 2.45rem;
   padding: 0 0.95rem;
-  border: 1px solid #d9e1eb;
+  border: 1px solid var(--v-border-strong);
   border-radius: 999px;
-  background: #f8f9fc;
-  color: #24497e;
+  background: var(--v-surface-2);
+  color: var(--v-text-2);
   font-size: 0.93rem;
   font-weight: 700;
   white-space: nowrap;
@@ -129,7 +129,7 @@
 }
 
 .member-invite-btn:hover {
-  background: #eef3f8;
+  background: var(--v-surface-2);
 }
 
 @media (max-width: 900px) {

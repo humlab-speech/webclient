@@ -6,8 +6,11 @@
     [class.running]="hasRunningSessions"
     (click)="vispApp.name === 'tratt' ? selectAppOptions() : launchProjectInApp()">
 
-    <span class="tile-icon orange">
-      <img [src]="appIconPath" [alt]="vispApp.title + ' icon'" [class.icon-lg]="vispApp.name === 'tratt'">
+    <span class="tile-icon accent" [ngSwitch]="vispApp.name">
+      <svg *ngSwitchCase="'tratt'" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
+      <svg *ngSwitchCase="'artic'" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>
+      <svg *ngSwitchCase="'jupyter'" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>
+      <img *ngSwitchDefault [src]="appIconPath" [alt]="vispApp.title + ' icon'">
     </span>
 
     <span class="tile-copy">
@@ -18,6 +21,8 @@
         {{ statusMsg }}
       </span>
     </span>
+
+    <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
   </button>
 
   <button class="session-close-button" *ngIf="hasRunningSessions" [disabled]="showLoadingIndicator" (click)="close()" aria-label="Close running session">

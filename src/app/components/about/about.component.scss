@@ -9,9 +9,9 @@
     margin: 2em;
     width: auto;
     max-width: 60em;
-    background-color: #fff;
+    background-color: var(--v-surface);
     padding: 2em;
-    border-color: #ddd;
+    border-color: var(--v-border-strong);
     border-width: 1px;
     border-style: solid;
     box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, 0.1);

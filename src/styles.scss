@@ -109,10 +109,11 @@ $bluesky-theme: mat.m2-define-light-theme((
 @import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap');
 */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "../node_modules/normalize.css/normalize.css";
 @import "../node_modules/leaflet/dist/leaflet.css";
 @import './colors.scss';
+@import './theme.scss';
 @import '../node_modules/ngx-popperjs/scss/theme-white.scss';
 @import '../node_modules/font-awesome/scss/font-awesome.scss';
 @import '../node_modules/angular-notifier/styles.css';
@@ -124,9 +125,29 @@ html, body { height: 100%; }
 body { 
     margin: 0;
     padding: 0;
-    background: #eef1f5;
-    color: #27426f;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    background: var(--v-bg);
+    color: var(--v-text);
+    font-family: 'IBM Plex Sans', "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+// Form controls don't inherit the page font by default.
+button, input, select, textarea {
+    font-family: inherit;
+}
+
+input, select, textarea {
+    background-color: var(--v-input-bg);
+    color: var(--v-text);
+    border-color: var(--v-border-strong);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--v-subtle);
+}
+
+a {
+    color: var(--v-accent-ink);
 }
 
 body.hero-phase1 {
@@ -134,7 +155,7 @@ body.hero-phase1 {
 }
 
 h1 {
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    font-family: 'IBM Plex Sans', "Helvetica Neue", sans-serif;
     text-decoration: none;
 }
 
@@ -146,7 +167,7 @@ h4 {
     font-size: 1.4rem;
     font-weight: lighter;
     text-decoration: none;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    font-family: 'IBM Plex Sans', "Helvetica Neue", sans-serif;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
@@ -154,7 +175,7 @@ h4 {
 h5 {
     font-size: 1.1rem;
     font-weight: lighter;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    font-family: 'IBM Plex Sans', "Helvetica Neue", sans-serif;
     margin-top:0.5em;
     margin-bottom:0.5em;
 }
@@ -219,7 +240,7 @@ ngx-dropzone > ngx-dropzone-preview {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color:rgba(0, 0, 0, 0.5);
+    background-color: var(--v-overlay);
     z-index:20000;
 }
 
@@ -228,10 +249,11 @@ ngx-dropzone > ngx-dropzone-preview {
     display:flex;
     flex-direction: column;
     padding: 2rem;
-    border-radius:4px;
-    background-color: #fff !important;
-    color: $dark-font-color;
-    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    background-color: var(--v-surface) !important;
+    color: var(--v-text);
+    border: 1px solid var(--v-border);
+    box-shadow: var(--v-shadow-lg);
     margin-top: 1em;
     margin-bottom: 1em;
     max-height: 92vh;
@@ -269,11 +291,11 @@ ngx-dropzone > ngx-dropzone-preview {
 }
 
 .dialog-close-btn:hover {
-    background-color: $secondary-light;
-    border: 1px solid #333;
-    border-radius: 25%;
+    background-color: var(--v-surface-3);
+    border: 1px solid var(--v-border-strong);
+    border-radius: 6px;
     cursor: pointer;
-    color: #fff;
+    color: var(--v-text);
 }
 
 .dialog-header {
@@ -304,7 +326,7 @@ ngx-dropzone > ngx-dropzone-preview {
     left:0;
     width:100vw;
     height:100vh;
-    background-color:rgba(0, 0, 0, 0.2);
+    background-color: var(--v-overlay);
 }
 
 #project-create-form {
@@ -335,9 +357,9 @@ form label {
     padding-top: 0.25em;
     padding-bottom: 0.25em;
     font-size: 1.4em;
-    border-left: 0.25em solid $secondary-light;
+    border-left: 0.25em solid var(--v-accent);
     background: transparent;
-    color: #333;
+    color: var(--v-text);
 }
 
 .form fieldset {
@@ -355,9 +377,9 @@ form label {
 }
 
 .form fieldset input {
-    border-color: #ccc;
+    border-color: var(--v-border-strong);
     border-style: solid;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .form .small-button {
@@ -367,23 +389,24 @@ form label {
 .form button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    background-color: $secondary;
-    color: $white;
+    background-color: var(--v-accent);
+    color: var(--v-on-accent);
     border-width:0px;
+    border-radius: 6px;
 }
 
 form input.ng-invalid {
-    border: 1px solid red;
+    border: 1px solid var(--v-danger);
 }
 
 .form button:hover {
-    background-color: $secondary-light;
-    box-shadow: 0px 0px 10px #999; 
+    background-color: var(--v-accent-hover);
     cursor:pointer;
 }
 
 .form button.disabled {
-    background: #ccc;
+    background: var(--v-surface-3);
+    color: var(--v-subtle);
     cursor: default;
 }
 
@@ -422,11 +445,11 @@ form input.ng-invalid {
 }
 
 .tooltip-zone-dark {
-    color: #666;
+    color: var(--v-subtle);
 }
 
 .tooltip-zone-dark:hover {
-    color: #333;
+    color: var(--v-text);
 }
 
 .help-text {
@@ -434,8 +457,8 @@ form input.ng-invalid {
 }
 
 .notifier__notification--material {
-    border-radius: 0px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: var(--v-shadow-lg);
 }
 
 .notifier__notification {
@@ -443,7 +466,7 @@ form input.ng-invalid {
 }
 
 .notifier__notification--default {
-    background-color: #444;
+    background-color: var(--v-card-head);
     color: #fff;
 }
 .notifier__notification--default .notifier__notification-button-icon {
@@ -451,7 +474,7 @@ form input.ng-invalid {
 }
 
 .notifier__notification--error {
-    background-color: $error;
+    background-color: #c4312a;
     color: #fff;
 }
 .notifier__notification--error .notifier__notification-button-icon {
@@ -459,7 +482,7 @@ form input.ng-invalid {
 }
 
 .notifier__notification--warning {
-    background-color: $warning;
+    background-color: #b8660b;
     color: #fff;
 }
 .notifier__notification--warning .notifier__notification-button-icon {
@@ -467,7 +490,7 @@ form input.ng-invalid {
 }
 
 .notifier__notification--info {
-    background-color: $info;
+    background-color: #2f6297;
     color: #fff;
 }
 .notifier__notification--info .notifier__notification-button-icon {
@@ -487,7 +510,7 @@ form input.ng-invalid {
 }
 
 .shepherd-modal-overlay-container {
-    background-color: rgba(16, 32, 55, 0.52) !important;
+    background-color: rgba(14, 20, 26, 0.52) !important;
 }
 
 .shepherd-element {
@@ -497,23 +520,23 @@ form input.ng-invalid {
 }
 
 .shepherd-content {
-    border-radius: 18px;
-    border: 1px solid #d8dfe8;
-    background: #ffffff;
-    box-shadow: 0 22px 52px rgba(20, 42, 74, 0.25);
+    border-radius: 12px;
+    border: 1px solid var(--v-border);
+    background: var(--v-surface);
+    box-shadow: var(--v-shadow-lg);
     overflow: hidden;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    font-family: 'IBM Plex Sans', "Helvetica Neue", sans-serif;
 }
 
 .shepherd-header {
-    background: linear-gradient(135deg, #243e6a 0%, #294b81 68%, #2f548d 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    background: var(--v-card-head);
+    border-bottom: 1px solid var(--v-border);
 }
 
 .shepherd-title {
-    color: #fff8f2;
+    color: var(--v-card-head-text);
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .shepherd-cancel-icon {
@@ -521,46 +544,43 @@ form input.ng-invalid {
 }
 
 .shepherd-text {
-    color: #27426f;
+    color: var(--v-text-2);
     line-height: 1.6;
     font-size: 0.95rem;
 }
 
 .shepherd-text a {
-    color: #24497e;
+    color: var(--v-accent-ink);
     font-weight: 600;
 }
 
 .shepherd-footer {
-    border-top: 1px solid #e4e9f0;
-    background: #f8fafd;
+    border-top: 1px solid var(--v-border);
+    background: var(--v-surface-2);
 }
 
 .shepherd-button {
     min-height: 40px;
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid transparent;
     padding: 0 14px;
-    font-weight: 700;
-    background: #ed894f;
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(237, 137, 79, 0.24);
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    font-weight: 500;
+    background: var(--v-accent);
+    color: var(--v-on-accent);
+    transition: background-color 0.16s ease;
 }
 
 .shepherd-button:hover {
-    background: #de7a40;
-    transform: translateY(-1px);
+    background: var(--v-accent-hover);
 }
 
 .shepherd-button.tutorial-exit-btn {
-    background: #eef2f8 !important;
-    color: #27426f !important;
-    border-color: #d3dce8;
+    background: var(--v-control) !important;
+    color: var(--v-text) !important;
+    border-color: var(--v-border-strong);
     box-shadow: none;
 }
 
 .shepherd-button.tutorial-exit-btn:hover {
-    background: #e4ebf4 !important;
-    transform: none;
+    background: var(--v-surface-2) !important;
 }

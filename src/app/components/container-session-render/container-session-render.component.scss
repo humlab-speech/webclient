@@ -28,7 +28,7 @@ a {
     display:flex;
     align-items:center;
     justify-content: space-between;
-    background: $primary;
+    background: var(--v-card-head);
     margin:0;
     padding:0;
     color: #fff;

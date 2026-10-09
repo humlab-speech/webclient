@@ -16,10 +16,10 @@
   margin: 0;
   padding: 0;
   border-radius: 26px;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
   overflow: hidden auto;
-  background: #ffffff !important;
+  background: var(--v-surface) !important;
 }
 
 .assignment-dialog-header {
@@ -29,7 +29,7 @@
   gap: 1rem;
   margin: 0;
   padding: 1.45rem 1.5rem;
-  background: linear-gradient(135deg, #243e6a 0%, #284a80 70%, #2f548d 100%);
+  background: linear-gradient(135deg, var(--v-card-head) 0%, var(--v-card-head) 70%, var(--v-card-head) 100%);
   color: #fff;
 }
 
@@ -83,7 +83,7 @@
 
 .assignment-dialog-content {
   padding: 1.35rem 1.5rem 1.5rem;
-  background: #f8fafd;
+  background: var(--v-surface-2);
 }
 
 @media (max-width: 900px) {

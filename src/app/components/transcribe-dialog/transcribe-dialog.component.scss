@@ -16,10 +16,10 @@
   margin: 0;
   padding: 0;
   border-radius: 26px;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
   overflow: hidden auto;
-  background: #ffffff !important;
+  background: var(--v-surface) !important;
 }
 
 .transcribe-dialog-header {
@@ -29,7 +29,7 @@
   gap: 1rem;
   margin: 0;
   padding: 1.45rem 1.5rem;
-  background: linear-gradient(135deg, #243e6a 0%, #284a80 70%, #2f548d 100%);
+  background: linear-gradient(135deg, var(--v-card-head) 0%, var(--v-card-head) 70%, var(--v-card-head) 100%);
   color: #fff;
 }
 
@@ -83,7 +83,7 @@
 
 .transcribe-dialog-content {
   padding: 1.35rem 1.5rem 1.5rem;
-  background: #f8fafd;
+  background: var(--v-surface-2);
 }
 
 .dialog-content {
@@ -126,7 +126,7 @@
   display:flex;
   align-items: center;
   justify-content: center;
-  background-color: $primary;
+  background-color: var(--v-card-head);
   height:2em;
   width:2em;
   margin:0;
@@ -163,11 +163,11 @@ li {
 }
 
 tr:hover {
-    background-color: #eef1f7;
+    background-color: var(--v-surface-2);
 }
 
 table {
-    color: #1f3044;
+    color: var(--v-text);
     width: 100%;
     border-collapse: collapse;
     font-size: 0.93rem;
@@ -180,20 +180,20 @@ thead th {
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #4a6080;
-    border-bottom: 2px solid #d4d9e2;
+    color: var(--v-muted);
+    border-bottom: 2px solid var(--v-border-strong);
 }
 
 tbody td {
     padding: 0.55rem 0.75rem;
-    border-bottom: 1px solid #e8ecf2;
+    border-bottom: 1px solid var(--v-border);
     vertical-align: middle;
 }
 
 .code-container {
     position: relative;
-    background-color: #f6f8fa; /* GitHub-style light grey background */
-    border: 1px solid #d1d5da;
+    background-color: var(--v-surface-2); /* GitHub-style light grey background */
+    border: 1px solid var(--v-border-strong);
     border-radius: 5px;
     padding: 15px;
     font-family: "Courier New", Courier, monospace; /* Monospace font */
@@ -212,8 +212,8 @@ pre {
     position: absolute;
     top: 10px;
     right: 10px;
-    background-color: #eff3f6;
-    border: 1px solid #d1d5da;
+    background-color: var(--v-surface-2);
+    border: 1px solid var(--v-border-strong);
     border-radius: 5px;
     padding: 5px 10px;
     cursor: pointer;
@@ -221,7 +221,7 @@ pre {
   }
 
 .copy-btn:hover {
-    background-color: #e1e4e8;
+    background-color: var(--v-surface-3);
 }
 
 h3 {
@@ -278,8 +278,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.4em;
-  background-color: $secondary;
-  color: $white;
+  background-color: var(--v-accent);
+  color: #fff;
   margin: 0.2em;
   padding: 0 0.75em;
   height: 2.1em;
@@ -294,7 +294,7 @@ button {
 }
 
 .btn:hover {
-  background-color: $secondary-light;
+  background-color: var(--v-accent);
   transform: translateY(-1px);
 }
 
@@ -302,7 +302,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: $primary;
+  background-color: var(--v-card-head);
   height: 1.5em;
   width: 1.5em;
   margin: 0;
@@ -319,15 +319,15 @@ button {
 .transcription-select {
   height: 2em;
   padding: 0 0.5em;
-  border: 1px solid #ccd2dc;
+  border: 1px solid var(--v-border-strong);
   border-radius: 6px;
   font-size: 0.9rem;
-  background-color: #fff;
-  color: #1f3044;
+  background-color: var(--v-surface);
+  color: var(--v-text);
 }
 
 .transcription-select:focus {
-  border-color: #284a80;
+  border-color: var(--v-border-strong);
   outline: none;
   box-shadow: 0 0 0 2px rgba(40, 74, 128, 0.15);
 }

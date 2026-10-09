@@ -265,6 +265,17 @@ if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <script>
+    // Apply the theme before first paint (see ThemeService, same storage key).
+    (function() {
+      var theme = null;
+      try { theme = localStorage.getItem('visp-theme'); } catch (e) {}
+      if(theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script>
     window.visp = {
       projectName: "<?php echo $_SESSION['projectName']; ?>",
       username: "<?php echo $_SESSION['username']; ?>",

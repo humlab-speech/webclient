@@ -1,5 +1,3 @@
-@import '../colors.scss';
-
 app-menu-bar {
   grid-area: menu;
   display: block;
@@ -14,7 +12,7 @@ app-menu-bar {
   min-height: 100vh;
   padding: 0;
   margin: 0;
-  background: #eef1f5;
+  background: var(--v-bg);
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
   grid-template-areas:

@@ -17,10 +17,10 @@
 }
 
 .attribute-container .fa {
-    color: #000;
+    color: var(--v-text);
     margin-left: 1em;
 }
 
 .fieldset-items-container {
-    border-left: 2px solid $primary-light;
+    border-left: 2px solid var(--v-border-strong);
 }

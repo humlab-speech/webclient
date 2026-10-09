@@ -1,10 +1,10 @@
 #dashboard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 2.2rem;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 3rem;
   max-width: 1420px;
   margin: 0 auto;
-  padding: 1rem 1.25rem 2.4rem;
+  padding: 3.75rem 1.5rem 4rem;
 }
 
 #main-content {
@@ -13,7 +13,6 @@
 
 #infobar {
   min-width: 0;
-  padding-top: 0.75rem;
 }
 
 #dashboard.dashboard--signed-out-frontpage {
@@ -32,27 +31,31 @@
 }
 
 .workspace-section {
-  padding-top: 0.75rem;
+  padding-top: 0;
 }
 
 #userFailedAccessListCheckContainer {
   margin-top: 0.9rem;
-  border-radius: 22px;
-  border: 1px solid #d8dfe8;
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(31, 56, 93, 0.08);
+  border-radius: 10px;
+  border: 1px solid var(--v-border);
+  background: var(--v-surface);
+  box-shadow: var(--v-shadow);
   padding: 1.6rem;
-  color: #27426f;
+  color: var(--v-text-2);
 }
 
 #userFailedAccessListCheckContainer h2 {
   margin: 0 0 0.75rem;
   text-decoration: none;
-  color: #1c3660;
+  color: var(--v-text);
 }
 
 #userFailedAccessListCheckContainer p {
   line-height: 1.55;
+}
+
+#userFailedAccessListCheckContainer a {
+  color: var(--v-accent-ink);
 }
 
 @media (max-width: 1180px) {
@@ -61,14 +64,14 @@
   }
 
   #infobar {
-    padding-top: 0.2rem;
+    padding-top: 0;
   }
 }
 
 @media (max-width: 900px) {
   #dashboard {
-    padding: 0.85rem 0.9rem 1.8rem;
-    gap: 1.1rem;
+    padding: 2rem 1rem 2.4rem;
+    gap: 2rem;
   }
 
   .workspace-section {

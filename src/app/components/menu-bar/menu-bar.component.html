@@ -8,7 +8,7 @@
       </div>
 
       <button *ngIf="showBackToDashboardButton" id="visp-back-button" (click)="backButtonClicked()" aria-label="Back to dashboard">
-        <span class="back-arrow">&#8678;</span>
+        <svg class="back-arrow" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         <span>Back to dashboard</span>
       </button>
     </div>
@@ -52,12 +52,20 @@
         </div>
       </div>
 
+      <button class="icon-button theme-toggle" (click)="themeService.toggle()"
+              [attr.aria-label]="themeService.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              [attr.title]="themeService.theme === 'dark' ? 'Light mode' : 'Dark mode'">
+        <svg *ngIf="themeService.theme === 'dark'" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg *ngIf="themeService.theme !== 'dark'" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+
       <app-help-ctrl *ngIf="containerSessionViewActive"></app-help-ctrl>
       <app-user></app-user>
     </div>
   </div>
 
   <div class="menu-hero-content" *ngIf="showDashboardHero">
+   <div class="menu-hero-inner">
     <ng-container *ngIf="showSignedInHero; else signedOutHeroTemplate">
       <div class="menu-hero-badge">{{ greetingLine }}</div>
       <h1>Your speech research,<br><span>secured and organized.</span></h1>
@@ -67,7 +75,7 @@
       </p>
       <div class="menu-hero-actions">
         <button id="tutorial-create-project-btn" class="hero-btn hero-btn-primary" (click)="createProject()" [disabled]="!canCreateProjects">
-          <span class="hero-btn-plus">+</span>
+          <svg class="hero-btn-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           <span>New project</span>
         </button>
         <button class="hero-btn hero-btn-secondary" (click)="openHelpDialog()">Help</button>
@@ -86,5 +94,6 @@
         <app-signin-ctrl></app-signin-ctrl>
       </ng-container>
     </ng-template>
+   </div>
   </div>
 </header>

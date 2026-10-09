@@ -8,8 +8,8 @@
 }
 
 #submitBtn.disabled {
-    background-color: #eee;
-    color: #333;
+    background-color: var(--v-surface-3);
+    color: var(--v-text);
     cursor: default;
 }
 

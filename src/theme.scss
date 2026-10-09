@@ -1,0 +1,136 @@
+// Colour tokens for the light and dark themes.
+//
+// Components use these custom properties instead of hard-coded colours, so a
+// theme switch is just a change of the data-theme attribute on <html>
+// (ThemeService; index.php sets it before Angular boots to avoid a flash).
+//
+// Naming: surfaces go bg → surface → surface-2 → surface-3 from the page
+// background towards the most raised/filled element. "card-head" is the dark
+// header band on project cards and dialogs, which stays dark in both themes.
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --v-accent: #ef5925;
+  --v-accent-hover: #d94a18;
+  --v-accent-soft: #fdeae2;
+  --v-accent-ink: #ca5b36;
+  --v-on-accent: #ffffff;
+
+  --v-topbar: #1b2731;
+  --v-topbar-raised: #22323d;
+  --v-topbar-border: rgba(255, 255, 255, 0.08);
+  --v-topbar-text: #f2f5f7;
+  --v-topbar-muted: #8e9ca6;
+
+  --v-bg: #f2f4f6;
+  --v-hero: #ffffff;
+  --v-surface: #ffffff;
+  --v-surface-2: #f7f9fa;
+  --v-surface-3: #edf0f3;
+  --v-border: #e3e8ec;
+  --v-border-strong: #cdd5dc;
+  // Themes differ in which surface these sit on, hence their own tokens.
+  --v-tile: #ffffff;
+  --v-tile-hover: #f7f9fa;
+  --v-chip: #f2f4f6;
+  --v-control: #ffffff;
+
+  --v-text: #1b2731;
+  --v-text-2: #3a4853;
+  --v-muted: #687681;
+  --v-subtle: #8a969f;
+
+  --v-card-head: #1b2731;
+  --v-card-head-text: #ffffff;
+  --v-card-head-muted: rgba(255, 255, 255, 0.68);
+  --v-card-head-raised: rgba(255, 255, 255, 0.08);
+  --v-card-head-border: rgba(255, 255, 255, 0.14);
+
+  --v-danger: #c4312a;
+  --v-danger-hover: #a8261f;
+  --v-danger-soft: #fdecea;
+  --v-success: #1d7a4b;
+  --v-success-soft: #e4f4eb;
+  --v-warning: #9a5b06;
+  --v-warning-soft: #fdf2d9;
+  --v-info: #2f6297;
+  --v-info-soft: #e7eef7;
+
+  --v-input-bg: #ffffff;
+  --v-focus-ring: rgba(239, 89, 37, 0.28);
+  --v-overlay: rgba(14, 20, 26, 0.55);
+  --v-shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 6px 20px rgba(16, 24, 32, 0.05);
+  --v-shadow-lg: 0 18px 40px rgba(16, 24, 32, 0.18);
+  --v-skeleton: #e9edf0;
+  --v-skeleton-shine: #f6f8f9;
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --v-accent: #ef5925;
+  --v-accent-hover: #ff6b36;
+  --v-accent-soft: #3d2319;
+  --v-accent-ink: #f0784a;
+  --v-on-accent: #ffffff;
+
+  --v-topbar: #161e25;
+  --v-topbar-raised: #1b2731;
+  --v-topbar-border: rgba(255, 255, 255, 0.07);
+  --v-topbar-text: #eef2f5;
+  --v-topbar-muted: #83939d;
+
+  --v-bg: #161e25;
+  --v-hero: #1b2731;
+  --v-surface: #1b2731;
+  --v-surface-2: #22323d;
+  --v-surface-3: #2e404e;
+  --v-border: #2a3a46;
+  --v-border-strong: #3b4e5c;
+  --v-tile: #22323d;
+  --v-tile-hover: #293b48;
+  --v-chip: #22323d;
+  --v-control: #161e25;
+
+  --v-text: #eef2f5;
+  --v-text-2: #c4ced5;
+  --v-muted: #8d9ca6;
+  --v-subtle: #6f7e89;
+
+  --v-card-head: #22323d;
+  --v-card-head-text: #eef2f5;
+  --v-card-head-muted: rgba(238, 242, 245, 0.62);
+  --v-card-head-raised: #1b2731;
+  --v-card-head-border: #2e404e;
+
+  --v-danger: #f0776e;
+  --v-danger-hover: #ff8d85;
+  --v-danger-soft: #3a2224;
+  --v-success: #5fcf96;
+  --v-success-soft: #1d3a2e;
+  --v-warning: #f2b64f;
+  --v-warning-soft: #3a3020;
+  --v-info: #83b4e8;
+  --v-info-soft: #1f3345;
+
+  --v-input-bg: #16202a;
+  --v-focus-ring: rgba(239, 89, 37, 0.4);
+  --v-overlay: rgba(5, 8, 11, 0.68);
+  --v-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.18);
+  --v-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.45);
+  --v-skeleton: #22323d;
+  --v-skeleton-shine: #2b3d4a;
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+// No explicit choice yet: follow the OS.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}

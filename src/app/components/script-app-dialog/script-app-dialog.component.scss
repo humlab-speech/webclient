@@ -11,7 +11,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color:rgba(0, 0, 0, 0.5);
+    background-color:var(--v-overlay);
 }
 
 fieldset {
@@ -28,7 +28,7 @@ fieldset label {
 }
 
 fieldset input {
-    border-color: #ccc;
+    border-color: var(--v-border-strong);
     border-style: solid;
     border-radius: 4px;
 }
@@ -36,7 +36,7 @@ fieldset input {
 button {
     font-size: 1.5rem;
     padding: 0.5rem;
-    background-color: $crimson;
+    background-color: var(--v-danger);
     color: #fff;
     border-width:0px;
 }
@@ -47,14 +47,14 @@ button:hover {
 }
 
 h3 {
-    background-color: $secondary;
+    background-color: var(--v-accent);
     background: $gradient-horizontal;
     padding-left: 1em;
     padding-right: 1em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
-    color: $lightgrey;
-    border-left: 0.25em solid $secondary-light;
+    color: #eceff3;
+    border-left: 0.25em solid var(--v-accent);
 }
 /*
 .btn {
@@ -74,8 +74,8 @@ h3 {
     flex-direction: column;
     padding: 2rem;
     border-radius:4px;
-    background-color: #fff !important;
-    color: $dark-font-color;
+    background-color: var(--v-surface) !important;
+    color: var(--v-text);
     box-shadow: 0px 0px 10px 5px #666;
     max-height: 95vh;
     overflow:auto;
@@ -97,7 +97,7 @@ h3 {
 
 .dialog-close-btn:hover {
     background-color: lighten($crimson, 10%);
-    border: 1px solid #333;
+    border: 1px solid var(--v-border-strong);
     border-radius: 50%;
     cursor: pointer;
     color: #fff;
@@ -115,7 +115,7 @@ h3 {
 }
 
 li {
-    background-color: #eee;
+    background-color: var(--v-surface-3);
     padding: 1rem;
     border-radius: 4px;
     list-style-type: none;
@@ -132,8 +132,8 @@ li {
 }
 
 #submitBtn.disabled {
-    background-color: #eee !important;
-    color: #333;
+    background-color: var(--v-surface-3) !important;
+    color: var(--v-text);
     cursor: default;
 }
 
@@ -230,6 +230,6 @@ form label {
 
 
 .form-error-msg {
-    color: $crimson;
+    color: var(--v-danger);
     font-size: 0.8em;
 }

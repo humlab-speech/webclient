@@ -1,13 +1,5 @@
 @import '../../../../colors.scss';
 
-$ink: #1c2b40;
-$ink-muted: #5b6b80;
-$navy: #243e6a;
-$line: #d8dfe8;
-$line-soft: #e6ebf1;
-$field-line: #ccd6e3;
-$action: #b95a2c;
-$action-hover: #a24c22;
 
 :host {
     display: block;
@@ -25,11 +17,11 @@ $action-hover: #a24c22;
     margin: 0;
     padding: 0;
     border-radius: 20px;
-    border: 1px solid $line;
+    border: 1px solid var(--v-border-strong);
     box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
     overflow: hidden;
-    background: #ffffff !important;
-    color: $ink;
+    background: var(--v-surface) !important;
+    color: var(--v-text);
 }
 
 .project-dialog-header {
@@ -40,7 +32,7 @@ $action-hover: #a24c22;
     gap: 1rem;
     margin: 0;
     padding: 1.3rem 1.5rem 1.4rem;
-    background: $navy;
+    background: var(--v-card-head);
     color: #fff;
 }
 
@@ -109,7 +101,7 @@ $action-hover: #a24c22;
     flex-direction: column;
     gap: 0.9rem;
     padding: 1.4rem 1.5rem 1.75rem;
-    background: #ffffff;
+    background: var(--v-surface);
 }
 
 .project-name-fieldset {
@@ -124,7 +116,7 @@ $action-hover: #a24c22;
 .project-name-fieldset label {
     display: block;
     margin: 0;
-    color: $ink;
+    color: var(--v-text);
     font-size: 0.82rem;
     font-weight: 700;
 }
@@ -133,33 +125,33 @@ $action-hover: #a24c22;
     box-sizing: border-box;
     width: 100%;
     min-height: 2.75rem;
-    border: 1px solid $field-line;
+    border: 1px solid var(--v-border-strong);
     border-radius: 10px;
     padding: 0 0.9rem;
-    color: $ink;
-    background: #ffffff;
+    color: var(--v-text);
+    background: var(--v-surface);
     font-size: 1rem;
 }
 
 .project-name-input:focus {
     outline: 0;
-    border-color: #5f87bd;
+    border-color: var(--v-border-strong);
     box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
 }
 
 .project-name-input:disabled {
-    background: #f6f8fb;
-    color: #44546a;
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
 }
 
 .field-hint {
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.78rem;
 }
 
 .form-error-msg {
     margin-top: 0.3rem;
-    color: #b3261e;
+    color: var(--v-danger);
     font-size: 0.8rem;
 }
 
@@ -183,7 +175,7 @@ $action-hover: #a24c22;
     content: "";
     flex: 1;
     height: 1px;
-    background: $line;
+    background: var(--v-surface-3);
 }
 
 .setup-heading h3 {
@@ -191,21 +183,21 @@ $action-hover: #a24c22;
     padding: 0;
     border: 0;
     background: none;
-    color: $ink;
+    color: var(--v-text);
     font-size: 1rem;
     font-weight: 700;
 }
 
 .setup-heading p {
     margin: 0.15rem 0 0;
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.78rem;
 }
 
 .setup-list {
-    border: 1px solid $line;
+    border: 1px solid var(--v-border-strong);
     border-radius: 14px;
-    background: #ffffff;
+    background: var(--v-surface);
     overflow: hidden;
 }
 
@@ -213,7 +205,7 @@ $action-hover: #a24c22;
 :host ::ng-deep .setup-list .setup-row {
     display: block;
     margin: 0;
-    background: #ffffff;
+    background: var(--v-surface);
 }
 
 .setup-list > app-documentation-form {
@@ -222,7 +214,7 @@ $action-hover: #a24c22;
 
 // The annotation row is rendered from the sessions form's template, so it lacks this component's scoping attribute
 :host ::ng-deep .setup-list > * + * {
-    border-top: 1px solid $line-soft;
+    border-top: 1px solid var(--v-border);
 }
 
 :host ::ng-deep .setup-row-summary {
@@ -239,22 +231,22 @@ $action-hover: #a24c22;
 }
 
 :host ::ng-deep .setup-row-summary:hover {
-    background: #fafbfd;
+    background: var(--v-surface-2);
 }
 
 :host ::ng-deep .setup-row > .setup-row-summary:focus-visible {
-    outline: 2px solid #5f87bd;
+    outline: 2px solid var(--v-border-strong);
     outline-offset: -2px;
 }
 
 :host ::ng-deep .setup-row[open] > .setup-row-summary {
-    border-bottom: 1px solid $line-soft;
+    border-bottom: 1px solid var(--v-border);
 }
 
 :host ::ng-deep .setup-row .details-chevron {
     flex: none;
     width: 0.8rem;
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.75rem;
     transition: transform 0.15s ease;
 }
@@ -271,8 +263,8 @@ $action-hover: #a24c22;
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 9px;
-    background: #eef2f7;
-    color: #44546a;
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
     font-size: 1rem;
 }
 
@@ -288,20 +280,20 @@ $action-hover: #a24c22;
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    color: $ink;
+    color: var(--v-text);
     font-size: 0.95rem;
     font-weight: 700;
 }
 
 :host ::ng-deep .setup-row-title .help-icon {
-    color: #8593a6;
+    color: var(--v-muted);
     font-size: 0.85em;
     font-weight: normal;
     cursor: help;
 }
 
 :host ::ng-deep .setup-row-subtitle {
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.78rem;
 }
 
@@ -311,10 +303,10 @@ $action-hover: #a24c22;
     align-items: center;
     gap: 0.4rem;
     padding: 0.25rem 0.65rem;
-    border: 1px solid $line;
+    border: 1px solid var(--v-border-strong);
     border-radius: 999px;
-    background: #f3f6fa;
-    color: #44546a;
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
     font-size: 0.76rem;
     font-weight: 600;
     white-space: nowrap;
@@ -335,7 +327,7 @@ $action-hover: #a24c22;
 
 .info-field label {
     display: block;
-    color: $ink;
+    color: var(--v-text);
     font-size: 0.82rem;
     font-weight: 700;
 }
@@ -343,11 +335,11 @@ $action-hover: #a24c22;
 .project-info-input {
     box-sizing: border-box;
     width: 100%;
-    border: 1px solid $field-line;
+    border: 1px solid var(--v-border-strong);
     border-radius: 10px;
     padding: 0.4rem 0.8rem;
-    color: $ink;
-    background: #ffffff;
+    color: var(--v-text);
+    background: var(--v-surface);
     font-size: 0.95rem;
     font-family: inherit;
     min-height: 2.5rem;
@@ -355,7 +347,7 @@ $action-hover: #a24c22;
 
 .project-info-input:focus {
     outline: 0;
-    border-color: #5f87bd;
+    border-color: var(--v-border-strong);
     box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
 }
 
@@ -372,7 +364,7 @@ $action-hover: #a24c22;
 }
 
 .info-field-hint {
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.75rem;
 }
 
@@ -384,8 +376,8 @@ $action-hover: #a24c22;
     align-items: center;
     gap: 0.6rem;
     padding: 0.85rem 1.5rem;
-    border-top: 1px solid $line-soft;
-    background: #f8fafc;
+    border-top: 1px solid var(--v-border);
+    background: var(--v-surface-2);
 }
 
 .save-status {
@@ -394,12 +386,12 @@ $action-hover: #a24c22;
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    color: $ink-muted;
+    color: var(--v-muted);
     font-size: 0.84rem;
 }
 
 .save-status-dirty {
-    color: #9a4a1f;
+    color: var(--v-accent-ink);
     font-weight: 600;
 }
 
@@ -413,17 +405,17 @@ $action-hover: #a24c22;
 .cancel-btn {
     min-height: 2.6rem;
     padding: 0 1.2rem;
-    border: 1px solid $field-line;
+    border: 1px solid var(--v-border-strong);
     border-radius: 10px;
-    background: #ffffff;
-    color: $ink;
+    background: var(--v-surface);
+    color: var(--v-text);
     font-size: 0.92rem;
     font-weight: 700;
     box-shadow: none;
 }
 
 .cancel-btn:hover {
-    background: #f1f5fb;
+    background: var(--v-surface-2);
     box-shadow: none;
 }
 
@@ -443,22 +435,22 @@ $action-hover: #a24c22;
     padding: 0 1.3rem;
     font-size: 0.92rem;
     font-weight: 700;
-    background: $action;
+    background: var(--v-accent);
     color: #ffffff;
     box-shadow: 0 6px 16px rgba(185, 90, 44, 0.25);
     transition: box-shadow 0.18s ease, background 0.18s ease;
 }
 
 #submitBtn:hover {
-    background: $action-hover;
+    background: var(--v-accent);
     box-shadow: 0 6px 16px rgba(185, 90, 44, 0.32);
 }
 
 #submitBtn.disabled,
 #submitBtn:disabled {
-    background: #e9edf3;
-    color: #71819d;
-    border-color: #dde4ed;
+    background: var(--v-surface-3);
+    color: var(--v-muted);
+    border-color: var(--v-border-strong);
     box-shadow: none;
     cursor: default;
 }
@@ -471,10 +463,10 @@ $action-hover: #a24c22;
 /* ── Documentation upload (child component) ── */
 
 :host ::ng-deep app-documentation-form ngx-dropzone {
-    border: 1px dashed #b9c7d9;
+    border: 1px dashed var(--v-border-strong);
     border-radius: 12px;
-    background: #fbfcfe;
-    color: $ink-muted;
+    background: var(--v-surface-2);
+    color: var(--v-muted);
     font-size: 0.88rem;
 }
 

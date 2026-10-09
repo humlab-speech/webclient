@@ -6,6 +6,7 @@ import { UserSession } from 'src/app/models/UserSession';
 import { ModalService } from 'src/app/services/modal.service';
 import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
+import { ThemeService } from 'src/app/services/theme.service';
 
 interface TopBarNotification {
   id: string;
@@ -177,7 +178,8 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     private systemService: SystemService,
     private toastService: NotifierService,
     private userService: UserService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    public themeService: ThemeService
   ) {
     this.userFullName = (window as any).visp?.fullName || '';
     this.userAuthenticationCheckPerformed = this.userService.userAuthenticationCheckPerformed;
