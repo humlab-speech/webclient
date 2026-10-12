@@ -22,11 +22,14 @@
   color: var(--v-card-head-text);
   border-radius: 9px 9px 0 0;
   border-bottom: 1px solid var(--v-border);
+  // Brand orange as a graphic element along the top of each active project.
+  box-shadow: inset 0 3px 0 var(--v-accent);
 }
 
 .project-card--archived .project-top {
   background: var(--v-surface-3);
   color: var(--v-text);
+  box-shadow: none;
 }
 
 .project-label {
@@ -43,7 +46,7 @@ h3 {
   font-size: 2.2rem;
   letter-spacing: -0.015em;
   color: inherit;
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -75,14 +78,8 @@ h3 img {
   gap: 0.5rem;
 }
 
-.project-meta svg {
-  width: 1.05rem;
-  height: 1.05rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.project-meta .fa {
+  font-size: 1.05rem;
 }
 
 .meta-divider {
@@ -158,8 +155,8 @@ h3 img {
 }
 
 .project-menu-dropdown li:hover {
-  background: var(--v-surface-2);
-  color: var(--v-accent-ink);
+  background: var(--v-interactive-soft);
+  color: var(--v-interactive-ink);
   cursor: pointer;
 }
 

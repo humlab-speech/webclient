@@ -11,7 +11,7 @@
     border: 1px solid var(--v-border-strong);
     border-radius: 16px;
     background: var(--v-surface);
-    box-shadow: 0 8px 20px rgba(31, 56, 93, 0.06);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
 .member-controls-card {
@@ -83,8 +83,8 @@
 
 .form-control-pair-input input:focus {
     outline: 0;
-    border-color: var(--v-border-strong);
-    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+    border-color: var(--v-interactive);
+    box-shadow: 0 0 0 3px var(--v-focus-ring);
 }
 
 #search-user-input {
@@ -103,7 +103,7 @@
     border-radius: 12px;
     background: var(--v-surface);
     color: var(--v-text);
-    box-shadow: 0 18px 38px rgba(32, 55, 84, 0.18);
+    box-shadow: var(--v-shadow-lg);
     z-index: 20;
 }
 
@@ -232,13 +232,13 @@ details > summary {
     font-size: 1rem;
     font-weight: 700;
     background: var(--v-accent);
-    color: #ffffff;
-    box-shadow: 0 10px 22px rgba(237, 137, 79, 0.24);
+    color: var(--v-on-accent);
+    box-shadow: 0 10px 22px rgba(240, 88, 26, 0.24);
     transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 #member-form-save-button:hover {
-    background: var(--v-accent);
+    background: var(--v-accent-hover);
     transform: translateY(-1px);
 }
 

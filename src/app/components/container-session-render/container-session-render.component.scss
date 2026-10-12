@@ -1,14 +1,10 @@
 @import '../../../colors.scss';
-@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500&display=swap');
 
 body {
     margin:0;
     padding:0;
 }
 
-h1 {
-    font-family: 'Gothic A1', sans-serif;
-}
 
 a {
     text-decoration-line: none;
@@ -29,14 +25,15 @@ a {
     align-items:center;
     justify-content: space-between;
     background: var(--v-card-head);
+    border-bottom: 1px solid var(--v-border);
     margin:0;
     padding:0;
-    color: #fff;
+    color: var(--v-card-head-text);
 }
 
 #back-button-container > a {
     display:flex;
-    color: #fff;
+    color: var(--v-card-head-text);
 }
 
 #back-button-container > a:hover h1 {
@@ -45,7 +42,7 @@ a {
 
 #visp-back-button {
     font-size: 4em;
-    color: #fff;
+    color: var(--v-card-head-text);
     margin-right: 0.1em;
 }
 

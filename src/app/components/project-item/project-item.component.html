@@ -13,12 +13,12 @@
           Archived (locked)
         </span>
         <span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5a6.5 6.5 0 0 1 3 5.5"/></svg>
+          <i class="fa fa-users" aria-hidden="true"></i>
           {{ getMemberCount() }} {{ getMemberLabel() }}
         </span>
         <span class="meta-divider">•</span>
         <span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4M7 7v10M11 4v16M15 8v8M19 11v2"/></svg>
+          <i class="fa fa-file-audio-o" aria-hidden="true"></i>
           {{ getRecordingCount() }} recordings
         </span>
       </div>
@@ -63,48 +63,48 @@
 
         <div class="tile-list">
           <button class="tool-tile" (click)="transcribeDialog(this.project)">
-            <span class="tile-icon neutral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
+            <span class="tile-icon neutral"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
             <span class="tile-copy">
               <span class="tile-label">Auto-transcribe</span>
               <span class="tile-subtitle">Powered by WhisperX</span>
             </span>
-            <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <i class="fa fa-chevron-right tile-chevron" aria-hidden="true"></i>
           </button>
 
           <button class="tool-tile" (click)="editEmuDb(this.project)">
-            <span class="tile-icon neutral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4M7 7v10M11 4v16M15 8v8M19 11v2"/></svg></span>
+            <span class="tile-icon neutral"><i class="fa fa-microphone" aria-hidden="true"></i></span>
             <span class="tile-copy">
               <span class="tile-label">Recording sessions</span>
               <span class="tile-subtitle">View and manage recorded audio files</span>
             </span>
-            <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <i class="fa fa-chevron-right tile-chevron" aria-hidden="true"></i>
           </button>
 
           <button class="tool-tile" (click)="manageBundleLists(this.project)">
-            <span class="tile-icon neutral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17v-5a8 8 0 0 1 16 0v5"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span>
+            <span class="tile-icon neutral"><i class="fa fa-headphones" aria-hidden="true"></i></span>
             <span class="tile-copy">
               <span class="tile-label">Assign annotation tasks</span>
               <span class="tile-subtitle">Distribute bundles for annotation in Artic</span>
             </span>
-            <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <i class="fa fa-chevron-right tile-chevron" aria-hidden="true"></i>
           </button>
 
           <button class="tool-tile" (click)="manageMembers(this.project)">
-            <span class="tile-icon neutral"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5a6.5 6.5 0 0 1 3 5.5"/></svg></span>
+            <span class="tile-icon neutral"><i class="fa fa-users" aria-hidden="true"></i></span>
             <span class="tile-copy">
               <span class="tile-label">Members</span>
               <span class="tile-subtitle">Manage team members and roles</span>
             </span>
-            <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <i class="fa fa-chevron-right tile-chevron" aria-hidden="true"></i>
           </button>
 
           <button class="tool-tile" (click)="openSprScriptsDialog(this.project)">
-            <span class="tile-icon neutral"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+            <span class="tile-icon neutral"><i class="fa fa-list-ol" aria-hidden="true"></i></span>
             <span class="tile-copy">
               <span class="tile-label">Manage recording scripts</span>
               <span class="tile-subtitle">Create and edit speaker prompts</span>
             </span>
-            <svg class="tile-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            <i class="fa fa-chevron-right tile-chevron" aria-hidden="true"></i>
           </button>
         </div>
       </section>

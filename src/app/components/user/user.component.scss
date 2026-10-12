@@ -3,24 +3,25 @@
   z-index: 30;
 }
 
-// Lives in the topbar, which is dark in both themes.
+// Lives in the topbar.
 .profile-pill,
 .signin-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
   min-height: 3.1rem;
-  border: 1px solid var(--v-topbar-border);
-  border-radius: 10px;
-  background: var(--v-topbar-raised);
+  border: 1px solid var(--v-border-strong);
+  border-radius: 6px;
+  background: var(--v-topbar);
   color: var(--v-topbar-text);
   padding: 0.3rem 0.85rem 0.3rem 0.45rem;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .profile-pill:hover,
 .signin-pill:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--v-interactive);
+  background: var(--v-topbar-raised);
 }
 
 .profile-avatar {
@@ -29,7 +30,7 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #1b2731;
+  color: var(--v-on-accent);
   font-weight: 700;
   font-size: 0.85rem;
   background: var(--v-accent);
@@ -61,9 +62,14 @@
 
 .signin-pill {
   padding: 0.35rem 0.95rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
+}
+
+.signin-pill > i {
+  color: var(--v-interactive);
+  font-size: 1.2rem;
 }
 
 .account-menu-dropdown {
@@ -76,7 +82,7 @@
   min-width: 12.5rem;
   background: var(--v-surface);
   border: 1px solid var(--v-border);
-  border-radius: 10px;
+  border-radius: 6px;
   box-shadow: var(--v-shadow-lg);
   overflow: hidden;
 }
@@ -96,9 +102,13 @@
   color: var(--v-muted);
 }
 
+.account-menu-dropdown li:hover i {
+  color: inherit;
+}
+
 .account-menu-dropdown li:hover {
-  background: var(--v-surface-2);
-  color: var(--v-accent-ink);
+  background: var(--v-interactive-soft);
+  color: var(--v-interactive-ink);
   cursor: pointer;
 }
 

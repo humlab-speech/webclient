@@ -17,7 +17,7 @@
   padding: 0;
   border-radius: 26px;
   border: 1px solid var(--v-border-strong);
-  box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.26);
   overflow: hidden auto;
   background: var(--v-surface) !important;
 }
@@ -29,8 +29,9 @@
   gap: 1rem;
   margin: 0;
   padding: 1.45rem 1.5rem;
-  background: linear-gradient(135deg, var(--v-card-head) 0%, var(--v-card-head) 70%, var(--v-card-head) 100%);
-  color: #fff;
+  background: var(--v-card-head);
+  border-bottom: 1px solid var(--v-border);
+  color: var(--v-card-head-text);
 }
 
 .header-copy {
@@ -44,20 +45,20 @@
   letter-spacing: 0.24em;
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--v-card-head-muted);
 }
 
 .assignment-dialog-header h2 {
   margin: 0;
   font-size: clamp(1.25rem, 3vw, 1.9rem);
   letter-spacing: -0.03em;
-  color: #fff8f2;
+  color: var(--v-card-head-text);
   text-decoration: none;
 }
 
 .assignment-dialog-header p {
   margin: 0.5rem 0 0;
-  color: rgba(246, 248, 253, 0.82);
+  color: var(--v-card-head-muted);
   line-height: 1.4;
   font-size: 0.94rem;
 }
@@ -68,16 +69,16 @@
   min-width: 2rem;
   margin-left: 0;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--v-card-head-border);
+  color: var(--v-card-head-muted);
+  background: var(--v-card-head-raised);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .assignment-dialog-close-btn:hover {
-  border-color: rgba(255, 255, 255, 0.38);
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--v-border-strong);
+  color: var(--v-card-head-text);
+  background: var(--v-surface-3);
   transform: translateY(-1px);
 }
 

@@ -7,6 +7,7 @@ import { ModalService } from 'src/app/services/modal.service';
 import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
 import { ThemeService } from 'src/app/services/theme.service';
+import { brandLanguage } from 'src/app/lib/locale';
 
 interface TopBarNotification {
   id: string;
@@ -26,6 +27,12 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
   public containerSessionViewActive:boolean = false;
   public showBackToDashboardButton:boolean = false;
+
+  // Platform logo with slogan, per Språkbanken's graphic profile.
+  private readonly brandLang = brandLanguage();
+  public readonly brandLogoPath = `/assets/visp_slogan_${this.brandLang}.svg`;
+  public readonly brandLogoDarkPath = `/assets/visp_slogan_${this.brandLang}_dark.svg`;
+  public readonly brandSlogan = this.brandLang === 'sv' ? 'Språkbankens talforskningsplattform' : 'Språkbanken’s speech research platform';
   public isDashboardRoute:boolean = false;
 
   public userAuthenticationCheckPerformed:boolean = false;
@@ -331,7 +338,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   }
 
   get showUserActions():boolean {
-    // Search and notifications only mean something to a user who can reach projects.
+    // Notifications only mean something to a user who can reach projects.
     return this.userIsAuthenticated && this.userIsAuthorized;
   }
 

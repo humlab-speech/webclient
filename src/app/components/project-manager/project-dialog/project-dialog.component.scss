@@ -18,7 +18,7 @@
     padding: 0;
     border-radius: 20px;
     border: 1px solid var(--v-border-strong);
-    box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.26);
     overflow: hidden;
     background: var(--v-surface) !important;
     color: var(--v-text);
@@ -33,7 +33,8 @@
     margin: 0;
     padding: 1.3rem 1.5rem 1.4rem;
     background: var(--v-card-head);
-    color: #fff;
+    border-bottom: 1px solid var(--v-border);
+    color: var(--v-card-head-text);
 }
 
 .header-copy {
@@ -47,7 +48,7 @@
     letter-spacing: 0.16em;
     font-size: 0.7rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--v-card-head-muted);
 }
 
 .project-dialog-header h2 {
@@ -57,7 +58,7 @@
     text-overflow: ellipsis;
     font-size: clamp(1.35rem, 3vw, 1.75rem);
     letter-spacing: -0.02em;
-    color: #ffffff;
+    color: var(--v-card-head-text);
     text-decoration: none;
 }
 
@@ -69,18 +70,18 @@
     margin-left: 0;
     padding: 0;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    color: rgba(255, 255, 255, 0.92);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--v-card-head-border);
+    color: var(--v-card-head-muted);
+    background: var(--v-card-head-raised);
     font-size: 0.95rem;
     box-shadow: none;
     transition: background 0.2s ease;
 }
 
 .project-dialog-header .dialog-close-btn:hover {
-    border-color: rgba(255, 255, 255, 0.45);
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.18);
+    border-color: var(--v-border-strong);
+    color: var(--v-card-head-text);
+    background: var(--v-surface-3);
     box-shadow: none;
 }
 
@@ -135,8 +136,8 @@
 
 .project-name-input:focus {
     outline: 0;
-    border-color: var(--v-border-strong);
-    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+    border-color: var(--v-interactive);
+    box-shadow: 0 0 0 3px var(--v-focus-ring);
 }
 
 .project-name-input:disabled {
@@ -347,8 +348,8 @@
 
 .project-info-input:focus {
     outline: 0;
-    border-color: var(--v-border-strong);
-    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+    border-color: var(--v-interactive);
+    box-shadow: 0 0 0 3px var(--v-focus-ring);
 }
 
 .project-info-textarea {
@@ -436,14 +437,14 @@
     font-size: 0.92rem;
     font-weight: 700;
     background: var(--v-accent);
-    color: #ffffff;
-    box-shadow: 0 6px 16px rgba(185, 90, 44, 0.25);
+    color: var(--v-on-accent);
+    box-shadow: 0 6px 16px rgba(240, 88, 26, 0.25);
     transition: box-shadow 0.18s ease, background 0.18s ease;
 }
 
 #submitBtn:hover {
-    background: var(--v-accent);
-    box-shadow: 0 6px 16px rgba(185, 90, 44, 0.32);
+    background: var(--v-accent-hover);
+    box-shadow: 0 6px 16px rgba(240, 88, 26, 0.32);
 }
 
 #submitBtn.disabled,

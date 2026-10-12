@@ -14,10 +14,11 @@ app-menu-bar {
   margin: 0;
   background: var(--v-bg);
   grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   grid-template-areas:
     'menu'
-    'main-content';
+    'main-content'
+    'footer';
 }
 
 #content-container {
@@ -28,26 +29,8 @@ app-menu-bar {
   margin: 0;
 }
 
-#main-container.has-bottom-banner #content-container {
-  box-sizing: border-box;
-  padding-bottom: 5rem;
-}
-
-.app-bottom-banner {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 5rem;
-  z-index: 1000;
-}
-
-@media (max-width: 900px) {
-  #main-container.has-bottom-banner #content-container {
-    padding-bottom: 4.6rem;
-  }
-
-  .app-bottom-banner {
-    height: 4.6rem;
-  }
+.app-footer {
+  grid-area: footer;
+  background: var(--v-surface);
+  border-top: 1px solid var(--v-border);
 }

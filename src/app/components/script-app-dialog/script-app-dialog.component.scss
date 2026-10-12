@@ -35,25 +35,25 @@ fieldset input {
 
 button {
     font-size: 1.5rem;
+    font-weight: 600;
     padding: 0.5rem;
-    background-color: var(--v-danger);
-    color: #fff;
+    background-color: var(--v-accent);
+    color: var(--v-on-accent);
     border-width:0px;
+    border-radius: 6px;
 }
 
 button:hover {
-    background-color:lighten($crimson, 10%);
+    background-color: var(--v-accent-hover);
     cursor:pointer;
 }
 
 h3 {
-    background-color: var(--v-accent);
-    background: $gradient-horizontal;
-    padding-left: 1em;
+    padding-left: 0.5em;
     padding-right: 1em;
     padding-top: 0.25em;
     padding-bottom: 0.25em;
-    color: #eceff3;
+    color: var(--v-text);
     border-left: 0.25em solid var(--v-accent);
 }
 /*
@@ -76,7 +76,7 @@ h3 {
     border-radius:4px;
     background-color: var(--v-surface) !important;
     color: var(--v-text);
-    box-shadow: 0px 0px 10px 5px #666;
+    box-shadow: var(--v-shadow-lg);
     max-height: 95vh;
     overflow:auto;
 }
@@ -96,11 +96,11 @@ h3 {
 }
 
 .dialog-close-btn:hover {
-    background-color: lighten($crimson, 10%);
+    background-color: var(--v-surface-3);
     border: 1px solid var(--v-border-strong);
     border-radius: 50%;
     cursor: pointer;
-    color: #fff;
+    color: var(--v-text);
 }
 
 .dialog-header {

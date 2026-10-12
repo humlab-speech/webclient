@@ -4,7 +4,7 @@
 .tool-tile {
   width: 100%;
   min-height: 4.5rem;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--v-border);
   background: var(--v-tile);
   cursor: pointer;
@@ -19,7 +19,7 @@
 }
 
 .tool-tile:hover:not(:disabled) {
-  border-color: var(--v-border-strong);
+  border-color: var(--v-interactive);
   background: var(--v-tile-hover);
 }
 
@@ -37,8 +37,8 @@
 
 .tile-label {
   color: var(--v-text);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 500;
 }
 
 .tile-subtitle {
@@ -57,14 +57,8 @@
   flex: 0 0 auto;
 }
 
-.tile-icon svg {
-  width: 1.3rem;
-  height: 1.3rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.tile-icon .fa {
+  font-size: 1.3rem;
 }
 
 .tile-icon.accent {
@@ -78,18 +72,13 @@
 }
 
 .tile-chevron {
-  width: 1.15rem;
-  height: 1.15rem;
   flex: 0 0 auto;
-  fill: none;
-  stroke: var(--v-subtle);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: transform 0.15s ease, stroke 0.15s ease;
+  font-size: 0.95rem;
+  color: var(--v-subtle);
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
 .tool-tile:hover:not(:disabled) .tile-chevron {
-  stroke: var(--v-text);
+  color: var(--v-interactive);
   transform: translateX(2px);
 }

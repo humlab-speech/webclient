@@ -43,7 +43,7 @@ tr:hover {
     border: 1px solid var(--v-border-strong);
     border-radius: 5px;
     padding: 15px;
-    font-family: "Courier New", Courier, monospace; /* Monospace font */
+    font-family: var(--v-font-mono);
     font-size: 14px;
     overflow-x: auto;
     white-space: pre-wrap; /* Preserve code formatting */
@@ -81,15 +81,17 @@ h3 {
 }
 
 pre {
-    font-family: "Gothic A1", sans-serif; /* Customize font here */
+    font-family: var(--v-font-data);
+    font-size-adjust: var(--v-noto-adjust);
 }
 
 :host {
     --help-title: var(--v-text);
-    --help-accent-start: var(--v-accent);
-    --help-accent-end: var(--v-accent);
-    --help-icon-bg: var(--v-accent-soft);
-    --help-icon-color: var(--v-accent-ink);
+    // Help sections are blue in Språkbanken's profile.
+    --help-accent-start: var(--v-interactive);
+    --help-accent-end: var(--v-interactive);
+    --help-icon-bg: var(--v-interactive-soft);
+    --help-icon-color: var(--v-interactive-ink);
     --help-section-bg: var(--v-surface);
     --help-section-border: var(--v-border);
     --help-feature-bg: var(--v-surface-2);

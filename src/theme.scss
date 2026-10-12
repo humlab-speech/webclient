@@ -1,127 +1,185 @@
-// Colour tokens for the light and dark themes.
+// Colour and type tokens for the light and dark themes, following Språkbanken's
+// graphic profile (sprakbanken.se/internt/teknik/grafisk-profil).
+//
+// Type: Jost for headings and UI, Noto Sans for tables and data, Noto Serif
+// for running text. Sizes are relative (rem/em) and no base size is set.
 //
 // Components use these custom properties instead of hard-coded colours, so a
 // theme switch is just a change of the data-theme attribute on <html>
 // (ThemeService; index.php sets it before Angular boots to avoid a flash).
 //
+// Colour roles, per the profile:
+//   accent      "sborange" #F0581A: graphic elements, and actions that take the
+//               intended next step in a workflow (create, save, launch).
+//   interactive blue #1E989F: other interactive elements (links, toggles,
+//               selection, focus) and help sections.
+//   danger      red #D42225: results that block the expected workflow, and
+//               actions that can destroy data.
+//   warning     yellow #F6C200: results that change the expected workflow.
+//               Never as text on a light background, hence a darker ink.
+//   success     green #5AA018.
+// Each hue has a plain token (fill, or text where it reads well), an -ink for
+// text on light/soft surfaces, and a -soft tint for backgrounds: 20% colour
+// over white in light mode, over the surface colour in dark mode.
+//
+// Greys are strictly neutral (R = G = B). Text sits on white or light grey;
+// coloured backgrounds carry bold text only (buttons, badges).
+//
 // Naming: surfaces go bg → surface → surface-2 → surface-3 from the page
-// background towards the most raised/filled element. "card-head" is the dark
-// header band on project cards and dialogs, which stays dark in both themes.
+// background towards the most raised/filled element. "card-head" is the header
+// band on project cards and dialogs.
+
+:root {
+  --v-font-ui: 'Jost', 'Helvetica Neue', Arial, sans-serif;
+  --v-font-data: 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --v-font-prose: 'Noto Serif', Georgia, serif;
+  --v-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  // Noto's x-height (0.536 em) is much larger than Jost's (0.460 em), so Noto
+  // is rendered at Jost's x-height (font-size-adjust) to read as the same size.
+  --v-noto-adjust: 0.46;
+}
 
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --v-accent: #ef5925;
-  --v-accent-hover: #d94a18;
-  --v-accent-soft: #fdeae2;
-  --v-accent-ink: #ca5b36;
+  --v-accent: #f0581a;
+  --v-accent-hover: #d84b12;
+  --v-accent-soft: #fcded1;
+  --v-accent-ink: #c4460f;
   --v-on-accent: #ffffff;
 
-  --v-topbar: #1b2731;
-  --v-topbar-raised: #22323d;
-  --v-topbar-border: rgba(255, 255, 255, 0.08);
-  --v-topbar-text: #f2f5f7;
-  --v-topbar-muted: #8e9ca6;
+  --v-interactive: #1e989f;
+  --v-interactive-hover: #17838a;
+  --v-interactive-soft: #d2eaec;
+  --v-interactive-ink: #157278;
+  --v-on-interactive: #ffffff;
 
-  --v-bg: #f2f4f6;
+  --v-topbar: #ffffff;
+  --v-topbar-raised: #f3f3f3;
+  --v-topbar-border: #e0e0e0;
+  --v-topbar-text: #1a1a1a;
+  --v-topbar-muted: #666666;
+
+  --v-bg: #f3f3f3;
   --v-hero: #ffffff;
   --v-surface: #ffffff;
-  --v-surface-2: #f7f9fa;
-  --v-surface-3: #edf0f3;
-  --v-border: #e3e8ec;
-  --v-border-strong: #cdd5dc;
+  --v-surface-2: #f7f7f7;
+  --v-surface-3: #ebebeb;
+  --v-border: #e0e0e0;
+  --v-border-strong: #c4c4c4;
   // Themes differ in which surface these sit on, hence their own tokens.
   --v-tile: #ffffff;
-  --v-tile-hover: #f7f9fa;
-  --v-chip: #f2f4f6;
+  --v-tile-hover: #f7f7f7;
+  --v-chip: #f3f3f3;
   --v-control: #ffffff;
 
-  --v-text: #1b2731;
-  --v-text-2: #3a4853;
-  --v-muted: #687681;
-  --v-subtle: #8a969f;
+  --v-text: #1a1a1a;
+  --v-text-2: #3d3d3d;
+  --v-muted: #666666;
+  --v-subtle: #8c8c8c;
+  // Neutral filled element (count badges, "done" states).
+  --v-strong: #3d3d3d;
+  --v-on-strong: #ffffff;
 
-  --v-card-head: #1b2731;
-  --v-card-head-text: #ffffff;
-  --v-card-head-muted: rgba(255, 255, 255, 0.68);
-  --v-card-head-raised: rgba(255, 255, 255, 0.08);
-  --v-card-head-border: rgba(255, 255, 255, 0.14);
+  --v-card-head: #f3f3f3;
+  --v-card-head-text: #1a1a1a;
+  --v-card-head-muted: #666666;
+  --v-card-head-raised: #ffffff;
+  --v-card-head-border: #d6d6d6;
 
-  --v-danger: #c4312a;
-  --v-danger-hover: #a8261f;
-  --v-danger-soft: #fdecea;
-  --v-success: #1d7a4b;
-  --v-success-soft: #e4f4eb;
-  --v-warning: #9a5b06;
-  --v-warning-soft: #fdf2d9;
-  --v-info: #2f6297;
-  --v-info-soft: #e7eef7;
+  --v-danger: #d42225;
+  --v-danger-fill: #d42225;
+  --v-danger-hover: #b51c1f;
+  --v-danger-soft: #f6d3d3;
+  --v-success: #3f7510;
+  --v-success-fill: #5aa018;
+  --v-success-soft: #deecd1;
+  --v-warning: #7a6000;
+  --v-warning-fill: #f6c200;
+  --v-on-warning: #1a1a1a;
+  --v-warning-soft: #fdf3cc;
+  --v-info: #157278;
+  --v-info-fill: #1e989f;
+  --v-info-soft: #d2eaec;
 
   --v-input-bg: #ffffff;
-  --v-focus-ring: rgba(239, 89, 37, 0.28);
-  --v-overlay: rgba(14, 20, 26, 0.55);
-  --v-shadow: 0 1px 2px rgba(16, 24, 32, 0.04), 0 6px 20px rgba(16, 24, 32, 0.05);
-  --v-shadow-lg: 0 18px 40px rgba(16, 24, 32, 0.18);
-  --v-skeleton: #e9edf0;
-  --v-skeleton-shine: #f6f8f9;
+  --v-focus-ring: rgba(30, 152, 159, 0.35);
+  --v-overlay: rgba(0, 0, 0, 0.5);
+  --v-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
+  --v-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.16);
+  --v-skeleton: #ebebeb;
+  --v-skeleton-shine: #f7f7f7;
 }
 
 @mixin dark-tokens {
   color-scheme: dark;
 
-  --v-accent: #ef5925;
-  --v-accent-hover: #ff6b36;
-  --v-accent-soft: #3d2319;
-  --v-accent-ink: #f0784a;
+  --v-accent: #f0581a;
+  --v-accent-hover: #ff6a2c;
+  --v-accent-soft: #46281c;
+  --v-accent-ink: #f47a48;
   --v-on-accent: #ffffff;
 
-  --v-topbar: #161e25;
-  --v-topbar-raised: #1b2731;
-  --v-topbar-border: rgba(255, 255, 255, 0.07);
-  --v-topbar-text: #eef2f5;
-  --v-topbar-muted: #83939d;
+  --v-interactive: #1e989f;
+  --v-interactive-hover: #26adb5;
+  --v-interactive-soft: #1c3536;
+  --v-interactive-ink: #45c0c7;
+  --v-on-interactive: #ffffff;
 
-  --v-bg: #161e25;
-  --v-hero: #1b2731;
-  --v-surface: #1b2731;
-  --v-surface-2: #22323d;
-  --v-surface-3: #2e404e;
-  --v-border: #2a3a46;
-  --v-border-strong: #3b4e5c;
-  --v-tile: #22323d;
-  --v-tile-hover: #293b48;
-  --v-chip: #22323d;
-  --v-control: #161e25;
+  --v-topbar: #1c1c1c;
+  --v-topbar-raised: #262626;
+  --v-topbar-border: #2c2c2c;
+  --v-topbar-text: #f0f0f0;
+  --v-topbar-muted: #9a9a9a;
 
-  --v-text: #eef2f5;
-  --v-text-2: #c4ced5;
-  --v-muted: #8d9ca6;
-  --v-subtle: #6f7e89;
+  --v-bg: #141414;
+  --v-hero: #1c1c1c;
+  --v-surface: #1c1c1c;
+  --v-surface-2: #242424;
+  --v-surface-3: #2e2e2e;
+  --v-border: #2c2c2c;
+  --v-border-strong: #444444;
+  --v-tile: #242424;
+  --v-tile-hover: #2b2b2b;
+  --v-chip: #242424;
+  --v-control: #141414;
 
-  --v-card-head: #22323d;
-  --v-card-head-text: #eef2f5;
-  --v-card-head-muted: rgba(238, 242, 245, 0.62);
-  --v-card-head-raised: #1b2731;
-  --v-card-head-border: #2e404e;
+  --v-text: #f0f0f0;
+  --v-text-2: #c8c8c8;
+  --v-muted: #9a9a9a;
+  --v-subtle: #767676;
+  --v-strong: #d6d6d6;
+  --v-on-strong: #141414;
 
-  --v-danger: #f0776e;
-  --v-danger-hover: #ff8d85;
-  --v-danger-soft: #3a2224;
-  --v-success: #5fcf96;
-  --v-success-soft: #1d3a2e;
-  --v-warning: #f2b64f;
-  --v-warning-soft: #3a3020;
-  --v-info: #83b4e8;
-  --v-info-soft: #1f3345;
+  --v-card-head: #262626;
+  --v-card-head-text: #f0f0f0;
+  --v-card-head-muted: #9a9a9a;
+  --v-card-head-raised: #1c1c1c;
+  --v-card-head-border: #3a3a3a;
 
-  --v-input-bg: #16202a;
-  --v-focus-ring: rgba(239, 89, 37, 0.4);
-  --v-overlay: rgba(5, 8, 11, 0.68);
+  --v-danger: #f0595b;
+  --v-danger-fill: #d42225;
+  --v-danger-hover: #ff6b6d;
+  --v-danger-soft: #411d1e;
+  --v-success: #8acb4f;
+  --v-success-fill: #5aa018;
+  --v-success-soft: #28361b;
+  --v-warning: #f6c200;
+  --v-warning-fill: #f6c200;
+  --v-on-warning: #1a1a1a;
+  --v-warning-soft: #483d16;
+  --v-info: #45c0c7;
+  --v-info-fill: #1e989f;
+  --v-info-soft: #1c3536;
+
+  --v-input-bg: #141414;
+  --v-focus-ring: rgba(30, 152, 159, 0.5);
+  --v-overlay: rgba(0, 0, 0, 0.66);
   --v-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.18);
   --v-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.45);
-  --v-skeleton: #22323d;
-  --v-skeleton-shine: #2b3d4a;
+  --v-skeleton: #242424;
+  --v-skeleton-shine: #2e2e2e;
 }
 
 :root[data-theme='dark'] {

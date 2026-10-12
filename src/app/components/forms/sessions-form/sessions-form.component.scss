@@ -45,8 +45,8 @@
 
 .text-input:focus {
     outline: 0;
-    border-color: var(--v-border-strong);
-    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+    border-color: var(--v-interactive);
+    box-shadow: 0 0 0 3px var(--v-focus-ring);
 }
 
 .text-input.ng-invalid.ng-dirty {
@@ -198,8 +198,8 @@ button.icon-btn-danger:hover {
     width: 3rem;
     height: 3rem;
     border-radius: 12px;
-    background: var(--v-card-head);
-    color: #ffffff;
+    background: var(--v-accent-soft);
+    color: var(--v-accent-ink);
     font-size: 1.25rem;
 }
 
@@ -230,8 +230,8 @@ h3.section-title {
     height: 1.4rem;
     padding: 0 0.45rem;
     border-radius: 999px;
-    background: var(--v-card-head);
-    color: #ffffff;
+    background: var(--v-strong);
+    color: var(--v-on-strong);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0;
@@ -254,8 +254,8 @@ button.primary-btn {
     padding: 0 1.2rem;
     border: 1px solid transparent;
     border-radius: 10px;
-    background: var(--v-card-head);
-    color: #ffffff;
+    background: var(--v-accent);
+    color: var(--v-on-accent);
     font-size: 0.92rem;
     font-weight: 700;
     white-space: nowrap;
@@ -263,7 +263,7 @@ button.primary-btn {
 }
 
 button.primary-btn:hover {
-    background: var(--v-card-head);
+    background: var(--v-accent-hover);
     box-shadow: none;
 }
 
@@ -322,7 +322,7 @@ button.primary-btn:disabled {
 
 .session-card-open {
     border-color: var(--v-border-strong);
-    box-shadow: 0 4px 14px rgba(19, 39, 67, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
 .session-card-new {
@@ -446,8 +446,8 @@ button.primary-btn:disabled {
 }
 
 .status-sealed {
-    background: var(--v-card-head);
-    color: #ffffff;
+    background: var(--v-strong);
+    color: var(--v-on-strong);
 }
 
 .session-card-body {
@@ -472,7 +472,7 @@ button.primary-btn:disabled {
 
 .source-panel-on {
     border-color: var(--v-border-strong);
-    box-shadow: inset 3px 0 0 #24497e;
+    box-shadow: inset 3px 0 0 var(--v-interactive);
 }
 
 .source-panel-header {
@@ -497,8 +497,8 @@ button.primary-btn:disabled {
 }
 
 .source-panel-on .source-icon {
-    background: var(--v-card-head);
-    color: #ffffff;
+    background: var(--v-interactive-soft);
+    color: var(--v-interactive-ink);
 }
 
 .source-copy {
@@ -573,12 +573,12 @@ button.primary-btn:disabled {
     height: 1.1rem;
     border-radius: 50%;
     background: var(--v-surface);
-    box-shadow: 0 1px 2px rgba(19, 39, 67, 0.3);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
     transition: transform 0.15s ease;
 }
 
 .source-switch-input:checked + .source-switch-track {
-    background: var(--v-card-head);
+    background: var(--v-interactive);
 }
 
 .source-switch-input:checked + .source-switch-track::after {
@@ -586,7 +586,7 @@ button.primary-btn:disabled {
 }
 
 .source-switch-input:focus-visible + .source-switch-track {
-    outline: 2px solid var(--v-border-strong);
+    outline: 2px solid var(--v-interactive);
     outline-offset: 2px;
 }
 

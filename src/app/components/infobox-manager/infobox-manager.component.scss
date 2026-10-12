@@ -51,7 +51,7 @@
   border-radius: 6px;
   background: var(--v-accent);
   border: none;
-  color: #fff;
+  color: var(--v-on-accent);
   font-weight: 600;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
@@ -61,15 +61,8 @@
   flex-shrink: 0;
   line-height: 1;
 
-  svg {
-    width: 1.15em;
-    height: 1.15em;
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    flex-shrink: 0;
+  .fa {
+    font-size: 1.15em;
   }
 
   &:hover {
@@ -132,15 +125,10 @@
   height: 2.4rem;
   border-radius: 6px;
   background: var(--v-accent);
+  color: var(--v-on-accent);
 
-  svg {
-    width: 1.2rem;
-    height: 1.2rem;
-    stroke: #fff;
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .fa {
+    font-size: 1.2rem;
   }
 }
 
@@ -170,13 +158,8 @@
     left: 0.8rem;
     top: 50%;
     transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
-    stroke: var(--v-muted);
-    stroke-width: 1.8;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    color: var(--v-muted);
+    font-size: 0.95rem;
     pointer-events: none;
   }
 
@@ -198,7 +181,7 @@
 
     &:focus {
       outline: none;
-      border-color: var(--v-accent);
+      border-color: var(--v-interactive);
       background: var(--v-surface);
       box-shadow: 0 0 0 3px var(--v-focus-ring);
     }
@@ -213,7 +196,7 @@
   border-radius: 6px;
   border: none;
   background: var(--v-accent);
-  color: #fff;
+  color: var(--v-on-accent);
   font-weight: 600;
   font-size: 0.97rem;
   padding: 0 1.2rem;
@@ -221,14 +204,8 @@
   transition: transform 0.13s ease, box-shadow 0.13s ease;
   white-space: nowrap;
 
-  svg {
-    width: 1rem;
-    height: 1rem;
-    stroke: currentColor;
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .fa {
+    font-size: 1rem;
   }
 
   &:hover {
@@ -274,7 +251,7 @@
     width: 1rem;
     height: 1rem;
     border-radius: 50%;
-    background: var(--v-danger);
+    background: var(--v-danger-fill);
     color: #fff;
     font-size: 0.72rem;
     font-weight: 900;
