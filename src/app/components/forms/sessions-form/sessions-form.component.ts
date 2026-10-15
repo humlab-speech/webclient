@@ -945,11 +945,21 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
    * recorded with: pointing it at another script (which numbers its prompts from
    * prompt_1) would have the next participant record over takes belonging to other
    * prompts. The backend refuses such a save; locking the control says so before the
-   * user tries. A take recorded while this dialog was open is not known here, and is
-   * caught by that same refusal.
+   * user tries. Takes whose import is queued are covered here as well (importPending
+   * below); a take recorded so recently that session-manager has not queued its import
+   * is not known here, and is caught by that same refusal.
    */
   sessionScriptIsLocked(session:any):boolean {
-    if(!this.sessionsWithRecordings.has(String(session?.controls?.id?.value))) {
+    const sessionId = String(session?.controls?.id?.value);
+    // Recorded takes live in the upload directory until the import writes them into
+    // session.files, which happens minutes after the last take is sealed. Files alone
+    // would leave this control editable through exactly that window - long enough to
+    // re-point the session, after which the import lands and the next prompt records
+    // over takes belonging to another script. Only while an import is pending:
+    // getSprImportStatus reports a failed one as "error", and its retries can take
+    // half an hour, so locking on that would strand the session with no way out.
+    const importPending = this.getSprImportStatus(sessionId)?.state === "busy";
+    if(!importPending && !this.sessionsWithRecordings.has(sessionId)) {
       return false;
     }
     // Unless the script it would lock onto is actually there. A session can hold
