@@ -431,6 +431,7 @@ function extractZipEntries(
 ): array {
     $log = $log ?: function ($message, $level = "debug") {};
     $extracted = [];
+    $wrote = 0;
     $existedBefore = [];
     $createdDirs = [];
     $remaining = $ceiling;
@@ -441,15 +442,26 @@ function extractZipEntries(
         if(zipEntryVerdict($name) === 'junk') {
             continue; // Apple's resource forks never land on disk at all
         }
+        $isDir = substr($name, -1) === "/";
+        if(!$isDir && (int) $sizeAt($i) === 0 && !str_contains($name, ".")) {
+            // A directory stored without its trailing slash. getStream() hands
+            // back a real (empty) resource for it, so the unreadable-entry
+            // guard below never fires: writing it would put a FILE where the
+            // folder has to be, and the file inside it could then never be
+            // created. Zero size and no extension is what unzip itself keys on.
+            // ponytail: an empty extension-less file (a 0-byte README) is read
+            // as a folder; uploads here are audio, and it stores nothing either way.
+            $isDir = true;
+        }
+        if($isDir) {
+            continue; // directory entry, stores nothing
+        }
         $path = $targetDir."/".$name;
-        // Directory entries included: a zipped folder has to be made here,
-        // because extracting a single entry does not create its parents.
+        // A zipped folder has to be made here, because extracting a single
+        // entry does not create its parents.
         zipEnsureDir(dirname($path), $createdDirs);
         $extracted[] = $path;
         zipRecordPreExisting($existedBefore, $path);
-        if(substr($name, -1) === "/") {
-            continue; // directory entry, stores nothing
-        }
         $stream = $streamAt($name);
         if(!is_resource($stream)) {
             // A directory stored without its trailing slash holds nothing, and
@@ -492,6 +504,7 @@ function extractZipEntries(
             break;
         }
         $remaining -= $written;
+        $wrote++;
     }
     if($failed) {
         $plan = extractionCleanupPlan($extracted, $existedBefore, $createdDirs);
@@ -506,7 +519,15 @@ function extractZipEntries(
             }
         }
     }
-    return ['ok' => !$failed, 'reason' => $reason];
+    if(!$failed && $wrote === 0) {
+        // Every entry turned out to be a directory or junk. Reporting that as a
+        // stored upload is the silent failure this path keeps producing: the
+        // user is told it worked and the session is created with no audio.
+        $failed = true;
+        $reason = "the archive held no file to store";
+        $log("Refused zip archive: no file landed (all entries were directories)", "warn");
+    }
+    return ['ok' => !$failed, 'wrote' => $wrote, 'reason' => $reason];
 }
 
 /**

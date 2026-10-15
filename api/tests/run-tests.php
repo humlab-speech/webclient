@@ -470,12 +470,56 @@ check("an entry inside a folder the archive brings lands too", is_file("$workDir
 check("junk entries never reach the disk", !file_exists("$workDir/s8/__MACOSX"));
 check("a successful run leaves no .part file", glob("$workDir/s8/*.part") === []);
 
+// What production actually hands the loop: getStream() returns a real, empty
+// resource for a directory entry stored without its trailing slash, not false.
+// Feeding null there was the blind spot: production writes an empty FILE where
+// the folder has to be, and can then never write the file inside it.
+$extractAsZipArchive = function (array $entries, array $sources, string $targetDir) use ($workDir) {
+    $log = [];
+    @mkdir($targetDir, 0777, true);
+    $tmps = [];
+    $result = extractZipEntries(
+        count($entries),
+        function ($i) use ($entries) { return $entries[$i][0]; },
+        function ($name) use ($sources, $targetDir, &$tmps) {
+            $tmp = tempnam($targetDir, 'stream');
+            $tmps[] = $tmp;
+            file_put_contents($tmp, $sources[$name] ?? '');
+            return fopen($tmp, 'r');            // a resource for every entry, as ZipArchive gives
+        },
+        function ($i) use ($entries) { return $entries[$i][1]; },
+        $targetDir,
+        10 * 1024 * 1024,               // literal: a closure captures nothing implicitly
+        function ($message, $level = "debug") use (&$log) { $log[] = "$level $message"; }
+    );
+    foreach ($tmps as $tmp) {
+        @unlink($tmp);
+    }
+    return [$result, $log];
+};
+file_put_contents("$workDir/tiny.wav", str_repeat('a', 2048));
+$tiny = file_get_contents("$workDir/tiny.wav");
+
+[$slashless] = $extractAsZipArchive(
+    [['take', 0], ['take/tiny.wav', 2048]],      // "take" carries no trailing slash
+    ['take' => '', 'take/tiny.wav' => $tiny],
+    "$workDir/s9"
+);
+if ($slashless['ok'] !== true) { fwrite(STDERR, "DEBUG: " . json_encode($slashless) . "\n"); } check("an archive with a slash-less directory entry is accepted", $slashless['ok'] === true);
+check("nothing was stored under the folder's own name", !is_file("$workDir/s9/take"));
+check("the file inside that folder lands", is_file("$workDir/s9/take/tiny.wav"));
+
+[$dirsonly] = $extractAsZipArchive([['a/', 0], ['b/', 0], ['c', 0]], [], "$workDir/s10");
+check("an archive that stores no file is refused, not reported as stored", $dirsonly['ok'] === false);
+check("and the refusal says why", str_contains($dirsonly['reason'], 'no file'));
+check("a refused no-content archive leaves nothing behind", glob("$workDir/s10/*") === []);
+
 // Leave no scratch files behind - the harness runs on a developer's /tmp.
 $leftovers = array_merge(glob("$workDir/*") ?: [], glob("$workDir/*/*") ?: [], glob("$workDir/*/*/*") ?: []);
 foreach ($leftovers as $p) {
     if (is_file($p)) { unlink($p); }
 }
-foreach (["$workDir/s5/takename1", "$workDir/s5", "$workDir/s7", "$workDir/s8/my_takes", "$workDir/s8",
+foreach (["$workDir/s9/take", "$workDir/s9", "$workDir/s10", "$workDir/s5/takename1", "$workDir/s5", "$workDir/s7", "$workDir/s8/my_takes", "$workDir/s8",
           "$workDir/uploads/takename1", "$workDir/uploads", $workDir] as $d) {
     @rmdir($d);
 }
