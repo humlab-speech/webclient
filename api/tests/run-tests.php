@@ -167,6 +167,22 @@ check("SessionManagerInterface.class.php stays deleted", !file_exists("$apiDir/S
 check("the session please/save/close routes stay deleted", strpos(file_get_contents("$apiDir/api.php"), '/session/please') === false
     && strpos(file_get_contents("$apiDir/api.php"), '/api/v1/session/save') === false);
 
+
+// --- zipWithinLimits --------------------------------------------------------
+// The bounds behind zipEntriesAreSafe(): entry count and uncompressed size.
+$KB = 1024; $MB = 1024 * 1024; $GB = 1024 * 1024 * 1024;
+check("a project folder of takes is accepted", zipWithinLimits(400, 600 * $MB, 300 * $MB) === true);
+check("entry cap accepts 5000", zipWithinLimits(5000, 10 * $MB, 5 * $MB) === true);
+check("entry cap refuses 5001", zipWithinLimits(5001, 10 * $MB, 5 * $MB) === false);
+check("1 MB archive claiming 600 MB is refused", zipWithinLimits(50, 600 * $MB, $MB) === false);
+check("claim below the 500 MB ratio floor is accepted", zipWithinLimits(50, 400 * $MB, $MB) === true);
+check("3 GB claimed from a 1 GB archive is refused despite a 3:1 ratio", zipWithinLimits(500, 3 * $GB, $GB) === false);
+check("an explicit ceiling overrides the default", zipWithinLimits(500, 3 * $GB, $GB, 4 * $GB) === true);
+putenv("ZIP_MAX_UNCOMPRESSED_BYTES=" . (4 * $GB));
+check("ZIP_MAX_UNCOMPRESSED_BYTES raises the ceiling", zipWithinLimits(500, 3 * $GB, $GB) === true);
+putenv("ZIP_MAX_UNCOMPRESSED_BYTES");
+check("more than the default ceiling is refused, whatever the ratio", zipWithinLimits(5000, 12 * $GB, 10 * $GB) === false);
+
 // --- result -----------------------------------------------------------------
 
 // --- result -----------------------------------------------------------------

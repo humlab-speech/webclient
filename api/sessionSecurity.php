@@ -151,3 +151,35 @@ function requestOriginOk(array $server, string $baseDomain): bool
     // No Origin and no Sec-Fetch-Site: a user agent predating both.
     return true;
 }
+
+
+/**
+ * Function: zipWithinLimits
+ *
+ * Bounds on an archive's declared entry count and uncompressed size, as pure
+ * arithmetic (no zip extension needed to test it). Content here is audio: WAV
+ * deflates to roughly 2:1, and the upload itself is already capped at 10 GB by
+ * upload_max_filesize, so a legitimate archive is bounded by its own size.
+ *
+ * The ratio check needs BOTH tests, not either: a 300 MB archive of recordings
+ * legitimately unpacks to ~600 MB, so an absolute floor alone would refuse real
+ * uploads, while a ratio alone accepts anything small and refuses nothing big.
+ */
+function zipWithinLimits($entryCount, $declaredBytes, $archiveBytes, $absoluteMax = null) {
+    $maxEntries = 5000;                       // a project's takes are in the hundreds; bomb tools make millions
+    // The absolute ceiling is a guess about recordings, not a measurement: 2 GB of
+    // WAV is hours of takes. It exists because a ratio alone is not safe with big
+    // archives - long silence compresses by a thousand, so a 10 GB archive (the
+    // upload limit) could unpack to a hundred times that. Raise it with
+    // ZIP_MAX_UNCOMPRESSED_BYTES if a project ever legitimately needs more.
+    if($absoluteMax === null) {
+        $fromEnv = (int) getenv("ZIP_MAX_UNCOMPRESSED_BYTES");
+        $absoluteMax = $fromEnv > 0 ? $fromEnv : 2 * 1024 * 1024 * 1024;
+    }
+    $ratioMax = 20;
+    $ratioFloor = 500 * 1024 * 1024;
+    if($entryCount > $maxEntries || $declaredBytes > $absoluteMax) {
+        return false;
+    }
+    return !($declaredBytes > $ratioFloor && $declaredBytes > $archiveBytes * $ratioMax);
+}

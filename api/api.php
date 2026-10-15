@@ -16,7 +16,23 @@ require_once __DIR__ . '/sessionSecurity.php';
 ]);
 $accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true";
 
-session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
+// SameSite was never stated at all, which is not the same as it being unset:
+// Chrome (since 80) fills in Lax for a missing attribute, Firefox and Safari do
+// not. So this line changes behaviour for Firefox and Safari - the cookie stops
+// riding cross-site requests, including a cross-site top-level POST, which is
+// what a SAML ACS on POST binding is. Lax is the intended policy either way, and
+// the subdomains (artic, tratt, recorder) are the same *site*, so their same-site
+// fetches still carry the cookie. Verify a SWAMID login in Firefox before
+// deploying. Do not "fix" a subdomain problem by moving this to None - that is a
+// cross-site cookie, and it needs Secure as well.
+session_set_cookie_params([
+    "lifetime" => 60 * 60 * 8,
+    "path" => "/",
+    "domain" => $domain,
+    "secure" => $secure,
+    "httponly" => $httpOnly,
+    "samesite" => "Lax",
+]);
 session_start();
 
 
@@ -693,8 +709,14 @@ class Application {
     // directory level is legitimate (a zipped folder is flattened below), so only an
     // absolute path, a backslash, a NUL or any ".." is refused. The whole archive is
     // refused rather than quietly dropping entries the sender expects back.
-    function zipEntriesAreSafe($zip) {
+    // Also bounds the archive: entry count and declared uncompressed size. The
+    // arithmetic lives in zipWithinLimits() (sessionSecurity.php) so the bounds can
+    // be tested without the zip extension; this walk is where the numbers come from.
+    function zipEntriesAreSafe($zip, $archiveBytes) {
+        $declaredBytes = 0;
         for($i = 0; $i < $zip->numFiles; $i++) {
+            $stat = $zip->statIndex($i);
+            $declaredBytes += isset($stat['size']) ? $stat['size'] : 0;
             $name = $zip->getNameIndex($i);
             $unsafe = $name === "" || $name[0] === "/" || strpbrk($name, "\0\\") !== false;
             if(!$unsafe) {
@@ -725,30 +747,90 @@ class Application {
                 return false;
             }
         }
+        if(!zipWithinLimits($zip->numFiles, $declaredBytes, $archiveBytes)) {
+            $this->addLog(
+                "Refused zip archive: ".$zip->numFiles." entries declaring ".$declaredBytes.
+                " bytes from a ".$archiveBytes." byte upload", "warn");
+            return false;
+        }
         return true;
+    }
+
+    // Remove what an aborted extraction already wrote, plus the archive itself.
+    // The target directory holds other users' stored uploads, so only the files
+    // this extraction created may go.
+    function removeExtractedUploads($targetDir, $extracted, $archiveFile) {
+        foreach($extracted as $path) {
+            if(is_file($path)) {
+                unlink($path);
+            }
+        }
+        foreach(array_reverse($extracted) as $path) {
+            if(is_dir($path)) {
+                @rmdir($path);
+            }
+        }
+        if(is_file($targetDir."/".$archiveFile)) {
+            unlink($targetDir."/".$archiveFile);
+        }
     }
 
     // Returns whether the upload may be reported as stored.
     function handleZipArchive($archiveFile, $targetDir) {
         $this->addLog("File ".$archiveFile." is zipped, unzipping", "debug");
         $zip = new ZipArchive();
+        $archiveBytes = filesize($targetDir."/".$archiveFile);
         $result = $zip->open($targetDir."/".$archiveFile); //might contain multiple files
         if($result === true) {
-            if(!$this->zipEntriesAreSafe($zip)) {
+            if(!$this->zipEntriesAreSafe($zip, $archiveBytes)) {
                 $zip->close();
                 unlink($targetDir."/".$archiveFile);
                 return false;
             }
-            if(!$zip->extractTo($targetDir."/")) {
-                // A partial extract used to be reported as a stored upload: the
-                // caller answers 200 either way, and the sender never learns which
-                // takes are missing.
-                $zip->close();
-                unlink($targetDir."/".$archiveFile);
-                $this->addLog("Could not extract the uploaded archive completely", "error");
-                return false;
+            // Entry by entry, not extractTo() for the whole archive: the sizes the
+            // check above reads come from the central directory, and a crafted
+            // archive can declare one byte and inflate to a gigabyte. Measuring what
+            // actually landed is the ceiling; the declared-size check is only the
+            // early refusal. A partial extract is reported as a failure rather than
+            // as a stored upload, so the sender learns which takes are missing.
+            $extracted = [];
+            $realBytes = 0;
+            $failed = false;
+            for($i = 0; $i < $zip->numFiles && !$failed; $i++) {
+                $name = $zip->getNameIndex($i);
+                $path = $targetDir."/".$name;
+                // Extracting a single entry does not create its parents, and the
+                // archive's own directory entries have to be made here too - a
+                // zipped folder is the normal case, not an edge one.
+                if(!is_dir(dirname($path))) {
+                    $oldUmask = umask(0);
+                    @mkdir(dirname($path), 0777, true);
+                    umask($oldUmask);
+                }
+                $extracted[] = $path;
+                if(substr($name, -1) === "/") {
+                    continue; // directory entry, stores nothing
+                }
+                if(!$zip->extractTo($targetDir."/", [$name])) {
+                    $failed = true;
+                    $this->addLog("Could not extract the uploaded archive completely", "error");
+                    break;
+                }
+                $realBytes += is_file($path) ? filesize($path) : 0;
+                // Same rule as the declared sizes, now measured: this is what
+                // catches an archive whose central directory understates itself.
+                if(!zipWithinLimits(1, $realBytes, $archiveBytes)) {
+                    $failed = true;
+                    $this->addLog(
+                        "Refused zip archive: ".$realBytes." bytes extracted from a ".
+                        $archiveBytes." byte upload (the archive declared less)", "warn");
+                }
             }
             $zip->close();
+            if($failed) {
+                $this->removeExtractedUploads($targetDir, $extracted, $archiveFile);
+                return false;
+            }
             
             $dir = array_diff(scandir($targetDir), array('..', '.'));
             $this->addLog("File unzipped to: ".$targetDir."/", "debug");
