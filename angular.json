@@ -27,7 +27,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              { "glob": "**/*", "input": "api/", "output": "api/" },
+              { "glob": "**/*", "input": "api/", "output": "api/", "ignore": ["**/*.md", "**/*.code-workspace", "tests/**"] },
               {"glob": "**/*", "input": "./vendor", "output": "/vendor"}
             ],
             "styles": [

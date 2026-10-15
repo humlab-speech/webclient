@@ -149,6 +149,24 @@ check("dev: Host without BASE_DOMAIN matches Host", $ok(["HTTP_ORIGIN" => "http:
 // dispatch gate exempts GET, and even if reached, no-Origin-without-SFS is ok.
 check("session-manager style call (no headers) still passes", $ok(["HTTP_HOST" => "apache"]) === true);
 
+// --- dead code stays dead ---------------------------------------------------
+// Application::httpRequest() was deleted in 91bb119 (2026-04-23). php -l cannot
+// see a call to a method that does not exist and no test reached these routes,
+// so five of them returned a fatal 500 for six months with a green lint and a
+// green build. These three asserts are the only thing that catches that class
+// of bug: a reintroduced call fails here instead of in a user's browser.
+$apiDir = dirname(__DIR__);
+$callers = [];
+foreach (glob("$apiDir/*.php") ?: [] as $f) {
+    if (strpos((string)file_get_contents($f), 'httpRequest(') !== false) {
+        $callers[] = basename($f);
+    }
+}
+check("nothing calls the removed Application::httpRequest()", $callers === []);
+check("SessionManagerInterface.class.php stays deleted", !file_exists("$apiDir/SessionManagerInterface.class.php"));
+check("the session please/save/close routes stay deleted", strpos(file_get_contents("$apiDir/api.php"), '/session/please') === false
+    && strpos(file_get_contents("$apiDir/api.php"), '/api/v1/session/save') === false);
+
 // --- result -----------------------------------------------------------------
 
 // --- result -----------------------------------------------------------------

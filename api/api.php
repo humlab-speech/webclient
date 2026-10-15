@@ -1,6 +1,5 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/SessionManagerInterface.class.php';
 require_once __DIR__ . '/ApiResponse.class.php';
 
 use MongoDB\Client;
@@ -20,15 +19,10 @@ $accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true
 session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
 session_start();
 
-$hsApiAccessToken = getenv("HS_API_ACCESS_TOKEN");
-
-
 
 class Application {
     function __construct($domain) {
-        global $hsApiAccessToken;
         global $accessListEnabled;
-        $this->sessionManagerInterface = new SessionManagerInterface($this, $hsApiAccessToken);
         $this->accessListEnabled = $accessListEnabled;
     }
 
@@ -242,60 +236,6 @@ class Application {
                 $apiResponse = $this->handleUploadDelete();
             }
             
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/operations/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/operations/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "operations");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/jupyter/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/jupyter/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "jupyter");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/vscode/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/vscode/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "vscode");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/artic/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/artic/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = new ApiResponse(200, array('personalAccessToken' => $_SESSION['personalAccessToken']));
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/session/save");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/session/save", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->commitSession($postData->sessionId);
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/session/close");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/session/close", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->delSession($postData->sessionId);
-                }
-            }
             if($apiResponse !== false) {
                 return $apiResponse->toJSON();
             }

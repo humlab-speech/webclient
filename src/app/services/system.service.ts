@@ -2,7 +2,6 @@ import { Injectable, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { from, Observable, Observer, Subject } from 'rxjs';
 import { NotifierService } from 'angular-notifier';
-import { environment } from 'src/environments/environment';
 import Cookies from 'js-cookie';
 import { nanoid } from 'nanoid';
 import { WebSocketMessage } from '../models/WebSocketMessage';
@@ -54,40 +53,6 @@ export class SystemService {
     return Cookies.get('CurrentApplication');
   }
 
-  async fetchOperationsSession(projectId) {
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: projectId,
-    };
-
-    return new Promise((resolve, reject) => {
-      this.http.post<any>('/api/v1/operations/session/please', "data="+JSON.stringify(body), { headers }).subscribe({
-        next: (data) => {
-          let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
-          if(!sessionAccessCode) {
-            this.notifierService.notify("error", "No sessionAccessCode received.");
-            return;
-          }
-          
-          let cookieParams = " SameSite=None; Secure";
-          if(environment.PROTOCOL == "http") {
-            cookieParams = "";
-          }
-          console.log("Setting SessionAccessCode cookie");
-          Cookies.set('SessionAccessCode', sessionAccessCode, { domain: window.location.hostname, secure: true, sameSite: 'None' });
-          console.log(document.cookie);
-          resolve(sessionAccessCode);
-        },
-        error: (error) => {
-          console.error(error);
-          reject();
-        }
-      });
-    });
-    
-  }
 
   async runCommandInOperationsSession(sessionAccessCode:string, cmd:string, env:Array<any> = []) {
 
