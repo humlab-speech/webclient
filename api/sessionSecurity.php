@@ -156,11 +156,17 @@ function requestOriginOk(array $server, string $baseDomain): bool
 // A project's takes are in the hundreds; bomb tools make millions.
 const ZIP_MAX_ENTRIES = 5000;
 
+// A raw-name bound far above the real cap, checked on numFiles before a single
+// name is read. The cap itself counts only entries that land on disk, so junk
+// (AppleDouble, __MACOSX) is free to add names - and a bomb does not announce
+// which of its 200000 entries are real. Walking them costs a libzip round trip
+// each, which is exactly what this bound exists to avoid.
+const ZIP_MAX_ARCHIVED_ENTRIES = 50000;
+
 /**
- * The entry-count half of the archive bounds, on its own, so the extractor can
- * settle it BEFORE walking the entries. numFiles comes from the end-of-central-
- * directory record (O(1)); per-entry statIndex()/getNameIndex() are a libzip
- * round trip each, so a cap that is only checked after that walk bounds nothing.
+ * The cap on entries that actually land on disk, on its own. Junk entries are
+ * never written, so they do not spend it - see zipArchiveVerdict(), which also
+ * enforces ZIP_MAX_ARCHIVED_ENTRIES on the raw name count.
  */
 function zipEntryCountOk($entryCount) {
     return $entryCount <= ZIP_MAX_ENTRIES;
@@ -263,22 +269,37 @@ function zipEntryVerdict(string $name): string {
  * reason for the log.
  */
 function zipArchiveVerdict($entryCount, callable $nameAt, callable $sizeAt, $archiveBytes, $absoluteMax = null) {
-    if(!zipEntryCountOk($entryCount)) {
-        return $entryCount . " entries, the cap is " . ZIP_MAX_ENTRIES;
+    if($entryCount > ZIP_MAX_ARCHIVED_ENTRIES) {
+        return $entryCount . " entries in the archive, the bound is " . ZIP_MAX_ARCHIVED_ENTRIES;
     }
     $declaredBytes = 0;
+    $usable = 0;
     for($i = 0; $i < $entryCount; $i++) {
         $name = (string) $nameAt($i);
         $verdict = zipEntryVerdict($name);
         if($verdict === 'unsafe' || $verdict === 'unusable') {
             return "unsafe entry name: " . $name;
         }
-        if($verdict !== 'junk') {
-            $declaredBytes += (int) $sizeAt($i);
+        if($verdict === 'junk') {
+            continue; // never written: no bytes, no share of the entry cap
+        }
+        $declaredBytes += (int) $sizeAt($i);
+        if(substr($name, -1) !== '/') {
+            $usable++; // a directory entry brings a folder, not a take
+        }
+        if(!zipEntryCountOk($usable)) {
+            return "more than " . ZIP_MAX_ENTRIES . " extractable entries";
         }
     }
-    if(!zipWithinLimits($entryCount, $declaredBytes, $archiveBytes, $absoluteMax)) {
-        return $entryCount . " entries declaring " . $declaredBytes . " bytes from a " . $archiveBytes . " byte upload";
+    if($usable === 0) {
+        // Extraction would write nothing at all, and handleUpload() would answer
+        // 200 "File uploaded successfully" over an empty upload directory - the
+        // silent-success class this pipeline already documents as its most
+        // common failure. Say no instead.
+        return "nothing usable in the archive";
+    }
+    if(!zipWithinLimits($usable, $declaredBytes, $archiveBytes, $absoluteMax)) {
+        return $usable . " entries declaring " . $declaredBytes . " bytes from a " . $archiveBytes . " byte upload";
     }
     return null;
 }
@@ -321,6 +342,171 @@ function streamCopyWithinLimit($src, string $dstPath, $max): int {
     }
     fclose($dst);
     return $written;
+}
+
+/**
+ * The name an entry is written under before it is renamed into place.
+ *
+ * NAME_MAX is 255 BYTES per path component and a 255-character entry name is
+ * legal (uploadFileName() and zipEntryVerdict() both allow exactly that), so
+ * appending ".part" to the full name fails with ENAMETOOLONG and the whole
+ * archive is refused over one long file name. The suffix therefore goes on a
+ * truncation. Two names long enough to land on the same truncated temp are
+ * sequential here - the first is renamed away before the second opens the temp
+ * with 'w' - so no content is lost, only the temp name is shared.
+ */
+function zipPartPath(string $path): string {
+    $suffix = '.part';
+    $base = basename($path);
+    if(strlen($base) + strlen($suffix) <= 255) {
+        return $path . $suffix;
+    }
+    return dirname($path) . '/' . substr($base, 0, 255 - strlen($suffix)) . $suffix;
+}
+
+/**
+ * Did $path exist before THIS extraction run? Asked once per path, the first
+ * time it comes up: an earlier entry of the same archive may already have been
+ * renamed into place, and asking is_file() again would call the file this run
+ * itself wrote "pre-existing" - cleanup would then spare it, leaving the bytes
+ * of an archive that was reported as refused. Returns the recorded answer.
+ */
+function zipRecordPreExisting(array &$existedBefore, string $path): bool {
+    if(!array_key_exists($path, $existedBefore)) {
+        $existedBefore[$path] = is_file($path);
+    }
+    return $existedBefore[$path];
+}
+
+/**
+ * Ensure $dir exists, recording in $createdDirs every ancestor that had to be
+ * made: extracting one entry does not create its parents, and the archive has
+ * to be able to bring its own folders (a zipped folder is the normal case, not
+ * an edge one). Recording them is what lets an aborted extraction reclaim the
+ * directories it made instead of leaving a skeleton in the upload area.
+ */
+function zipEnsureDir(string $dir, array &$createdDirs): void {
+    for($d = $dir; $d !== "" && $d !== "/" && $d !== "." && !is_dir($d); $d = dirname($d)) {
+        $createdDirs[] = $d;
+    }
+    if(!is_dir($dir)) {
+        $oldUmask = umask(0);
+        @mkdir($dir, 0777, true);
+        umask($oldUmask);
+    }
+}
+
+/**
+ * Extract an archive's entries into $targetDir, within $ceiling bytes.
+ *
+ * api.php hands in closures over a ZipArchive, api/tests/run-tests.php hands in
+ * closures over arrays - one loop, and the one under test is the one that runs
+ * in production. $nameAt($i) is the entry name, $streamAt($name) a readable
+ * stream or false, $sizeAt($i) the size the central directory declares.
+ *
+ * Entry by entry, and streamed against a running byte budget, rather than
+ * extractTo() for the whole archive: the sizes the gate above reads come from
+ * the central directory, and a crafted archive can declare one byte and inflate
+ * to a gigabyte. extractTo() writes an entry in full before any size is
+ * measurable, so the ceiling is spent while copying instead
+ * (streamCopyWithinLimit) and a partial file is deleted rather than left behind
+ * - the filesystem here is the one that holds Mongo's dbPath.
+ *
+ * Each entry lands as zipPartPath() and is renamed only once written whole, so
+ * an abort cannot truncate a take this user stored earlier under the same name.
+ * A partial extract is reported as a failure rather than as a stored upload, so
+ * the sender learns which takes are missing; on failure this removes only what
+ * this run made (extractionCleanupPlan) and the caller removes the archive.
+ *
+ * Returns ['ok' => bool, 'reason' => string].
+ */
+function extractZipEntries(
+    $entryCount,
+    callable $nameAt,
+    callable $streamAt,
+    callable $sizeAt,
+    string $targetDir,
+    $ceiling,
+    ?callable $log = null
+): array {
+    $log = $log ?: function ($message, $level = "debug") {};
+    $extracted = [];
+    $existedBefore = [];
+    $createdDirs = [];
+    $remaining = $ceiling;
+    $failed = false;
+    $reason = "";
+    for($i = 0; $i < $entryCount; $i++) {
+        $name = (string) $nameAt($i);
+        if(zipEntryVerdict($name) === 'junk') {
+            continue; // Apple's resource forks never land on disk at all
+        }
+        $path = $targetDir."/".$name;
+        // Directory entries included: a zipped folder has to be made here,
+        // because extracting a single entry does not create its parents.
+        zipEnsureDir(dirname($path), $createdDirs);
+        $extracted[] = $path;
+        zipRecordPreExisting($existedBefore, $path);
+        if(substr($name, -1) === "/") {
+            continue; // directory entry, stores nothing
+        }
+        $stream = $streamAt($name);
+        if(!is_resource($stream)) {
+            // A directory stored without its trailing slash holds nothing, and
+            // the files inside it carry their own path (so their parents get
+            // made when they are written) - skip such an entry rather than
+            // refuse the archive for a writer's quirk. An entry that does hold
+            // content and still cannot be read is a broken upload.
+            if((int) $sizeAt($i) === 0) {
+                continue;
+            }
+            $failed = true;
+            $reason = "could not read the entry ".$name;
+            $log("Could not read the entry ".$name." from the uploaded archive", "error");
+            break;
+        }
+        // The same ceiling as the declared sizes, enforced as the bytes land:
+        // this is what catches an archive whose central directory understates
+        // itself.
+        $part = zipPartPath($path);
+        $written = streamCopyWithinLimit($stream, $part, $remaining);
+        fclose($stream);
+        if($written < 0 || $written > $remaining) {
+            $failed = true;
+            if($written < 0) {
+                $reason = "could not write the entry ".$name;
+                $log("Could not write the extracted entry ".$name." (out of disk space?)", "error");
+            } else {
+                $reason = "entry ".$name." passed the ".$ceiling." byte ceiling";
+                $log(
+                    "Refused zip archive: an entry passed the ".$ceiling." byte ceiling (".
+                    $written." bytes written)", "warn");
+            }
+            break;
+        }
+        if(!@rename($part, $path)) {
+            @unlink($part);
+            $failed = true;
+            $reason = "could not store the entry ".$name;
+            $log("Could not store the extracted entry ".$name, "error");
+            break;
+        }
+        $remaining -= $written;
+    }
+    if($failed) {
+        $plan = extractionCleanupPlan($extracted, $existedBefore, $createdDirs);
+        foreach($plan['files'] as $path) {
+            if(is_file($path)) {
+                unlink($path);
+            }
+        }
+        foreach($plan['dirs'] as $path) {
+            if(is_dir($path)) {
+                @rmdir($path); // only ever empty; a parallel upload keeps it
+            }
+        }
+    }
+    return ['ok' => !$failed, 'reason' => $reason];
 }
 
 /**

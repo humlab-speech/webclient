@@ -166,6 +166,13 @@ check("nothing calls the removed Application::httpRequest()", $callers === []);
 check("SessionManagerInterface.class.php stays deleted", !file_exists("$apiDir/SessionManagerInterface.class.php"));
 check("the session please/save/close routes stay deleted", strpos(file_get_contents("$apiDir/api.php"), '/session/please') === false
     && strpos(file_get_contents("$apiDir/api.php"), '/api/v1/session/save') === false);
+// The extraction loop moved into extractZipEntries() (sessionSecurity.php) so the
+// harness can run the real one. A leftover call to the class methods it replaced
+// is a fatal 500 that php -l cannot see — the httpRequest() class of bug above.
+$staleCalls = array_values(array_filter(['ensureUploadDir', 'removeExtractedUploads'], function ($m) use ($apiDir) {
+    return strpos((string) file_get_contents("$apiDir/api.php"), $m . '(') !== false;
+}));
+check("api.php calls neither extraction method that moved to sessionSecurity.php", $staleCalls === []);
 
 
 // --- zipWithinLimits --------------------------------------------------------
@@ -226,9 +233,11 @@ check("junk entries do not count toward the declared size", $gate(
     [1024, 10 * $GB]
 ) === null);
 
-// A3: the entry-count cap exists to bound the walk over the entries, so it must
-// be settled BEFORE any of them is read. The closures below record every read:
-// if the count check ran after the walk (the old code), $reads would be 5001.
+// A3: the bound exists to bound the walk over the entries. The raw name count
+// from the end-of-central-directory settles the outer bound with no reads at all
+// (the 200000-entry case above); the 5000-entry cap itself can only be counted
+// per entry, because junk does not spend it — so the check is that the walk
+// stops the moment the cap is passed, not after reading the whole archive.
 $reads = 0;
 $many = 5001;
 $refused = zipArchiveVerdict(
@@ -238,7 +247,7 @@ $refused = zipArchiveVerdict(
     10 * $MB
 );
 check("a 5001-entry archive is refused", $refused !== null);
-check("the entry-count cap needs 0 entry reads", $reads === 0);
+check("the walk stops as soon as the cap is passed", $reads === 5001);
 $reads = 0;
 check("a 5000-entry archive is accepted and does read its entries", zipArchiveVerdict(
     5000,
@@ -247,6 +256,55 @@ check("a 5000-entry archive is accepted and does read its entries", zipArchiveVe
     10 * $MB
 ) === null && $reads === 5000);
 check("zipEntryCountOk is the same cap", zipEntryCountOk(5000) === true && zipEntryCountOk(5001) === false);
+
+// --- the cap counts entries that land on disk, not names in the archive ----
+// 'junk' is never written, so it must not spend the cap: a folder of 5001
+// entries zipped in Finder is half AppleDouble and has to get through.
+$finder = [];
+for ($i = 0; $i < 5001; $i++) {
+    $finder[] = $i % 2 ? "__MACOSX/._take$i.wav" : "take$i.wav";
+}
+check(
+    "junk entries do not count against the entry cap (5001 names, 2500 takes)",
+    zipArchiveVerdict(
+        count($finder),
+        function ($i) use ($finder) { return $finder[$i]; },
+        function ($i) { return 1024; },
+        10 * $MB
+    ) === null
+);
+// Junk is free to add, so the raw name count needs its own cheap bound: the
+// one that still stops a bomb before a single getNameIndex() round trip.
+$reads = 0;
+$boom = zipArchiveVerdict(
+    200000,
+    function ($i) use (&$reads) { $reads++; return "take$i.wav"; },
+    function ($i) { return 1024; },
+    10 * $MB
+);
+check("a 200k-entry archive is refused", $boom !== null);
+check("the outer bound needs 0 entry reads", $reads === 0);
+check(
+    "the entry cap still refuses 5001 real takes",
+    zipArchiveVerdict(5001, function ($i) { return "take$i.wav"; }, function ($i) { return 1024; }, 10 * $MB) !== null
+);
+
+// --- nothing usable in the archive is a refusal, not a 200 ------------------
+// Every junk entry is skipped, so an archive of pure Apple metadata extracts to
+// an empty directory and handleUpload() answers 200 "File uploaded successfully"
+// while session-manager later logs "Upload directory does not exist".
+check(
+    "an archive of nothing but Apple metadata is refused",
+    $gate(['__MACOSX/._take1.wav', '._take1.wav', 'my_takes/.DS_Store', 'my_takes/']) !== null
+);
+check(
+    "an archive whose only entries are directories is refused",
+    $gate(['my_takes/', 'my_takes/sub/']) !== null
+);
+check(
+    "one real take among the junk is accepted",
+    $gate(['my_takes/take1.wav', '__MACOSX/._take1.wav', 'my_takes/.DS_Store']) === null
+);
 
 // --- zipByteCeiling: the same size rules, expressed as a budget -------------
 // The extractor spends this while writing (streamCopyWithinLimit); the declared
@@ -286,6 +344,23 @@ file_put_contents("$workDir/empty.wav", "");
 $zero = streamCopyWithinLimit(fopen("$workDir/empty.wav", 'r'), "$workDir/empty-out.wav", 1024);
 check("an empty entry copies as zero bytes", $zero === 0 && filesize("$workDir/empty-out.wav") === 0);
 
+// --- a legal 255-byte entry name vs the extractor's ".part" suffix ---------
+// NAME_MAX is 255 bytes per component and uploadFileName()/zipEntryVerdict()
+// allow 255 characters, but the extractor writes a temp name first. Appending
+// ".part" to the full name is 260 bytes: fopen() fails with ENAMETOOLONG,
+// streamCopyWithinLimit() reports -1 and api.php blames the disk. zipPartPath()
+// shortens the name instead of losing the archive.
+$longName = str_repeat('t', 251) . '.wav';                 // 255 bytes exactly
+$longPath = "$workDir/$longName";
+check("a 255-byte entry name is a name the API accepts", zipEntryVerdict($longName) === 'ok');
+check("an ordinary entry is still written to \"<name>.part\"", zipPartPath("$workDir/take1.wav") === "$workDir/take1.wav.part");
+check("the extractor's temp name for a 255-byte entry stays within NAME_MAX", strlen(basename(zipPartPath($longPath))) <= 255);
+check(
+    "and such an entry can be copied at all",
+    streamCopyWithinLimit(fopen($src, 'r'), zipPartPath($longPath), 4 * $MB) === $sourceBytes
+);
+@unlink(zipPartPath($longPath));
+
 // --- extractionCleanupPlan: only what this run created (A5) ----------------
 $up = "$workDir/uploads";
 @mkdir("$up/takename1", 0777, true);
@@ -306,52 +381,102 @@ $plan2 = extractionCleanupPlan([], [], ["$up/a/b", "$up/a", $up]);
 check("created dirs are reclaimed deepest first", $plan2['dirs'] === ["$up/a/b", "$up/a", $up]);
 check("a directory nobody created is not on the removal list", !in_array("$up/takename1", $plan2['dirs'], true));
 
-// Both fixes together, on the real filesystem: an archive that blows the budget
-// half way through must leave the user's earlier take intact and no skeleton.
-$extraction = function (array $entries, string $targetDir) use ($workDir, $MB) {
-    $extracted = []; $existedBefore = []; $createdDirs = [];
-    $remaining = 1 * $MB;                                // pretend: a 1 MB archive budget
-    $failed = false;
-    foreach ($entries as $name => $bytes) {
-        if (zipEntryVerdict($name) === 'junk') { continue; }
-        $path = $targetDir . "/" . $name;
-        for ($d = dirname($path); $d !== $targetDir && $d !== "/" && !is_dir($d); $d = dirname($d)) {
-            $createdDirs[] = $d;
-        }
-        if (!is_dir(dirname($path))) { mkdir(dirname($path), 0777, true); }
-        $extracted[] = $path;
-        $existedBefore[$path] = is_file($path);
-        $written = streamCopyWithinLimit(fopen($bytes, 'r'), $path . ".part", $remaining);
-        if ($written > $remaining || !@rename($path . ".part", $path)) { $failed = true; break; }
-        $remaining -= $written;
-    }
-    if ($failed) {
-        $plan = extractionCleanupPlan($extracted, $existedBefore, $createdDirs);
-        foreach ($plan['files'] as $p) { if (is_file($p)) { unlink($p); } }
-        foreach ($plan['dirs'] as $p) { if (is_dir($p)) { @rmdir($p); } }
-    }
-    return !$failed;
+// A duplicate-name archive: pre-existence has to be asked ONCE per path, before
+// any rename of this run, which is what zipRecordPreExisting() memoizes. Asking
+// is_file() per entry (the old "$existedBefore[$path] = is_file($path)") let the
+// first entry's own rename count as pre-existence, so cleanup spared — after
+// reporting the archive as refused — a file this run itself had written.
+$dup = "$up/dup.wav";
+@unlink($dup);
+$seen = [];
+zipRecordPreExisting($seen, $dup);                // entry 1, before its rename
+file_put_contents($dup, 'written by this run');   // entry 1's rename landed
+check("a name the run itself just wrote is not called pre-existing", zipRecordPreExisting($seen, $dup) === false);
+$dupPlan = extractionCleanupPlan([$dup, $dup], $seen, []);
+check("a file this run wrote under a duplicate name is still reclaimed", in_array($dup, $dupPlan['files'], true));
+@unlink($dup);
+
+// The extraction loop itself, with production as the only implementation:
+// extractZipEntries() takes closures over an archive, and api.php hands it
+// closures over a ZipArchive. The archive below blows the byte budget on its
+// second entry, so what the first entry wrote has to be rolled back.
+$extractFrom = function (array $entries, array $sources, string $targetDir, $ceiling) {
+    // $entries: list of [name, declared size]; $sources: name => file, or null
+    // for an entry that cannot be read at all.
+    $log = [];
+    $result = extractZipEntries(
+        count($entries),
+        function ($i) use ($entries) { return $entries[$i][0]; },
+        function ($name) use ($sources) {
+            return isset($sources[$name]) && $sources[$name] !== null ? fopen($sources[$name], 'r') : false;
+        },
+        function ($i) use ($entries) { return $entries[$i][1]; },
+        $targetDir,
+        $ceiling,
+        function ($message, $level = "debug") use (&$log) { $log[] = "$level $message"; }
+    );
+    return [$result, $log];
 };
 @mkdir("$workDir/s5", 0777, true);
 $stored = "$workDir/s5/take1.wav";
 file_put_contents($stored, "EARLIER TAKE");
 file_put_contents("$workDir/small.wav", str_repeat('a', 100 * 1024));
 file_put_contents("$workDir/big.wav", random_bytes(4 * $MB));
-$extraction([
-    'take1.wav' => "$workDir/small.wav",                 // re-uploaded under the same name
-    'takename1/new1.wav' => "$workDir/big.wav",           // the entry that blows the budget
-], "$workDir/s5");
+[$res, $log] = $extractFrom(
+    [['take1.wav', 100 * 1024], ['takename1/new1.wav', 4 * $MB]],   // same name as the stored take
+    ['take1.wav' => "$workDir/small.wav", 'takename1/new1.wav' => "$workDir/big.wav"],
+    "$workDir/s5",
+    1 * $MB                                                         // pretend: a 1 MB archive budget
+);
+check("an archive that blows the byte budget is refused", $res['ok'] === false);
+check("the refusal names the entry that blew it", count($log) === 1 && str_contains($log[0], 'byte ceiling'));
 check("an aborted extraction does not truncate a stored take", is_file($stored));
 check("an aborted extraction removes the file it added", !file_exists("$workDir/s5/takename1/new1.wav"));
 check("an aborted extraction removes no .part file", glob("$workDir/s5/*.part") === []);
 check("an aborted extraction leaves no empty directory behind", !is_dir("$workDir/s5/takename1"));
+
+// Nothing of the user's in the way, and a name used twice: the whole run goes.
+@mkdir("$workDir/s7", 0777, true);
+[$res2] = $extractFrom(
+    [['dup.wav', 100 * 1024], ['dup.wav', 100 * 1024], ['broken.wav', 1024]],
+    ['dup.wav' => "$workDir/small.wav", 'broken.wav' => null],
+    "$workDir/s7",
+    10 * $MB
+);
+check("an archive that names one entry twice leaves nothing behind when it fails", $res2['ok'] === false && glob("$workDir/s7/*") === []);
+
+// An accepted run: junk is skipped on the way in, the folder an entry brings is
+// made, and a 255-byte name lands under its own name, not a truncated one.
+@mkdir("$workDir/s8", 0777, true);
+[$res3] = $extractFrom(
+    [
+        ['my_takes/', 0],
+        ['my_takes/take1.wav', 100 * 1024],
+        ['__MACOSX/._take1.wav', 100 * 1024],
+        [str_repeat('t', 251) . '.wav', 100 * 1024],
+    ],
+    [
+        'my_takes/' => null,
+        'my_takes/take1.wav' => "$workDir/small.wav",
+        '__MACOSX/._take1.wav' => "$workDir/small.wav",
+        str_repeat('t', 251) . '.wav' => "$workDir/small.wav",
+    ],
+    "$workDir/s8",
+    10 * $MB
+);
+check("an accepted archive reports success", $res3['ok'] === true && $res3['reason'] === "");
+check("a 255-byte entry name lands whole", is_file("$workDir/s8/$longName") && filesize("$workDir/s8/$longName") === filesize("$workDir/small.wav"));
+check("an entry inside a folder the archive brings lands too", is_file("$workDir/s8/my_takes/take1.wav"));
+check("junk entries never reach the disk", !file_exists("$workDir/s8/__MACOSX"));
+check("a successful run leaves no .part file", glob("$workDir/s8/*.part") === []);
 
 // Leave no scratch files behind - the harness runs on a developer's /tmp.
 $leftovers = array_merge(glob("$workDir/*") ?: [], glob("$workDir/*/*") ?: [], glob("$workDir/*/*/*") ?: []);
 foreach ($leftovers as $p) {
     if (is_file($p)) { unlink($p); }
 }
-foreach (["$workDir/s5/takename1", "$workDir/s5", "$workDir/uploads/takename1", "$workDir/uploads", $workDir] as $d) {
+foreach (["$workDir/s5/takename1", "$workDir/s5", "$workDir/s7", "$workDir/s8/my_takes", "$workDir/s8",
+          "$workDir/uploads/takename1", "$workDir/uploads", $workDir] as $d) {
     @rmdir($d);
 }
 check("the harness cleaned up its scratch directory", !is_dir($workDir));

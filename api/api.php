@@ -715,12 +715,13 @@ class Application {
      * refused rather than quietly dropping entries the sender expects back.
      */
     function zipEntriesAreSafe($zip, $archiveBytes) {
-        // The entry-count cap is settled before a single name is asked for:
-        // numFiles comes from the end of the central directory, while
-        // statIndex()/getNameIndex() are a libzip round trip each - and that walk
-        // is what the cap exists to bound. Entries judged 'junk' (AppleDouble,
-        // __MACOSX, .DS_Store) are not a refusal: the loop below never writes them,
-        // so a folder zipped from Finder on a Mac still gets through.
+        // The raw name count is settled before a single name is asked for: numFiles
+        // comes from the end of the central directory, while statIndex() and
+        // getNameIndex() are a libzip round trip each. Entries judged 'junk'
+        // (AppleDouble, __MACOSX, .DS_Store) are not a refusal and do not spend the
+        // entry cap either - the loop below never writes them, so a folder zipped
+        // from Finder on a Mac still gets through. An archive whose entries are all
+        // junk is refused: extracting it would store nothing at all.
         $error = zipArchiveVerdict(
             $zip->numFiles,
             function ($i) use ($zip) {
@@ -739,46 +740,9 @@ class Application {
         return true;
     }
 
-    /**
-     * Ensure $dir exists, recording in $createdDirs every ancestor that had to be
-     * made: extracting one entry does not create its parents, and the archive has
-     * to be able to bring its own folders (a zipped folder is the normal case, not
-     * an edge one). Recording them is what lets an aborted extraction reclaim the
-     * directories it made instead of leaving a skeleton in the upload area.
-     */
-    function ensureUploadDir($dir, &$createdDirs) {
-        for($d = $dir; $d !== "" && $d !== "/" && $d !== "." && !is_dir($d); $d = dirname($d)) {
-            $createdDirs[] = $d;
-        }
-        if(!is_dir($dir)) {
-            $oldUmask = umask(0);
-            @mkdir($dir, 0777, true);
-            umask($oldUmask);
-        }
-    }
-
-    // Remove what an aborted extraction already wrote, plus the archive itself.
-    // Only what this run created may go: $existedBefore says which paths were
-    // already here, and the realistic victim is this same user's own earlier take
-    // stored under the same name (uploadDir() scopes by username, so the "other
-    // users' uploads" an earlier version of this comment worried about were never
-    // reachable). extractionCleanupPlan() applies the rule.
-    function removeExtractedUploads($targetDir, $extracted, $existedBefore, $createdDirs, $archiveFile) {
-        $plan = extractionCleanupPlan($extracted, $existedBefore, $createdDirs);
-        foreach($plan['files'] as $path) {
-            if(is_file($path)) {
-                unlink($path);
-            }
-        }
-        foreach($plan['dirs'] as $path) {
-            if(is_dir($path)) {
-                @rmdir($path); // only ever empty; a parallel upload keeps it
-            }
-        }
-        if(is_file($targetDir."/".$archiveFile)) {
-            unlink($targetDir."/".$archiveFile);
-        }
-    }
+    // Entry-by-entry extraction, the byte budget and the failure cleanup all live
+    // in extractZipEntries()/extractionCleanupPlan() (sessionSecurity.php): one
+    // loop, and it is the one the harness drives.
 
     // Returns whether the upload may be reported as stored.
     function handleZipArchive($archiveFile, $targetDir) {
@@ -792,80 +756,31 @@ class Application {
                 unlink($targetDir."/".$archiveFile);
                 return false;
             }
-            // Entry by entry, and streamed against a running byte budget, rather
-            // than extractTo() for the whole archive: the sizes the check above
-            // reads come from the central directory, and a crafted archive can
-            // declare one byte and inflate to a gigabyte. extractTo() writes an
-            // entry in full before any size is measurable, so the ceiling is spent
-            // while copying instead (streamCopyWithinLimit) and a partial file is
-            // deleted rather than left behind - the filesystem here is the one that
-            // holds Mongo's dbPath. Each entry lands as ".part" and is renamed only
-            // once written whole, so an abort cannot truncate a take this user
-            // stored earlier under the same name. A partial extract is reported as
-            // a failure rather than as a stored upload, so the sender learns which
-            // takes are missing.
-            $extracted = [];
-            $existedBefore = [];
-            $createdDirs = [];
-            $ceiling = zipByteCeiling($archiveBytes);
-            $remaining = $ceiling;
-            $failed = false;
-            for($i = 0; $i < $zip->numFiles && !$failed; $i++) {
-                $name = $zip->getNameIndex($i);
-                if(zipEntryVerdict($name) === 'junk') {
-                    continue; // Apple's resource forks never land on disk at all
+            $extract = extractZipEntries(
+                $zip->numFiles,
+                function ($i) use ($zip) {
+                    return (string) $zip->getNameIndex($i);
+                },
+                function ($name) use ($zip) {
+                    return $zip->getStream($name);
+                },
+                function ($i) use ($zip) {
+                    $stat = $zip->statIndex($i);
+                    return isset($stat['size']) ? (int) $stat['size'] : 0;
+                },
+                $targetDir,
+                zipByteCeiling($archiveBytes),
+                function ($message, $level = "debug") {
+                    $this->addLog($message, $level);
                 }
-                $path = $targetDir."/".$name;
-                // Directory entries included: a zipped folder has to be made here,
-                // because extracting a single entry does not create its parents.
-                $this->ensureUploadDir(dirname($path), $createdDirs);
-                $extracted[] = $path;
-                $existedBefore[$path] = is_file($path);
-                if(substr($name, -1) === "/") {
-                    continue; // directory entry, stores nothing
-                }
-                $stream = $zip->getStream($name);
-                if($stream === false) {
-                    // A directory stored without its trailing slash holds nothing,
-                    // and the files inside it carry their own path (so their parents
-                    // get made when they are written) - skip such an entry rather
-                    // than refuse the archive for a writer's quirk. An entry that
-                    // does hold content and still cannot be read is a broken upload.
-                    $stat = $zip->statName($name);
-                    if(isset($stat['size']) && (int) $stat['size'] === 0) {
-                        continue;
-                    }
-                    $failed = true;
-                    $this->addLog("Could not read the entry ".$name." from the uploaded archive", "error");
-                    break;
-                }
-                // The same ceiling as the declared sizes, enforced as the bytes
-                // land: this is what catches an archive whose central directory
-                // understates itself.
-                $written = streamCopyWithinLimit($stream, $path.".part", $remaining);
-                fclose($stream);
-                if($written < 0 || $written > $remaining) {
-                    $failed = true;
-                    if($written < 0) {
-                        $this->addLog("Could not write the extracted entry ".$name." (out of disk space?)", "error");
-                    } else {
-                        $this->addLog(
-                            "Refused zip archive: an entry passed the ".$ceiling." byte ceiling (".
-                            $written." bytes written from a ".$archiveBytes." byte upload)", "warn");
-                    }
-                    break;
-                }
-                if(!@rename($path.".part", $path)) {
-                    @unlink($path.".part");
-                    $failed = true;
-                    $this->addLog("Could not store the extracted entry ".$name, "error");
-                    break;
-                }
-                $remaining -= $written;
-            }
+            );
             $zip->close();
-            if($failed) {
-                $this->removeExtractedUploads($targetDir, $extracted, $existedBefore, $createdDirs, $archiveFile);
+            if(!$extract['ok']) {
+                // What this run wrote is already reclaimed; the archive goes too,
+                // and the sender gets a refusal rather than a stored upload.
+                if(is_file($targetDir."/".$archiveFile)) {
+                    unlink($targetDir."/".$archiveFile);
+                }
                 return false;
             }
             
