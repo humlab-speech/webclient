@@ -183,6 +183,179 @@ check("ZIP_MAX_UNCOMPRESSED_BYTES raises the ceiling", zipWithinLimits(500, 3 * 
 putenv("ZIP_MAX_UNCOMPRESSED_BYTES");
 check("more than the default ceiling is refused, whatever the ratio", zipWithinLimits(5000, 12 * $GB, 10 * $GB) === false);
 
+// --- zipEntryVerdict: entry names, incl. macOS Finder archives (A1) ---------
+// Rules that used to live inline in api.php's zipEntriesAreSafe(), where no test
+// could reach them (the zip extension is not part of the Apache image's test
+// environment). The traversal rule must stay as strict as it was.
+check("an ordinary entry is extracted", zipEntryVerdict('take1.wav') === 'ok');
+check("one directory level is legitimate", zipEntryVerdict('my_takes/take1.wav') === 'ok');
+check("an embedded .. in a file name stays valid", zipEntryVerdict('my..take.wav') === 'ok');
+check("traversal is refused", zipEntryVerdict('../take1.wav') === 'unsafe');
+check("traversal deeper in the path is refused", zipEntryVerdict('a/../../etc/passwd') === 'unsafe');
+check("an absolute entry name is refused", zipEntryVerdict('/etc/passwd') === 'unsafe');
+check("a backslash is refused", zipEntryVerdict('a\..\x.wav') === 'unsafe');
+check("a NUL is refused", zipEntryVerdict("a\0b.wav") === 'unsafe');
+check("an empty entry name is refused", zipEntryVerdict('') === 'unsafe');
+check("a dot-file no one could name again is refused", zipEntryVerdict('.hidden.wav') === 'unusable');
+check("an oversized entry name is refused", zipEntryVerdict(str_repeat('a', 256) . '.wav') === 'unusable');
+// A Finder-compressed folder carries these alongside the real files. Refusing the
+// archive for them (the old behaviour) locked every macOS user out of uploading.
+check("an AppleDouble entry is skipped, not refused", zipEntryVerdict('__MACOSX/._take1.wav') === 'junk');
+check("an AppleDouble entry next to the takes is skipped", zipEntryVerdict('._take1.wav') === 'junk');
+check(".DS_Store is skipped", zipEntryVerdict('my_takes/.DS_Store') === 'junk');
+check("the __MACOSX directory entry is skipped", zipEntryVerdict('__MACOSX/') === 'junk');
+check("traversal is still traversal inside __MACOSX", zipEntryVerdict('__MACOSX/../../etc/passwd') === 'unsafe');
+
+// --- zipArchiveVerdict: the gate, with the entries read lazily --------------
+$gate = function (array $names, array $sizes = []) use ($MB) {
+    $size = count($sizes) ? $sizes : array_fill(0, count($names), 1024);
+    return zipArchiveVerdict(
+        count($names),
+        function ($i) use ($names) { return $names[$i]; },
+        function ($i) use ($size) { return $size[$i]; },
+        10 * $MB
+    );
+};
+check("a Finder zip is accepted", $gate(['take1.wav', '__MACOSX/._take1.wav']) === null);
+check("the gate refuses traversal", $gate(['take1.wav', '../../etc/passwd']) !== null);
+check("the gate refuses an unusable name", $gate(['.take1.wav']) !== null);
+check("the gate accepts a normal folder of takes", $gate(['my_takes/', 'my_takes/take1.wav', 'my_takes/take2.wav']) === null);
+check("the gate still refuses a 200:1 declared size", $gate(array_fill(0, 50, 'take.wav'), array_fill(0, 50, 12 * $MB)) !== null);
+check("junk entries do not count toward the declared size", $gate(
+    ['take1.wav', '__MACOSX/._take1.wav'],
+    [1024, 10 * $GB]
+) === null);
+
+// A3: the entry-count cap exists to bound the walk over the entries, so it must
+// be settled BEFORE any of them is read. The closures below record every read:
+// if the count check ran after the walk (the old code), $reads would be 5001.
+$reads = 0;
+$many = 5001;
+$refused = zipArchiveVerdict(
+    $many,
+    function ($i) use (&$reads) { $reads++; return "take$i.wav"; },
+    function ($i) { return 1024; },
+    10 * $MB
+);
+check("a 5001-entry archive is refused", $refused !== null);
+check("the entry-count cap needs 0 entry reads", $reads === 0);
+$reads = 0;
+check("a 5000-entry archive is accepted and does read its entries", zipArchiveVerdict(
+    5000,
+    function ($i) use (&$reads) { $reads++; return "take$i.wav"; },
+    function ($i) { return 1024; },
+    10 * $MB
+) === null && $reads === 5000);
+check("zipEntryCountOk is the same cap", zipEntryCountOk(5000) === true && zipEntryCountOk(5001) === false);
+
+// --- zipByteCeiling: the same size rules, expressed as a budget -------------
+// The extractor spends this while writing (streamCopyWithinLimit); the declared
+// sizes are only the early refusal, because they are attacker-supplied.
+check("ceiling of a 1 MB archive is the 500 MB floor", zipByteCeiling(1 * $MB) === 500 * $MB);
+check("ceiling of a 300 MB archive is the 2 GB absolute cap", zipByteCeiling(300 * $MB) === 2 * $GB);
+check("ceiling of a 1 GB archive is the 2 GB absolute cap", zipByteCeiling(1 * $GB) === 2 * $GB);
+check("an explicit ceiling caps it", zipByteCeiling(1 * $GB, 3 * $GB) === 3 * $GB);
+putenv("ZIP_MAX_UNCOMPRESSED_BYTES=" . (4 * $GB));
+check("ZIP_MAX_UNCOMPRESSED_BYTES raises the ceiling too", zipByteCeiling(1 * $GB) === 4 * $GB);
+putenv("ZIP_MAX_UNCOMPRESSED_BYTES");
+// The ceiling and the yes/no must never disagree, whatever the archive size.
+$agree = true;
+foreach ([0, 1, 1024, $MB, 26 * $MB, 25 * $MB, 300 * $MB, 5 * $GB, 10 * $GB] as $a) {
+    foreach ([0, 1, 500 * $MB, 501 * $MB, 2 * $GB, 2 * $GB + 1, 12 * $GB] as $d) {
+        $agree = $agree && (zipWithinLimits(10, $d, $a) === ($d <= zipByteCeiling($a)));
+    }
+}
+check("zipWithinLimits and zipByteCeiling accept exactly the same sizes", $agree);
+
+// --- streamCopyWithinLimit: the ceiling bound the WRITE (A4) ---------------
+$workDir = sys_get_temp_dir() . "/visp-api-tests";
+@mkdir($workDir, 0777, true);
+$src = "$workDir/src.wav";
+file_put_contents($src, random_bytes(3 * $MB));
+$dst = "$workDir/dst.wav";
+$sourceBytes = filesize($src);
+$over = streamCopyWithinLimit(fopen($src, 'r'), $dst, 1 * $MB);
+check("an over-cap copy reports more than the ceiling", $over > 1 * $MB);
+check("an over-cap copy leaves no partial file behind", !file_exists($dst));
+check("an over-cap copy wrote at most one chunk past the ceiling", $over <= 1 * $MB + 65536);
+$under = streamCopyWithinLimit(fopen($src, 'r'), $dst, 4 * $MB);
+check("an under-cap copy reports the whole entry", $under === $sourceBytes);
+check("an under-cap copy lands complete", is_file($dst) && filesize($dst) === $sourceBytes);
+check("an under-cap copy is byte-identical", md5_file($dst) === md5_file($src));
+file_put_contents("$workDir/empty.wav", "");
+$zero = streamCopyWithinLimit(fopen("$workDir/empty.wav", 'r'), "$workDir/empty-out.wav", 1024);
+check("an empty entry copies as zero bytes", $zero === 0 && filesize("$workDir/empty-out.wav") === 0);
+
+// --- extractionCleanupPlan: only what this run created (A5) ----------------
+$up = "$workDir/uploads";
+@mkdir("$up/takename1", 0777, true);
+$earlier = "$up/take1.wav";                              // the user's own earlier take
+file_put_contents($earlier, "EARLIER TAKE");
+$newFile = "$up/takename1/new1.wav";
+file_put_contents($newFile, "new");
+$plan = extractionCleanupPlan(
+    [$earlier, $newFile],                                // one path per entry name
+    [$earlier => true, $newFile => false],                // what existed before this run
+    ["$up/takename1", "$up/takename1"]                    // created parents, as recorded
+);
+check("a pre-existing upload is never unlinked", !in_array($earlier, $plan['files'], true));
+check("the file this run wrote is unlinked", in_array($newFile, $plan['files'], true));
+check("a created parent is reclaimed", in_array("$up/takename1", $plan['dirs'], true));
+check("created dirs are listed once", count(array_keys($plan['dirs'], "$up/takename1", true)) === 1);
+$plan2 = extractionCleanupPlan([], [], ["$up/a/b", "$up/a", $up]);
+check("created dirs are reclaimed deepest first", $plan2['dirs'] === ["$up/a/b", "$up/a", $up]);
+check("a directory nobody created is not on the removal list", !in_array("$up/takename1", $plan2['dirs'], true));
+
+// Both fixes together, on the real filesystem: an archive that blows the budget
+// half way through must leave the user's earlier take intact and no skeleton.
+$extraction = function (array $entries, string $targetDir) use ($workDir, $MB) {
+    $extracted = []; $existedBefore = []; $createdDirs = [];
+    $remaining = 1 * $MB;                                // pretend: a 1 MB archive budget
+    $failed = false;
+    foreach ($entries as $name => $bytes) {
+        if (zipEntryVerdict($name) === 'junk') { continue; }
+        $path = $targetDir . "/" . $name;
+        for ($d = dirname($path); $d !== $targetDir && $d !== "/" && !is_dir($d); $d = dirname($d)) {
+            $createdDirs[] = $d;
+        }
+        if (!is_dir(dirname($path))) { mkdir(dirname($path), 0777, true); }
+        $extracted[] = $path;
+        $existedBefore[$path] = is_file($path);
+        $written = streamCopyWithinLimit(fopen($bytes, 'r'), $path . ".part", $remaining);
+        if ($written > $remaining || !@rename($path . ".part", $path)) { $failed = true; break; }
+        $remaining -= $written;
+    }
+    if ($failed) {
+        $plan = extractionCleanupPlan($extracted, $existedBefore, $createdDirs);
+        foreach ($plan['files'] as $p) { if (is_file($p)) { unlink($p); } }
+        foreach ($plan['dirs'] as $p) { if (is_dir($p)) { @rmdir($p); } }
+    }
+    return !$failed;
+};
+@mkdir("$workDir/s5", 0777, true);
+$stored = "$workDir/s5/take1.wav";
+file_put_contents($stored, "EARLIER TAKE");
+file_put_contents("$workDir/small.wav", str_repeat('a', 100 * 1024));
+file_put_contents("$workDir/big.wav", random_bytes(4 * $MB));
+$extraction([
+    'take1.wav' => "$workDir/small.wav",                 // re-uploaded under the same name
+    'takename1/new1.wav' => "$workDir/big.wav",           // the entry that blows the budget
+], "$workDir/s5");
+check("an aborted extraction does not truncate a stored take", is_file($stored));
+check("an aborted extraction removes the file it added", !file_exists("$workDir/s5/takename1/new1.wav"));
+check("an aborted extraction removes no .part file", glob("$workDir/s5/*.part") === []);
+check("an aborted extraction leaves no empty directory behind", !is_dir("$workDir/s5/takename1"));
+
+// Leave no scratch files behind - the harness runs on a developer's /tmp.
+$leftovers = array_merge(glob("$workDir/*") ?: [], glob("$workDir/*/*") ?: [], glob("$workDir/*/*/*") ?: []);
+foreach ($leftovers as $p) {
+    if (is_file($p)) { unlink($p); }
+}
+foreach (["$workDir/s5/takename1", "$workDir/s5", "$workDir/uploads/takename1", "$workDir/uploads", $workDir] as $d) {
+    @rmdir($d);
+}
+check("the harness cleaned up its scratch directory", !is_dir($workDir));
+
 // --- result -----------------------------------------------------------------
 
 // --- result -----------------------------------------------------------------
