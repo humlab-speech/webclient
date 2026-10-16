@@ -2,11 +2,11 @@
   min-width: min(980px, 94vw);
   max-width: 94vw;
   padding: 1.5rem;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 22px;
-  background: #fff !important;
-  color: #27426f;
-  box-shadow: 0 22px 46px rgba(31, 56, 93, 0.24);
+  background: var(--v-surface) !important;
+  color: var(--v-text-2);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.18);
 }
 
 .dialog-header {
@@ -19,14 +19,14 @@
 
 .dialog-header h2 {
   margin: 0;
-  color: #1c3660;
+  color: var(--v-text);
   font-size: 1.45rem;
   font-weight: 700;
 }
 
 .dialog-header .header-copy p {
   margin: 0.3rem 0 0;
-  color: #6d7c98;
+  color: var(--v-muted);
   font-size: 0.92rem;
 }
 
@@ -34,16 +34,16 @@
   width: 36px;
   height: 36px;
   margin-left: 0;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 12px;
-  color: #34527f;
-  background: #f8f9fc;
+  color: var(--v-text-2);
+  background: var(--v-surface-2);
 }
 
 .dialog-close-btn:hover {
-  background: #edf2f8;
-  border-color: #c7d1df;
-  color: #1c3660;
+  background: var(--v-surface-2);
+  border-color: var(--v-border-strong);
+  color: var(--v-text);
 }
 
 #loading-indicator {
@@ -57,10 +57,10 @@
 }
 
 .no-invite-codes {
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 14px;
-  background: #f8f9fc;
-  color: #6d7c98;
+  background: var(--v-surface-2);
+  color: var(--v-muted);
   padding: 0.8rem 1rem;
   margin-bottom: 0.75rem;
 }
@@ -73,7 +73,7 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.6rem;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -81,7 +81,7 @@
 .invite-codes-table th,
 .invite-codes-table td {
   padding: 0.75rem 0.7rem;
-  border-bottom: 1px solid #e6ebf2;
+  border-bottom: 1px solid var(--v-border);
   text-align: left;
   vertical-align: middle;
 }
@@ -91,36 +91,36 @@
 }
 
 .invite-codes-table th {
-  background: #edf2f8;
-  color: #34527f;
+  background: var(--v-surface-2);
+  color: var(--v-text-2);
   font-size: 0.84rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .invite-codes-table tbody tr:nth-child(even) {
-  background: #f9fbfe;
+  background: var(--v-surface-2);
 }
 
 .invite-codes-table tbody tr:hover {
-  background: #eef4fb;
+  background: var(--v-surface-2);
 }
 
 .invite-code-container {
   min-width: 14rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-family: var(--v-font-mono);
   font-size: 0.95rem;
-  color: #1c3660;
+  color: var(--v-text);
   word-break: break-all;
 }
 
 .field-select {
   min-height: 38px;
   min-width: 12rem;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 10px;
-  background: #fff;
-  color: #27426f;
+  background: var(--v-surface);
+  color: var(--v-text-2);
   padding: 0 0.7rem;
 }
 
@@ -130,15 +130,15 @@
 
 .form-btn {
   min-height: 36px;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 10px;
-  background: #f8f9fc;
-  color: #34527f;
+  background: var(--v-surface-2);
+  color: var(--v-text-2);
 }
 
 .form-btn:hover {
-  background: #edf2f8;
-  border-color: #c7d1df;
+  background: var(--v-surface-2);
+  border-color: var(--v-border-strong);
 }
 
 .icon-btn {
@@ -152,9 +152,9 @@
 }
 
 .create-code-panel {
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 14px;
-  background: #f8f9fc;
+  background: var(--v-surface-2);
   padding: 0.9rem 1rem;
   margin-bottom: 0.9rem;
 }
@@ -173,7 +173,7 @@
 }
 
 .create-code-field > span {
-  color: #34527f;
+  color: var(--v-text-2);
   font-size: 0.82rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -184,30 +184,30 @@
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  color: #6d7c98;
+  color: var(--v-muted);
 }
 
 .create-code-hint {
   margin: 0.65rem 0 0;
-  color: #6d7c98;
+  color: var(--v-muted);
   font-size: 0.86rem;
 }
 
 .field-input {
   min-height: 38px;
   min-width: 16rem;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--v-border-strong);
   border-radius: 10px;
-  background: #fff;
-  color: #27426f;
+  background: var(--v-surface);
+  color: var(--v-text-2);
   padding: 0 0.7rem;
 }
 
 .create-code-btn {
   min-height: 46px;
-  border-color: #f0e2d8;
-  background: #fbf5f2;
-  color: #34527f;
+  border-color: var(--v-border-strong);
+  background: var(--v-surface-2);
+  color: var(--v-text-2);
   padding: 0 1rem;
   font-weight: 700;
 }

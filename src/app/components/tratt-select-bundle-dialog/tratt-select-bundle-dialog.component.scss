@@ -11,7 +11,7 @@
 
 .mode-intro {
     margin-bottom: 1rem;
-    color: #425d86;
+    color: var(--v-text-2);
     line-height: 1.45;
     font-size: 0.95rem;
 }
@@ -29,8 +29,8 @@
     gap: 0.65rem;
     padding: 0.7rem 0.8rem;
     border-radius: 12px;
-    border: 1px solid #d7deea;
-    background: #f8fafd;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface-2);
 }
 
 .mode-option input[type='radio'] {
@@ -43,13 +43,13 @@
 
 .mode-title {
     display: block;
-    color: #203a66;
+    color: var(--v-text);
     font-weight: 700;
     margin-bottom: 0.2rem;
 }
 
 .mode-description {
-    color: #5c6f91;
+    color: var(--v-muted);
     font-size: 0.9rem;
 }
 
@@ -61,18 +61,18 @@
     width: 100%;
     min-height: 2.35rem;
     border-radius: 10px;
-    border: 1px solid #cbd6e6;
+    border: 1px solid var(--v-border-strong);
     padding: 0.35rem 0.55rem;
     box-sizing: border-box;
-    color: #223a63;
-    background: #fff;
+    color: var(--v-text);
+    background: var(--v-surface);
 }
 
 .bundle-mode-help {
     border-radius: 10px;
-    border: 1px solid #d8dfe8;
-    background: #f8fafc;
-    color: #526789;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-muted);
     padding: 0.65rem 0.75rem;
     font-size: 0.9rem;
 }
@@ -102,7 +102,7 @@ li {
 }
 
 tr:hover {
-    background-color: #f0f0f0;
+    background-color: var(--v-surface-2);
 }
 
 pre {
@@ -121,7 +121,8 @@ h3 {
 }
 
 pre {
-    font-family: "Gothic A1", sans-serif; /* Customize font here */
+    font-family: var(--v-font-data);
+    font-size-adjust: var(--v-noto-adjust);
 }
 
 #bundle-select {

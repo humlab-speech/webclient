@@ -10,85 +10,90 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.1rem;
-  margin-bottom: 1.35rem;
+  margin-bottom: 1.75rem;
 }
 
 .eyebrow {
   display: inline-block;
   text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #ed894f;
-  margin-bottom: 0.45rem;
+  letter-spacing: 0.12em;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--v-accent);
+  margin-bottom: 0.6rem;
 }
 
 .section-heading h2 {
   margin: 0;
-  font-size: 2.2rem;
-  letter-spacing: -0.03em;
-  color: #1c3660;
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--v-text);
   text-decoration: none;
 }
 
 .section-actions {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1.1rem;
 }
 
 .active-count {
   font-size: 1.05rem;
-  color: #6d7c98;
+  color: var(--v-muted);
   white-space: nowrap;
 }
 
 .active-count > span {
-  color: #27426f;
-  font-weight: 700;
+  color: var(--v-text);
+  font-weight: 600;
 }
 
 .create-project-btn,
 .workspace-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 2.45rem;
-  padding: 0 0.95rem;
-  border: 1px solid #d9e1eb;
-  background: #f8f9fc;
-  color: #24497e;
+  gap: 0.6rem;
+  min-height: 3.1rem;
+  padding: 0 1.3rem;
+  border: 1px solid var(--v-border);
+  background: var(--v-control);
+  color: var(--v-text);
   border-radius: 999px;
-  font-size: 0.93rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.create-project-btn:hover {
-  background: #eef3f8;
+.create-project-btn i,
+.workspace-action-btn i {
+  color: var(--v-accent);
 }
 
+.create-project-btn:hover,
 .workspace-action-btn:hover {
-  background: #eef3f8;
+  border-color: var(--v-border-strong);
+  background: var(--v-surface-2);
 }
 
 .project-list {
   display: grid;
-  gap: 1.65rem;
+  gap: 2rem;
 }
 
 .project-manager-loading {
-  background: #fff;
-  border: 1px solid #d8dfe8;
-  border-radius: 22px;
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: 10px;
   padding: 1.15rem;
-  box-shadow: 0 10px 26px rgba(31, 56, 93, 0.08);
+  box-shadow: var(--v-shadow);
 }
 
 .projects-loading-status {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #27426f;
+  color: var(--v-text);
   margin-bottom: 0.7rem;
   font-weight: 600;
 }
@@ -97,8 +102,8 @@
   width: 0.95rem;
   height: 0.95rem;
   border-radius: 50%;
-  border: 2px solid rgba(39, 73, 126, 0.2);
-  border-top-color: #27497e;
+  border: 2px solid var(--v-border);
+  border-top-color: var(--v-accent);
   animation: spinner-spin 900ms linear infinite;
   flex-shrink: 0;
 }
@@ -116,23 +121,23 @@
   margin: 0;
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid #d8dfe8;
-  background: #f6f8fb;
-  color: #5f7190;
+  border: 1px solid var(--v-border);
+  background: var(--v-surface-2);
+  color: var(--v-muted);
   font-size: 0.78rem;
   line-height: 1.2;
 }
 
 .loading-steps li.active {
-  background: #edf2f9;
-  border-color: #c5d4e6;
-  color: #24497e;
+  background: var(--v-accent-soft);
+  border-color: transparent;
+  color: var(--v-accent-ink);
 }
 
 .loading-steps li.completed {
-  background: #e6eef8;
-  border-color: #bbcbdf;
-  color: #24497e;
+  background: var(--v-surface-3);
+  border-color: transparent;
+  color: var(--v-text-2);
 }
 
 .ghost-project-list {
@@ -146,11 +151,11 @@
 }
 
 .ghost-project {
-  background-color: #f8f9fc;
-  border-radius: 0.85rem;
+  background-color: var(--v-surface-2);
+  border-radius: 8px;
   padding: 1rem;
   margin: 0;
-  border: 1px solid #e0e7f0;
+  border: 1px solid var(--v-border);
 }
 
 .ghost-project-header {
@@ -173,16 +178,16 @@
 }
 
 .ghost-shimmer {
-  background: linear-gradient(90deg, #edf1f5 20%, #f8fafc 45%, #edf1f5 70%);
+  background: linear-gradient(90deg, var(--v-skeleton) 20%, var(--v-skeleton-shine) 45%, var(--v-skeleton) 70%);
   background-size: 240% 100%;
   animation: ghost-shimmer 1.35s ease-in-out infinite;
 }
 
 .no-projects-msg {
-  border: 1px dashed #ccd5e2;
-  border-radius: 18px;
-  background: #f8fafd;
-  color: #5e6f8c;
+  border: 1px dashed var(--v-border-strong);
+  border-radius: 10px;
+  background: var(--v-surface);
+  color: var(--v-muted);
   padding: 1rem 1.1rem;
 }
 

@@ -6,21 +6,12 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #547091;
+  color: var(--v-interactive);
+  font-size: 1.35rem;
   cursor: pointer;
 }
 
 #help-button:hover {
-  background: rgba(36, 73, 126, 0.08);
-  color: #24497e;
-}
-
-#help-button svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  background: var(--v-interactive-soft);
+  color: var(--v-interactive-ink);
 }

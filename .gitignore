@@ -7,3 +7,4 @@ composer.phar
 installer.php
 # Personal editor configuration (was committed once, under api/)
 *.code-workspace
+/work/

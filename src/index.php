@@ -312,10 +312,19 @@ if (function_exists('vispShellJson')) {
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>
+    // Apply the theme before first paint (see ThemeService, same storage key).
+    (function() {
+      var theme = null;
+      try { theme = localStorage.getItem('visp-theme'); } catch (e) {}
+      if(theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <script>
     window.visp = <?php echo $vispJson; ?>;
   </script>

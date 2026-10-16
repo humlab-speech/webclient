@@ -9,7 +9,7 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(16, 30, 52, 0.42);
+    background: var(--v-overlay);
     animation: backdrop-in 0.15s ease-out;
 }
 
@@ -19,10 +19,10 @@
     width: min(640px, 100%);
     max-height: min(760px, calc(100vh - 2rem));
     border-radius: 18px;
-    border: 1px solid #d8dfe8;
-    background: #ffffff;
-    color: #1c2b40;
-    box-shadow: 0 24px 60px rgba(19, 39, 67, 0.38);
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface);
+    color: var(--v-text);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.29);
     overflow: hidden;
     animation: sheet-in 0.18s ease-out;
 }
@@ -40,8 +40,9 @@
     align-items: center;
     gap: 0.85rem;
     padding: 1rem 1.25rem;
-    background: #243e6a;
-    color: #ffffff;
+    background: var(--v-card-head);
+    border-bottom: 1px solid var(--v-border);
+    color: var(--v-card-head-text);
 }
 
 .sheet-back-btn {
@@ -53,15 +54,15 @@
     height: 2.1rem;
     padding: 0;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
+    border: 1px solid var(--v-card-head-border);
+    background: var(--v-card-head-raised);
+    color: var(--v-card-head-text);
     font-size: 0.9rem;
     box-shadow: none;
 }
 
 .sheet-back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--v-surface-3);
     box-shadow: none;
 }
 
@@ -78,7 +79,7 @@
     letter-spacing: 0.14em;
     font-size: 0.68rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--v-card-head-muted);
 }
 
 .script-sheet-header h3 {
@@ -89,7 +90,7 @@
     text-overflow: ellipsis;
     font-size: 1.2rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--v-card-head-text);
     background: none;
 }
 
@@ -112,13 +113,13 @@
 
 .sheet-field > label,
 .sheet-label {
-    color: #1c2b40;
+    color: var(--v-text);
     font-size: 0.82rem;
     font-weight: 700;
 }
 
 .sheet-hint {
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.78rem;
     line-height: 1.4;
 }
@@ -128,22 +129,22 @@
     width: 100%;
     min-height: 2.5rem;
     padding: 0 0.8rem;
-    border: 1px solid #ccd6e3;
+    border: 1px solid var(--v-border-strong);
     border-radius: 10px;
-    background: #ffffff;
-    color: #1c2b40;
+    background: var(--v-surface);
+    color: var(--v-text);
     font: inherit;
     font-size: 0.95rem;
 }
 
 .sheet-input:focus {
     outline: 0;
-    border-color: #5f87bd;
-    box-shadow: 0 0 0 3px rgba(36, 73, 126, 0.14);
+    border-color: var(--v-interactive);
+    box-shadow: 0 0 0 3px var(--v-focus-ring);
 }
 
 .sheet-error {
-    color: #b3261e;
+    color: var(--v-danger);
     font-size: 0.8rem;
 }
 
@@ -154,8 +155,8 @@
     align-self: flex-start;
     padding: 3px;
     border-radius: 11px;
-    background: #eef2f7;
-    border: 1px solid #dde4ed;
+    background: var(--v-surface-2);
+    border: 1px solid var(--v-border-strong);
 }
 
 .segment {
@@ -164,7 +165,7 @@
     gap: 0.4rem;
     padding: 0.4rem 0.85rem;
     border-radius: 8px;
-    color: #4a5a70;
+    color: var(--v-text-2);
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -177,14 +178,14 @@
 }
 
 .segment:focus-within {
-    outline: 2px solid #5f87bd;
+    outline: 2px solid var(--v-border-strong);
     outline-offset: 1px;
 }
 
 .segment-active {
-    background: #ffffff;
-    color: #1c2b40;
-    box-shadow: 0 1px 3px rgba(19, 39, 67, 0.16);
+    background: var(--v-surface);
+    color: var(--v-text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 /* Prompts */
@@ -196,7 +197,7 @@
 }
 
 .prompt-count {
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.78rem;
 }
 
@@ -220,7 +221,7 @@
 .prompt-number {
     flex: none;
     width: 1.8rem;
-    color: #7a889b;
+    color: var(--v-muted);
     font-size: 0.8rem;
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -234,14 +235,14 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #8593a6;
+    color: var(--v-muted);
     font-size: 0.85rem;
     box-shadow: none;
 }
 
 .prompt-remove-btn:hover {
-    background: #fbeaea;
-    color: #b3261e;
+    background: var(--v-surface-3);
+    color: var(--v-danger);
     box-shadow: none;
 }
 
@@ -252,17 +253,17 @@
     gap: 0.4rem;
     margin: 0.25rem 0 0 2.3rem;
     padding: 0.4rem 0.8rem;
-    border: 1px dashed #b9c7d9;
+    border: 1px dashed var(--v-border-strong);
     border-radius: 9px;
     background: transparent;
-    color: #24497e;
+    color: var(--v-text-2);
     font-size: 0.85rem;
     font-weight: 600;
     box-shadow: none;
 }
 
 .sheet-add-btn:hover {
-    background: #f1f5fb;
+    background: var(--v-surface-2);
     box-shadow: none;
 }
 
@@ -273,14 +274,14 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.85rem 1.25rem;
-    border-top: 1px solid #e3e8ef;
-    background: #f8fafc;
+    border-top: 1px solid var(--v-border);
+    background: var(--v-surface-2);
 }
 
 .sheet-footer-note {
     flex: 1;
     min-width: 0;
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.78rem;
 }
 
@@ -298,24 +299,24 @@
 }
 
 .sheet-btn-secondary {
-    border: 1px solid #ccd6e3;
-    background: #ffffff;
-    color: #1c2b40;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface);
+    color: var(--v-text);
 }
 
 .sheet-btn-secondary:hover {
-    background: #f1f5fb;
+    background: var(--v-surface-2);
     box-shadow: none;
 }
 
 .sheet-btn-primary {
     border: 1px solid transparent;
-    background: #b95a2c;
-    color: #ffffff;
+    background: var(--v-accent);
+    color: var(--v-on-accent);
 }
 
 .sheet-btn-primary:hover {
-    background: #a24c22;
+    background: var(--v-accent-hover);
     box-shadow: none;
 }
 

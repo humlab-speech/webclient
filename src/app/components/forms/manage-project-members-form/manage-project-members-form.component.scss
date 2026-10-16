@@ -7,10 +7,10 @@
 }
 
 .member-table-card {
-    border: 1px solid #d8dfe8;
+    border: 1px solid var(--v-border-strong);
     border-radius: 16px;
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(31, 56, 93, 0.06);
+    background: var(--v-surface);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
 .member-table-card {
@@ -22,7 +22,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    color: #223a63;
+    color: var(--v-text);
     font-size: 0.94rem;
 }
 
@@ -30,13 +30,13 @@
 .project-members-table td {
     padding: 0.65rem 0.75rem;
     text-align: left;
-    border-bottom: 1px solid #e6ecf4;
+    border-bottom: 1px solid var(--v-border);
     vertical-align: middle;
 }
 
 .project-members-table thead th {
-    background: #f5f8fc;
-    color: #35527d;
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
     font-size: 0.79rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -44,7 +44,7 @@
 }
 
 .project-members-table tbody tr:hover {
-    background: #f8fbff;
+    background: var(--v-surface-2);
 }
 
 .project-members-table tbody tr:last-child td {
@@ -61,40 +61,40 @@
 }
 
 .empty-row {
-    color: #6c7d99;
+    color: var(--v-muted);
     text-align: center !important;
     font-style: italic;
     padding: 1rem !important;
 }
 
 .remove-member-btn {
-    color: #8da0bb;
+    color: var(--v-muted);
     font-size: 1.05rem;
 }
 
 .remove-member-btn:hover {
     cursor: pointer;
-    color: #bb0d24;
+    color: var(--v-danger);
 }
 
 .member-role-select {
     width: 100%;
     min-height: 34px;
-    border: 1px solid #c9d7e7;
+    border: 1px solid var(--v-border-strong);
     border-radius: 10px;
     box-sizing: border-box;
     padding: 0 0.5rem;
-    color: #203a66;
-    background: #ffffff;
+    color: var(--v-text);
+    background: var(--v-surface);
 }
 
 .role-pill {
     display: inline-block;
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
-    background: #edf2f9;
-    border: 1px solid #d4dfea;
-    color: #284b7e;
+    background: var(--v-surface-2);
+    border: 1px solid var(--v-border-strong);
+    color: var(--v-text-2);
     font-size: 0.82rem;
     text-transform: capitalize;
 }

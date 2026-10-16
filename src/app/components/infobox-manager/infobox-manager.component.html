@@ -1,6 +1,6 @@
 <section class="infobar-block" [class.infobar-block--expanded]="expandedLayout">
   <div class="infobar-heading">
-    <span class="accent-line"></span>
+    <span class="eyebrow">Resources</span>
     <h3>{{ headingText }}</h3>
   </div>
 
@@ -9,12 +9,7 @@
       Learn how VISP supports speech research, onboarding, and secure collaboration.
     </p>
     <button type="button" class="infobar-cta-button" (click)="toggleAccessRequestForm()">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="8" cy="15" r="4"/>
-        <path d="m12.5 11.5 8-8"/>
-        <path d="M22 6.5h-1.5v1.5"/>
-        <path d="M20 4.5v1.5h1.5"/>
-      </svg>
+      <i class="fa fa-key" aria-hidden="true"></i>
       {{ showAccessRequestForm ? 'Close form' : 'Request access' }}
     </button>
   </div>
@@ -28,7 +23,7 @@
   >
     <div class="access-form-header">
       <span class="access-form-icon">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v2.5c0 6.5-3.6 9.7-8 11.5C7.6 16.2 4 13 4 6.5V4z"/><path d="m9 12 2 2 4-4"/></svg>
+        <i class="fa fa-shield" aria-hidden="true"></i>
       </span>
       <div>
         <h4>Request access to VISP</h4>
@@ -39,7 +34,7 @@
       <label for="access-request-email">Your contact email</label>
       <div class="access-request-row">
         <div class="access-input-wrap">
-          <svg class="access-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 8 8 5 8-5"/></svg>
+          <i class="fa fa-envelope-o access-input-icon" aria-hidden="true"></i>
           <input
             id="access-request-email"
             type="email"
@@ -49,7 +44,7 @@
           >
         </div>
         <button type="submit">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+          <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
           Send request
         </button>
       </div>

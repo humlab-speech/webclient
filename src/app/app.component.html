@@ -1,4 +1,4 @@
-<div id="main-container" [class.has-bottom-banner]="showBottomBanner">
+<div id="main-container">
   <app-menu-bar></app-menu-bar>
 
   <div id="content-container">
@@ -6,5 +6,5 @@
     <router-outlet></router-outlet>
   </div>
 
-  <app-footer *ngIf="showBottomBanner" class="app-bottom-banner"></app-footer>
+  <app-footer *ngIf="showBottomBanner" class="app-footer"></app-footer>
 </div>

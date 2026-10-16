@@ -1,5 +1,23 @@
-<div id="footer-container">
-    <span class="footer-umu-logo">
-        <img [src]="umuLogoPath" alt="Umeå University">
-    </span>
-</div>
+<footer id="footer-container">
+  <div class="footer-column footer-sprakbanken">
+    <a class="footer-logo-link" [href]="text.sprakbanken" target="_blank" rel="noopener">
+      <img class="footer-sb-logo" src="/assets/sprakbanken_logo.svg" alt="Språkbanken">
+    </a>
+    <ul>
+      <li *ngFor="let link of sprakbankenLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
+    </ul>
+  </div>
+
+  <div class="footer-column footer-contact">
+    <p>{{ text.callout }}</p>
+    <ul>
+      <li *ngFor="let link of contactLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
+    </ul>
+  </div>
+
+  <div class="footer-column footer-node">
+    <a class="footer-logo-link" [href]="text.node.href" target="_blank" rel="noopener">
+      <img class="footer-node-logo" [src]="text.node.logo" [alt]="text.node.label">
+    </a>
+  </div>
+</footer>

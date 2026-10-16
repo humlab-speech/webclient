@@ -1,0 +1,194 @@
+// Colour and type tokens for the light and dark themes, following Språkbanken's
+// graphic profile (sprakbanken.se/internt/teknik/grafisk-profil).
+//
+// Type: Jost for headings and UI, Noto Sans for tables and data, Noto Serif
+// for running text. Sizes are relative (rem/em) and no base size is set.
+//
+// Components use these custom properties instead of hard-coded colours, so a
+// theme switch is just a change of the data-theme attribute on <html>
+// (ThemeService; index.php sets it before Angular boots to avoid a flash).
+//
+// Colour roles, per the profile:
+//   accent      "sborange" #F0581A: graphic elements, and actions that take the
+//               intended next step in a workflow (create, save, launch).
+//   interactive blue #1E989F: other interactive elements (links, toggles,
+//               selection, focus) and help sections.
+//   danger      red #D42225: results that block the expected workflow, and
+//               actions that can destroy data.
+//   warning     yellow #F6C200: results that change the expected workflow.
+//               Never as text on a light background, hence a darker ink.
+//   success     green #5AA018.
+// Each hue has a plain token (fill, or text where it reads well), an -ink for
+// text on light/soft surfaces, and a -soft tint for backgrounds: 20% colour
+// over white in light mode, over the surface colour in dark mode.
+//
+// Greys are strictly neutral (R = G = B). Text sits on white or light grey;
+// coloured backgrounds carry bold text only (buttons, badges).
+//
+// Naming: surfaces go bg → surface → surface-2 → surface-3 from the page
+// background towards the most raised/filled element. "card-head" is the header
+// band on project cards and dialogs.
+
+:root {
+  --v-font-ui: 'Jost', 'Helvetica Neue', Arial, sans-serif;
+  --v-font-data: 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --v-font-prose: 'Noto Serif', Georgia, serif;
+  --v-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  // Noto's x-height (0.536 em) is much larger than Jost's (0.460 em), so Noto
+  // is rendered at Jost's x-height (font-size-adjust) to read as the same size.
+  --v-noto-adjust: 0.46;
+}
+
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --v-accent: #f0581a;
+  --v-accent-hover: #d84b12;
+  --v-accent-soft: #fcded1;
+  --v-accent-ink: #c4460f;
+  --v-on-accent: #ffffff;
+
+  --v-interactive: #1e989f;
+  --v-interactive-hover: #17838a;
+  --v-interactive-soft: #d2eaec;
+  --v-interactive-ink: #157278;
+  --v-on-interactive: #ffffff;
+
+  --v-topbar: #ffffff;
+  --v-topbar-raised: #f3f3f3;
+  --v-topbar-border: #e0e0e0;
+  --v-topbar-text: #1a1a1a;
+  --v-topbar-muted: #666666;
+
+  --v-bg: #f3f3f3;
+  --v-hero: #ffffff;
+  --v-surface: #ffffff;
+  --v-surface-2: #f7f7f7;
+  --v-surface-3: #ebebeb;
+  --v-border: #e0e0e0;
+  --v-border-strong: #c4c4c4;
+  // Themes differ in which surface these sit on, hence their own tokens.
+  --v-tile: #ffffff;
+  --v-tile-hover: #f7f7f7;
+  --v-chip: #f3f3f3;
+  --v-control: #ffffff;
+
+  --v-text: #1a1a1a;
+  --v-text-2: #3d3d3d;
+  --v-muted: #666666;
+  --v-subtle: #8c8c8c;
+  // Neutral filled element (count badges, "done" states).
+  --v-strong: #3d3d3d;
+  --v-on-strong: #ffffff;
+
+  --v-card-head: #f3f3f3;
+  --v-card-head-text: #1a1a1a;
+  --v-card-head-muted: #666666;
+  --v-card-head-raised: #ffffff;
+  --v-card-head-border: #d6d6d6;
+
+  --v-danger: #d42225;
+  --v-danger-fill: #d42225;
+  --v-danger-hover: #b51c1f;
+  --v-danger-soft: #f6d3d3;
+  --v-success: #3f7510;
+  --v-success-fill: #5aa018;
+  --v-success-soft: #deecd1;
+  --v-warning: #7a6000;
+  --v-warning-fill: #f6c200;
+  --v-on-warning: #1a1a1a;
+  --v-warning-soft: #fdf3cc;
+  --v-info: #157278;
+  --v-info-fill: #1e989f;
+  --v-info-soft: #d2eaec;
+
+  --v-input-bg: #ffffff;
+  --v-focus-ring: rgba(30, 152, 159, 0.35);
+  --v-overlay: rgba(0, 0, 0, 0.5);
+  --v-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
+  --v-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.16);
+  --v-skeleton: #ebebeb;
+  --v-skeleton-shine: #f7f7f7;
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  --v-accent: #f0581a;
+  --v-accent-hover: #ff6a2c;
+  --v-accent-soft: #46281c;
+  --v-accent-ink: #f47a48;
+  --v-on-accent: #ffffff;
+
+  --v-interactive: #1e989f;
+  --v-interactive-hover: #26adb5;
+  --v-interactive-soft: #1c3536;
+  --v-interactive-ink: #45c0c7;
+  --v-on-interactive: #ffffff;
+
+  --v-topbar: #1c1c1c;
+  --v-topbar-raised: #262626;
+  --v-topbar-border: #2c2c2c;
+  --v-topbar-text: #f0f0f0;
+  --v-topbar-muted: #9a9a9a;
+
+  --v-bg: #141414;
+  --v-hero: #1c1c1c;
+  --v-surface: #1c1c1c;
+  --v-surface-2: #242424;
+  --v-surface-3: #2e2e2e;
+  --v-border: #2c2c2c;
+  --v-border-strong: #444444;
+  --v-tile: #242424;
+  --v-tile-hover: #2b2b2b;
+  --v-chip: #242424;
+  --v-control: #141414;
+
+  --v-text: #f0f0f0;
+  --v-text-2: #c8c8c8;
+  --v-muted: #9a9a9a;
+  --v-subtle: #767676;
+  --v-strong: #d6d6d6;
+  --v-on-strong: #141414;
+
+  --v-card-head: #262626;
+  --v-card-head-text: #f0f0f0;
+  --v-card-head-muted: #9a9a9a;
+  --v-card-head-raised: #1c1c1c;
+  --v-card-head-border: #3a3a3a;
+
+  --v-danger: #f0595b;
+  --v-danger-fill: #d42225;
+  --v-danger-hover: #ff6b6d;
+  --v-danger-soft: #411d1e;
+  --v-success: #8acb4f;
+  --v-success-fill: #5aa018;
+  --v-success-soft: #28361b;
+  --v-warning: #f6c200;
+  --v-warning-fill: #f6c200;
+  --v-on-warning: #1a1a1a;
+  --v-warning-soft: #483d16;
+  --v-info: #45c0c7;
+  --v-info-fill: #1e989f;
+  --v-info-soft: #1c3536;
+
+  --v-input-bg: #141414;
+  --v-focus-ring: rgba(30, 152, 159, 0.5);
+  --v-overlay: rgba(0, 0, 0, 0.66);
+  --v-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.18);
+  --v-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.45);
+  --v-skeleton: #242424;
+  --v-skeleton-shine: #2e2e2e;
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+// No explicit choice yet: follow the OS.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}

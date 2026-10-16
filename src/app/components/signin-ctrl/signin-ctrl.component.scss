@@ -11,16 +11,16 @@
   gap: 0.5rem;
   min-height: 48px;
   padding: 0 20px;
-  border-radius: 17px;
+  border-radius: 6px;
   border: 1px solid transparent;
-  background: #ed894f;
-  color: #fff;
-  box-shadow: 0 12px 22px rgba(237, 137, 79, 0.22);
-  font-size: 1rem;
-  font-weight: 700;
+  background: var(--v-accent);
+  color: var(--v-on-accent);
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-height: 3.4rem;
+  padding: 0 1.5rem;
 }
 
 #signin-btn:hover {
-  background: #de7a40;
-  transform: translateY(-1px);
+  background: var(--v-accent-hover);
 }

@@ -15,10 +15,10 @@
     margin: 0;
     padding: 0;
     border-radius: 26px;
-    border: 1px solid #d8dfe8;
-    box-shadow: 0 24px 56px rgba(19, 39, 67, 0.34);
+    border: 1px solid var(--v-border-strong);
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.26);
     overflow: hidden auto;
-    background: #ffffff !important;
+    background: var(--v-surface) !important;
 }
 
 .scripts-dialog-header {
@@ -28,8 +28,9 @@
     gap: 1rem;
     margin: 0;
     padding: 1.45rem 1.5rem;
-    background: linear-gradient(135deg, #243e6a 0%, #284a80 70%, #2f548d 100%);
-    color: #fff;
+    background: var(--v-card-head);
+    border-bottom: 1px solid var(--v-border);
+    color: var(--v-card-head-text);
 }
 
 .header-copy {
@@ -46,14 +47,14 @@
     letter-spacing: 0.24em;
     font-size: 0.72rem;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--v-card-head-muted);
 }
 
 .scripts-dialog-header h2 {
     margin: 0;
     font-size: clamp(1.35rem, 3vw, 1.95rem);
     letter-spacing: -0.03em;
-    color: #fff8f2;
+    color: var(--v-card-head-text);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -65,16 +66,16 @@
 }
 
 .scripts-dialog-header .tooltip-zone-dark {
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--v-card-head-muted);
 }
 
 .scripts-dialog-header .tooltip-zone-dark:hover {
-    color: #ffffff;
+    color: var(--v-card-head-text);
 }
 
 .scripts-dialog-header p {
     margin: 0;
-    color: rgba(246, 248, 253, 0.82);
+    color: var(--v-card-head-muted);
     line-height: 1.4;
     font-size: 0.94rem;
 }
@@ -85,16 +86,16 @@
     min-width: 2rem;
     margin-left: 0;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--v-card-head-border);
+    color: var(--v-card-head-muted);
+    background: var(--v-card-head-raised);
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .scripts-dialog-close-btn:hover {
-    border-color: rgba(255, 255, 255, 0.38);
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--v-border-strong);
+    color: var(--v-card-head-text);
+    background: var(--v-surface-3);
     transform: translateY(-1px);
 }
 
@@ -103,7 +104,7 @@
     flex-direction: column;
     gap: 0.95rem;
     padding: 1.35rem 1.5rem 1.5rem;
-    background: #f8fafd;
+    background: var(--v-surface-2);
 }
 
 .actions-row {
@@ -118,15 +119,15 @@ button.small-button {
     width: auto;
     max-width: 100%;
     border-radius: 12px;
-    border: 1px solid #c9d8ea;
-    background: #f1f5fb;
-    color: #24497e;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
     font-weight: 700;
     padding: 0 0.9rem;
 }
 
 button.small-button:hover {
-    background: #e7eff9;
+    background: var(--v-surface-3);
 }
 
 .scripts-list {
@@ -136,10 +137,10 @@ button.small-button:hover {
 
 .scripts-loading,
 .empty-scripts {
-    border: 1px solid #d8dfe8;
+    border: 1px solid var(--v-border-strong);
     border-radius: 16px;
-    background: #ffffff;
-    color: #42536a;
+    background: var(--v-surface);
+    color: var(--v-text-2);
     padding: 1rem;
 }
 
@@ -151,13 +152,13 @@ button.small-button:hover {
 
 .empty-scripts h3 {
     margin: 0 0 0.25rem;
-    color: #1c2b40;
+    color: var(--v-text);
     font-size: 1rem;
 }
 
 .empty-scripts p {
     margin: 0;
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.9rem;
 }
 
@@ -168,14 +169,14 @@ button.small-button:hover {
     gap: 1rem;
     margin: 0;
     border-radius: 16px;
-    border: 1px solid #d8dfe8;
-    background: #ffffff;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface);
     padding: 1rem;
     overflow: hidden;
 }
 
 .readonly-script {
-    background: #fbfcfe;
+    background: var(--v-surface-2);
 }
 
 .script-card-main {
@@ -195,7 +196,7 @@ button.small-button:hover {
 
 .script-card-title-row h3 {
     margin: 0;
-    color: #1c2b40;
+    color: var(--v-text);
     font-size: 1.08rem;
     font-weight: 700;
 }
@@ -207,27 +208,27 @@ button.small-button:hover {
     min-height: 1.45rem;
     padding: 0 0.5rem;
     border-radius: 999px;
-    border: 1px solid #d8e1ec;
-    background: #f1f5fb;
-    color: #42536a;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
     font-size: 0.72rem;
     font-weight: 700;
 }
 
 .script-chip-shared {
-    border-color: #cdd9ea;
-    background: #eaf1fa;
-    color: #24497e;
+    border-color: var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-text-2);
 }
 
 .script-chip-readonly {
-    border-color: #ead8cf;
-    background: #fff4ef;
-    color: #8b421d;
+    border-color: var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-accent-ink);
 }
 
 .script-card-meta {
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.82rem;
 }
 
@@ -236,7 +237,7 @@ button.small-button:hover {
     gap: 0.25rem;
     margin: 0.25rem 0 0;
     padding-left: 1.2rem;
-    color: #26384e;
+    color: var(--v-text);
     font-size: 0.9rem;
 }
 
@@ -247,7 +248,7 @@ button.small-button:hover {
 }
 
 .script-card-note {
-    color: #5b6b80;
+    color: var(--v-muted);
     font-size: 0.82rem;
 }
 
@@ -265,28 +266,28 @@ button.small-button:hover {
     height: 2.25rem;
     padding: 0;
     border-radius: 10px;
-    border: 1px solid #cbd7e6;
-    background: #ffffff;
-    color: #24497e;
+    border: 1px solid var(--v-border-strong);
+    background: var(--v-surface);
+    color: var(--v-text-2);
     box-shadow: none;
 }
 
 .icon-action-btn:hover {
-    background: #f1f5fb;
+    background: var(--v-surface-2);
 }
 
 .danger-action {
-    color: #a6332a;
+    color: var(--v-danger);
 }
 
 .danger-action:hover {
-    background: #fbeaea;
+    background: var(--v-surface-3);
 }
 
 .icon-action-btn:disabled {
-    background: #e9edf3;
-    color: #71819d;
-    border-color: #dde4ed;
+    background: var(--v-surface-3);
+    color: var(--v-muted);
+    border-color: var(--v-border-strong);
     cursor: default;
 }
 

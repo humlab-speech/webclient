@@ -1,53 +1,23 @@
 @use '@angular/material' as mat;
 @include mat.core();
 
-$bright-navy-blue-palette: (
-  50: #e3f2fd,
-  100: #badffb,
-  200: #8fcbfa,
-  300: #61b7f7,
-  400: #3ca7f6,
-  500: #0c98f5,
-  600: #078ae7,
-  700: #0078d4,
-  800: #0067c2,
-  900: #0049a3,
-  A100: #c2e4ff,
-  A200: #addcff,
-  A400: #1f9eff,
-  A700: #00518f,
-  contrast: (
-    50: rgba(black, 0.87),
-    100: rgba(black, 0.87),
-    200: rgba(black, 0.87),
-    300: rgba(black, 0.87),
-    400: rgba(black, 0.87),
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(black, 0.87),
-    A200: rgba(black, 0.87),
-    A400: white,
-    A700: white,
-  )
-);
-$gainsboro-palette: (
-  50: #f9f9fa,
-  100: #f3f3f4,
-  200: #ebebec,
-  300: #dcdcdd,
-  400: #b9b9ba,
-  500: #99999a,
-  600: #707071,
-  700: #5d5d5e,
-  800: #3e3e3f,
-  900: #1d1d1e,
-  A100: #f5f5f5,
-  A200: #eaeaeb,
-  A400: #d6d6d7,
-  A700: #838386,
+// Angular Material is only used for tooltips, but keep its palette on brand:
+// Språkbanken blue (interactive), sborange (accent) and red (warn).
+$sb-blue-palette: (
+  50: #e4f3f4,
+  100: #bce2e4,
+  200: #8fcfd3,
+  300: #62bcc1,
+  400: #40aab0,
+  500: #1e989f,
+  600: #1b8b91,
+  700: #17767c,
+  800: #136267,
+  900: #0c4245,
+  A100: #c2f6f9,
+  A200: #8feff4,
+  A400: #4ae1ea,
+  A700: #17767c,
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
@@ -65,17 +35,17 @@ $gainsboro-palette: (
     A700: white,
   )
 );
-$crimson-palette: (
-  50: #ffebef,
-  100: #ffcdc5,
-  200: #f0999f,
-  300: #e77179,
-  400: #f24e58,
-  500: #f83a40,
-  600: #e9313e,
-  700: #d72638,
-  800: #ca1e30,
-  900: #bb0d24,
+$sb-orange-palette: (
+  50: #fdebe4,
+  100: #fbcdbb,
+  200: #f8ac8d,
+  300: #f58a5f,
+  400: #f2713d,
+  500: #f0581a,
+  600: #d84b12,
+  700: #c4460f,
+  800: #a23a0c,
+  900: #6e2808,
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
@@ -89,18 +59,43 @@ $crimson-palette: (
     900: white,
   )
 );
-$bluesky-primary: mat.m2-define-palette($bright-navy-blue-palette, 700, 300, 900);
-$bluesky-accent: mat.m2-define-palette($gainsboro-palette, 300, 100, 500);
-$bluesky-warn: mat.m2-define-palette($crimson-palette, 700);
-
-$bluesky-theme: mat.m2-define-light-theme((
-  color: (
-    primary: $bluesky-primary,
-    accent: $bluesky-accent,
-    warn: $bluesky-warn,
+$sb-red-palette: (
+  50: #fbe5e5,
+  100: #f4bdbe,
+  200: #ec9193,
+  300: #e46568,
+  400: #dc4346,
+  500: #d42225,
+  600: #c41e21,
+  700: #b51c1f,
+  800: #961719,
+  900: #6a1012,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
   )
+);
+$visp-primary: mat.m2-define-palette($sb-blue-palette, 500, 100, 700);
+$visp-accent: mat.m2-define-palette($sb-orange-palette, 500, 100, 700);
+$visp-warn: mat.m2-define-palette($sb-red-palette, 500);
+
+$visp-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $visp-primary,
+    accent: $visp-accent,
+    warn: $visp-warn,
+  ),
+  typography: mat.m2-define-typography-config($font-family: "'Jost', 'Helvetica Neue', Arial, sans-serif"),
 ));
-@include mat.all-component-themes($bluesky-theme);
+@include mat.all-component-themes($visp-theme);
 
 
 
@@ -109,10 +104,12 @@ $bluesky-theme: mat.m2-define-light-theme((
 @import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300&display=swap');
 */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+// Språkbanken profile: Jost (headings, UI), Noto Sans (tables, data), Noto Serif (running text).
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
 @import "../node_modules/normalize.css/normalize.css";
 @import "../node_modules/leaflet/dist/leaflet.css";
 @import './colors.scss';
+@import './theme.scss';
 @import '../node_modules/ngx-popperjs/scss/theme-white.scss';
 @import '../node_modules/font-awesome/scss/font-awesome.scss';
 @import '../node_modules/angular-notifier/styles.css';
@@ -124,17 +121,77 @@ html, body { height: 100%; }
 body { 
     margin: 0;
     padding: 0;
-    background: #eef1f5;
-    color: #27426f;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    background: var(--v-bg);
+    color: var(--v-text);
+    font-family: var(--v-font-ui);
+    -webkit-font-smoothing: antialiased;
+}
+
+// Running text in Noto Serif, tables and data in Noto Sans; both at Jost's
+// x-height so they sit comfortably next to it.
+p {
+    font-family: var(--v-font-prose);
+    font-size-adjust: var(--v-noto-adjust);
+}
+
+table, .data-text {
+    font-family: var(--v-font-data);
+    font-size-adjust: var(--v-noto-adjust);
+}
+
+// Headings are set in Jost inside prose and tables too.
+table th {
+    font-family: var(--v-font-ui);
+    font-size-adjust: none;
+}
+
+code, pre, kbd, samp {
+    font-family: var(--v-font-mono);
+}
+
+// Form controls don't inherit the page font by default.
+button, input, select, textarea {
+    font-family: inherit;
+}
+
+input, select, textarea {
+    background-color: var(--v-input-bg);
+    color: var(--v-text);
+    border-color: var(--v-border-strong);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--v-subtle);
+}
+
+// Native checkboxes, radios and sliders are interactive elements: blue.
+input[type='checkbox'], input[type='radio'], input[type='range'], progress {
+    accent-color: var(--v-interactive);
+}
+
+a {
+    color: var(--v-interactive-ink);
+}
+
+a:hover {
+    color: var(--v-interactive-hover);
+}
+
+:focus-visible {
+    outline: 2px solid var(--v-interactive);
+    outline-offset: 2px;
 }
 
 body.hero-phase1 {
     overflow: hidden;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--v-font-ui);
+    font-size-adjust: none;
+}
+
 h1 {
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
     text-decoration: none;
 }
 
@@ -146,7 +203,6 @@ h4 {
     font-size: 1.4rem;
     font-weight: lighter;
     text-decoration: none;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
@@ -154,7 +210,6 @@ h4 {
 h5 {
     font-size: 1.1rem;
     font-weight: lighter;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
     margin-top:0.5em;
     margin-bottom:0.5em;
 }
@@ -189,6 +244,12 @@ button:not(:disabled) {
     font-size: 1.0rem;
 }
 
+.mat-mdc-tooltip {
+    --mdc-plain-tooltip-supporting-text-font: var(--v-font-ui);
+    --mdc-plain-tooltip-container-color: var(--v-strong);
+    --mdc-plain-tooltip-supporting-text-color: var(--v-on-strong);
+}
+
 popper-content h4 {
     margin-top:0em;
     margin-bottom:0.25em;
@@ -219,7 +280,7 @@ ngx-dropzone > ngx-dropzone-preview {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color:rgba(0, 0, 0, 0.5);
+    background-color: var(--v-overlay);
     z-index:20000;
 }
 
@@ -228,10 +289,11 @@ ngx-dropzone > ngx-dropzone-preview {
     display:flex;
     flex-direction: column;
     padding: 2rem;
-    border-radius:4px;
-    background-color: #fff !important;
-    color: $dark-font-color;
-    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    background-color: var(--v-surface) !important;
+    color: var(--v-text);
+    border: 1px solid var(--v-border);
+    box-shadow: var(--v-shadow-lg);
     margin-top: 1em;
     margin-bottom: 1em;
     max-height: 92vh;
@@ -269,11 +331,11 @@ ngx-dropzone > ngx-dropzone-preview {
 }
 
 .dialog-close-btn:hover {
-    background-color: $secondary-light;
-    border: 1px solid #333;
-    border-radius: 25%;
+    background-color: var(--v-surface-3);
+    border: 1px solid var(--v-border-strong);
+    border-radius: 6px;
     cursor: pointer;
-    color: #fff;
+    color: var(--v-text);
 }
 
 .dialog-header {
@@ -304,7 +366,7 @@ ngx-dropzone > ngx-dropzone-preview {
     left:0;
     width:100vw;
     height:100vh;
-    background-color:rgba(0, 0, 0, 0.2);
+    background-color: var(--v-overlay);
 }
 
 #project-create-form {
@@ -335,9 +397,9 @@ form label {
     padding-top: 0.25em;
     padding-bottom: 0.25em;
     font-size: 1.4em;
-    border-left: 0.25em solid $secondary-light;
+    border-left: 0.25em solid var(--v-accent);
     background: transparent;
-    color: #333;
+    color: var(--v-text);
 }
 
 .form fieldset {
@@ -355,9 +417,9 @@ form label {
 }
 
 .form fieldset input {
-    border-color: #ccc;
+    border-color: var(--v-border-strong);
     border-style: solid;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .form .small-button {
@@ -366,24 +428,26 @@ form label {
 
 .form button {
     font-size: 1.5rem;
+    font-weight: 600;
     padding: 0.5rem;
-    background-color: $secondary;
-    color: $white;
+    background-color: var(--v-accent);
+    color: var(--v-on-accent);
     border-width:0px;
+    border-radius: 6px;
 }
 
 form input.ng-invalid {
-    border: 1px solid red;
+    border: 1px solid var(--v-danger);
 }
 
 .form button:hover {
-    background-color: $secondary-light;
-    box-shadow: 0px 0px 10px #999; 
+    background-color: var(--v-accent-hover);
     cursor:pointer;
 }
 
 .form button.disabled {
-    background: #ccc;
+    background: var(--v-surface-3);
+    color: var(--v-subtle);
     cursor: default;
 }
 
@@ -414,19 +478,19 @@ form input.ng-invalid {
 
 
 .tooltip-zone {
-    color: #eee;
+    color: var(--v-subtle);
 }
 
 .tooltip-zone:hover {
-    color: $white;
+    color: var(--v-interactive);
 }
 
 .tooltip-zone-dark {
-    color: #666;
+    color: var(--v-subtle);
 }
 
 .tooltip-zone-dark:hover {
-    color: #333;
+    color: var(--v-interactive);
 }
 
 .help-text {
@@ -434,24 +498,29 @@ form input.ng-invalid {
 }
 
 .notifier__notification--material {
-    border-radius: 0px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    box-shadow: var(--v-shadow-lg);
 }
 
 .notifier__notification {
     z-index: 25000;
 }
 
+// Text on a coloured background is set bold (profile guideline).
+.notifier__notification {
+    font-weight: 600;
+}
+
 .notifier__notification--default {
-    background-color: #444;
-    color: #fff;
+    background-color: var(--v-strong);
+    color: var(--v-on-strong);
 }
 .notifier__notification--default .notifier__notification-button-icon {
-    fill: #fff;
+    fill: var(--v-on-strong);
 }
 
 .notifier__notification--error {
-    background-color: $error;
+    background-color: var(--v-danger-fill);
     color: #fff;
 }
 .notifier__notification--error .notifier__notification-button-icon {
@@ -459,18 +528,26 @@ form input.ng-invalid {
 }
 
 .notifier__notification--warning {
-    background-color: $warning;
-    color: #fff;
+    background-color: var(--v-warning-fill);
+    color: var(--v-on-warning);
 }
 .notifier__notification--warning .notifier__notification-button-icon {
-    fill: #fff;
+    fill: var(--v-on-warning);
 }
 
 .notifier__notification--info {
-    background-color: $info;
+    background-color: var(--v-info-fill);
     color: #fff;
 }
 .notifier__notification--info .notifier__notification-button-icon {
+    fill: #fff;
+}
+
+.notifier__notification--success {
+    background-color: var(--v-success-fill);
+    color: #fff;
+}
+.notifier__notification--success .notifier__notification-button-icon {
     fill: #fff;
 }
 
@@ -487,7 +564,7 @@ form input.ng-invalid {
 }
 
 .shepherd-modal-overlay-container {
-    background-color: rgba(16, 32, 55, 0.52) !important;
+    background-color: var(--v-overlay) !important;
 }
 
 .shepherd-element {
@@ -497,70 +574,67 @@ form input.ng-invalid {
 }
 
 .shepherd-content {
-    border-radius: 18px;
-    border: 1px solid #d8dfe8;
-    background: #ffffff;
-    box-shadow: 0 22px 52px rgba(20, 42, 74, 0.25);
+    border-radius: 12px;
+    border: 1px solid var(--v-border);
+    background: var(--v-surface);
+    box-shadow: var(--v-shadow-lg);
     overflow: hidden;
-    font-family: 'Inter', "Helvetica Neue", sans-serif;
+    font-family: var(--v-font-ui);
 }
 
 .shepherd-header {
-    background: linear-gradient(135deg, #243e6a 0%, #294b81 68%, #2f548d 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    background: var(--v-interactive-soft);
+    border-bottom: 1px solid var(--v-border);
 }
 
 .shepherd-title {
-    color: #fff8f2;
+    color: var(--v-text);
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .shepherd-cancel-icon {
-    color: rgba(255, 255, 255, 0.86);
+    color: var(--v-muted);
 }
 
 .shepherd-text {
-    color: #27426f;
+    color: var(--v-text-2);
     line-height: 1.6;
     font-size: 0.95rem;
 }
 
 .shepherd-text a {
-    color: #24497e;
+    color: var(--v-interactive-ink);
     font-weight: 600;
 }
 
 .shepherd-footer {
-    border-top: 1px solid #e4e9f0;
-    background: #f8fafd;
+    border-top: 1px solid var(--v-border);
+    background: var(--v-surface-2);
 }
 
 .shepherd-button {
     min-height: 40px;
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid transparent;
     padding: 0 14px;
-    font-weight: 700;
-    background: #ed894f;
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(237, 137, 79, 0.24);
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    font-weight: 600;
+    background: var(--v-interactive);
+    color: var(--v-on-interactive);
+    transition: background-color 0.16s ease;
 }
 
 .shepherd-button:hover {
-    background: #de7a40;
-    transform: translateY(-1px);
+    background: var(--v-interactive-hover);
 }
 
 .shepherd-button.tutorial-exit-btn {
-    background: #eef2f8 !important;
-    color: #27426f !important;
-    border-color: #d3dce8;
+    background: var(--v-control) !important;
+    color: var(--v-text) !important;
+    border-color: var(--v-border-strong);
     box-shadow: none;
 }
 
 .shepherd-button.tutorial-exit-btn:hover {
-    background: #e4ebf4 !important;
-    transform: none;
+    background: var(--v-surface-2) !important;
 }
