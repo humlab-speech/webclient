@@ -118,11 +118,11 @@ export class UserComponent implements OnInit {
       }
 
       // Step 3: Delete cookies client-side as a belt-and-suspenders measure.
-      // Note: _shibsession_* is HttpOnly and cannot be touched from JavaScript;
-      // the /Shibboleth.sso/Logout redirect in step 4 handles it server-side.
+      // Note: _shibsession_* and PHPSESSID are HttpOnly (session_set_cookie_params
+      // httponly=true) and cannot be touched from JavaScript; the
+      // /Shibboleth.sso/Logout redirect in step 4 and the server-side session
+      // teardown handle those.
       Cookies.remove('SessionAccessCode', { path: '/' });
-      Cookies.remove('PHPSESSID', { path: '/' });
-      Cookies.remove('PHPSESSID', { path: '/', domain: '.' + window.location.hostname });
       Cookies.remove('ProjectId', { path: '/' });
 
       // Step 4: Redirect through the Shibboleth SP logout endpoint. This is required in

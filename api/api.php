@@ -1,30 +1,44 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/SessionManagerInterface.class.php';
 require_once __DIR__ . '/ApiResponse.class.php';
 
 use MongoDB\Client;
 
-// Use the same domain as index.php (.visp.local with leading dot) so that signOut()'s
-// setcookie() call clears the same cookie that was set on login.
-$domain = ($_SERVER['HTTP_HOST'] != 'visp.local') ? $_SERVER['HTTP_HOST'] : ".visp.local";
-//if we are running on visp.local set cookie secure to false
-$secure = ($_SERVER['HTTP_HOST'] != 'visp.local') ? true : false;
-$httpOnly = false;
+// Cookie scope comes from the deployment environment (BASE_DOMAIN /
+// HTTP_PROTOCOL, both passed via the quadlet EnvironmentFile), never from the
+// client-controlled Host: header: that let a crafted request pin the cookie
+// attributes onto an attacker host. Dev (HTTP_PROTOCOL=http) is the only
+// insecure-cookie mode, and it is an explicit setting, not a host comparison.
+require_once __DIR__ . '/sessionSecurity.php';
+[$domain, $secure, $httpOnly] = cookieParams([
+    "BASE_DOMAIN" => getenv("BASE_DOMAIN"),
+    "HTTP_PROTOCOL" => getenv("HTTP_PROTOCOL"),
+]);
 $accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true";
 
-session_set_cookie_params(60*60*8, "/", $domain, $secure, $httpOnly);
+// SameSite was never stated at all, which is not the same as it being unset:
+// Chrome (since 80) fills in Lax for a missing attribute, Firefox and Safari do
+// not. So this line changes behaviour for Firefox and Safari - the cookie stops
+// riding cross-site requests, including a cross-site top-level POST, which is
+// what a SAML ACS on POST binding is. Lax is the intended policy either way, and
+// the subdomains (artic, tratt, recorder) are the same *site*, so their same-site
+// fetches still carry the cookie. Verify a SWAMID login in Firefox before
+// deploying. Do not "fix" a subdomain problem by moving this to None - that is a
+// cross-site cookie, and it needs Secure as well.
+session_set_cookie_params([
+    "lifetime" => 60 * 60 * 8,
+    "path" => "/",
+    "domain" => $domain,
+    "secure" => $secure,
+    "httponly" => $httpOnly,
+    "samesite" => "Lax",
+]);
 session_start();
-
-$hsApiAccessToken = getenv("HS_API_ACCESS_TOKEN");
-
 
 
 class Application {
     function __construct($domain) {
-        global $hsApiAccessToken;
         global $accessListEnabled;
-        $this->sessionManagerInterface = new SessionManagerInterface($this, $hsApiAccessToken);
         $this->accessListEnabled = $accessListEnabled;
     }
 
@@ -91,11 +105,28 @@ class Application {
                 }
             }
 
-            $apiResponse = new ApiResponse(200, json_encode($_SESSION));
+            // Allow-list, not raw $_SESSION: the document copy in the session
+            // carried personalAccessToken (a long-lived GitLab token) and
+            // phpSessionId, which this endpoint has no business serving. The
+            // session-manager refetches the user by eppn anyway.
+            $apiResponse = new ApiResponse(200, sessionValidationPayload($_SESSION));
             return $apiResponse->toJSON();
         }
 
         $reqMethod = $_SERVER['REQUEST_METHOD'];
+
+        // CSRF: the session cookie authenticates every /api/v1 handler, so one
+        // cross-site page could otherwise upload files, delete them or commit
+        // sessions as the signed-in user. The gate used to guard only the
+        // upload-deletion handler; it now runs for every non-idempotent method
+        // before any handler is reached. Idempotent GETs keep the lax
+        // missing-Origin tolerance (they change nothing and still need the
+        // cookie).
+        if(!in_array($reqMethod, ["GET", "HEAD", "OPTIONS"], true) && !$this->isSameOriginRequest()) {
+            $this->addLog("Refused cross-origin ".$reqMethod." ".$reqPath." from ".($_SERVER['HTTP_ORIGIN'] ?? "(no origin, Sec-Fetch-Site: ".($_SERVER['HTTP_SEC_FETCH_SITE'] ?? "absent").")"), "warn");
+            $ar = new ApiResponse(403, array('message' => 'Cross-origin requests are not allowed.'));
+            return $ar->toJSON();
+        }
 
         //PUBLIC METHODS
         if($reqMethod == "GET") {
@@ -221,60 +252,6 @@ class Application {
                 $apiResponse = $this->handleUploadDelete();
             }
             
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/operations/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/operations/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "operations");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/jupyter/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/jupyter/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "jupyter");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/vscode/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/vscode/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->fetchSession($postData->projectId, "vscode");
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/artic/session/please");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/artic/session/please", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = new ApiResponse(200, array('personalAccessToken' => $_SESSION['personalAccessToken']));
-                }
-                else {
-                    $apiResponse = new ApiResponse(401, array('message' => 'This user does not have access to that project.'));
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/session/save");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/session/save", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->commitSession($postData->sessionId);
-                }
-            }
-            $matchResult = $this->restMatchPath($reqPath, "/api/v1/session/close");
-            if($matchResult['matched']) {
-                $this->addLog("POST: /api/v1/session/close", "debug");
-                if($this->userHasProjectAuthorization($postData->projectId)) {
-                    $apiResponse = $this->sessionManagerInterface->delSession($postData->sessionId);
-                }
-            }
             if($apiResponse !== false) {
                 return $apiResponse->toJSON();
             }
@@ -480,33 +457,15 @@ class Application {
         // Try to find project - log what we're searching for
         $this->addLog("Searching for project with id: '$projectId'", "debug");
         $project = $collection->findOne(['id' => $projectId]);
-        
-        // Convert MongoDB document to array
-        $projectData = json_decode(json_encode(iterator_to_array($project)), TRUE);
-        $this->addLog("Found project: ".print_r(['id' => $projectData['id'] ?? 'no-id', 'members' => count($projectData['members'] ?? [])], true), "debug");
-        
-        // Check if user is in project members
-        $foundUser = false;
-        if(!empty($projectData['members'])) {
-            $memberUsernames = [];
-            foreach($projectData['members'] as $member) {
-                $memberUsernames[] = $member['username'] ?? 'no-username';
-                if(isset($member['username']) && $member['username'] == $_SESSION['username']) {
-                    $foundUser = true;
-                    break;
-                }
-            }
-            $this->addLog("Project members: ".print_r($memberUsernames, true), "debug");
-        } else {
-            $this->addLog("Project has no members array", "debug");
-        }
-        
+
+        // One decision, in sessionSecurity.php, where a test can reach it. A
+        // missing document is a denial here rather than the TypeError that
+        // iterator_to_array(null) used to raise on this line - which answered
+        // HTTP 500 with an empty body to both callers of this function.
+        $foundUser = projectGrantsAccess($project, $_SESSION['username']);
         if(!$foundUser) {
-            $this->addLog("User ".$_SESSION['username']." attempted to access unauthorized project: $projectId", "warn");
-        } else {
-            $this->addLog("Authorization check passed for user ".$_SESSION['username']." on project $projectId", "debug");
+            $this->addLog("Access denied for user ".$_SESSION['username']." on project $projectId (no such project, or not a member)", "warn");
         }
-        
         return $foundUser;
     }
 
@@ -602,7 +561,9 @@ class Application {
     
         // Handle specific file types (e.g., zip)
         if ($fileType === "application/x-zip-compressed" || $fileType === "application/zip") {
-            $this->handleZipArchive($fileName, $targetDir);
+            if(!$this->handleZipArchive($fileName, $targetDir)) {
+                return new ApiResponse(400, "The uploaded archive was rejected.");
+            }
         }
     
         // Return success response
@@ -631,7 +592,13 @@ class Application {
      * uploads.
      */
     function uploadDir($context, $group) {
-        $idPattern = '/^[A-Za-z0-9_-]{1,64}$/'; // nanoid()s: form contexts and session ids
+        // nanoid()s: form contexts and session ids. The pattern is safe for
+        // session ids because a session's id is generated with nanoid() in the
+        // dialog, never derived from its display name - names may contain
+        // spaces and ids may not (checked against the live projects collection
+        // on 2026-10-06: zero ids violate this). Do NOT widen the pattern to
+        // accommodate a name: fix the id source instead if that ever changes.
+        $idPattern = '/^[A-Za-z0-9_-]{1,64}$/';
         if(!is_string($context) || !preg_match($idPattern, $context)) {
             return null;
         }
@@ -664,24 +631,11 @@ class Application {
         return $name;
     }
 
-    // Whether a browser request comes from this site. Requests without an
-    // Origin header (older browsers, same-origin GETs) are let through; they
-    // still need the session cookie.
+    // Whether a browser request comes from this site. The rules (and the
+    // handling of a missing Origin) live in requestOriginOk() so the shared
+    // dispatch gate and this per-handler call cannot drift apart.
     function isSameOriginRequest() {
-        if(empty($_SERVER['HTTP_ORIGIN'])) {
-            return true;
-        }
-        $originHost = parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
-        if(!is_string($originHost)) {
-            return false;
-        }
-        $ownHosts = [parse_url("http://".($_SERVER['HTTP_HOST'] ?? ""), PHP_URL_HOST), getenv("BASE_DOMAIN")];
-        foreach($ownHosts as $host) {
-            if(is_string($host) && $host !== "" && strcasecmp($originHost, $host) == 0) {
-                return true;
-            }
-        }
-        return false;
+        return requestOriginOk($_SERVER, (string)getenv("BASE_DOMAIN"));
     }
 
     /**
@@ -694,12 +648,10 @@ class Application {
     function handleUploadDelete() {
         // A cross-site form can't send a JSON body without a CORS preflight,
         // which this API never answers, so a forged request can't get here.
+        // The origin check itself moved to the shared dispatch gate (it covers
+        // every non-idempotent handler there, not just this one).
         if(stripos($_SERVER['CONTENT_TYPE'] ?? "", "application/json") !== 0) {
             return new ApiResponse(415, "Expected a JSON body.");
-        }
-        if(!$this->isSameOriginRequest()) {
-            $this->addLog("Refused cross-origin upload deletion from ".$_SERVER['HTTP_ORIGIN'], "warn");
-            return new ApiResponse(403, "Cross-origin requests are not allowed.");
         }
 
         $body = json_decode(file_get_contents("php://input"));
@@ -733,13 +685,86 @@ class Application {
         return new ApiResponse(200, "Upload deleted.");
     }
 
+    /**
+     * Whether an uploaded archive may be extracted at all. Entry names inside it
+     * are attacker-controlled and extraction writes them relative to the upload
+     * directory, so "../x" walks straight out of it - into another user's uploads,
+     * or anywhere the container can write. The name rules (absolute path, backslash,
+     * NUL, any ".." segment, the two "no one could name this again" rules, the
+     * Apple-metadata skip) and the size arithmetic are pure, in
+     * sessionSecurity.php, so they are testable without the zip extension; this is
+     * the adapter that reads the numbers out of the archive. The whole archive is
+     * refused rather than quietly dropping entries the sender expects back.
+     */
+    function zipEntriesAreSafe($zip, $archiveBytes) {
+        // The raw name count is settled before a single name is asked for: numFiles
+        // comes from the end of the central directory, while statIndex() and
+        // getNameIndex() are a libzip round trip each. Entries judged 'junk'
+        // (AppleDouble, __MACOSX, .DS_Store) are not a refusal and do not spend the
+        // entry cap either - the loop below never writes them, so a folder zipped
+        // from Finder on a Mac still gets through. An archive whose entries are all
+        // junk is refused: extracting it would store nothing at all.
+        $error = zipArchiveVerdict(
+            $zip->numFiles,
+            function ($i) use ($zip) {
+                return (string) $zip->getNameIndex($i);
+            },
+            function ($i) use ($zip) {
+                $stat = $zip->statIndex($i);
+                return isset($stat['size']) ? (int) $stat['size'] : 0;
+            },
+            $archiveBytes
+        );
+        if($error !== null) {
+            $this->addLog("Refused zip archive: ".$error, "warn");
+            return false;
+        }
+        return true;
+    }
+
+    // Entry-by-entry extraction, the byte budget and the failure cleanup all live
+    // in extractZipEntries()/extractionCleanupPlan() (sessionSecurity.php): one
+    // loop, and it is the one the harness drives.
+
+    // Returns whether the upload may be reported as stored.
     function handleZipArchive($archiveFile, $targetDir) {
         $this->addLog("File ".$archiveFile." is zipped, unzipping", "debug");
         $zip = new ZipArchive();
+        $archiveBytes = filesize($targetDir."/".$archiveFile);
         $result = $zip->open($targetDir."/".$archiveFile); //might contain multiple files
         if($result === true) {
-            $zip->extractTo($targetDir."/");
+            if(!$this->zipEntriesAreSafe($zip, $archiveBytes)) {
+                $zip->close();
+                unlink($targetDir."/".$archiveFile);
+                return false;
+            }
+            $extract = extractZipEntries(
+                $zip->numFiles,
+                function ($i) use ($zip) {
+                    return (string) $zip->getNameIndex($i);
+                },
+                function ($name) use ($zip) {
+                    return $zip->getStream($name);
+                },
+                function ($i) use ($zip) {
+                    $stat = $zip->statIndex($i);
+                    return isset($stat['size']) ? (int) $stat['size'] : 0;
+                },
+                $targetDir,
+                zipByteCeiling($archiveBytes),
+                function ($message, $level = "debug") {
+                    $this->addLog($message, $level);
+                }
+            );
             $zip->close();
+            if(!$extract['ok']) {
+                // What this run wrote is already reclaimed; the archive goes too,
+                // and the sender gets a refusal rather than a stored upload.
+                if(is_file($targetDir."/".$archiveFile)) {
+                    unlink($targetDir."/".$archiveFile);
+                }
+                return false;
+            }
             
             $dir = array_diff(scandir($targetDir), array('..', '.'));
             $this->addLog("File unzipped to: ".$targetDir."/", "debug");
@@ -780,6 +805,7 @@ class Application {
             
             //Delete original zip file
             unlink($targetDir."/".$archiveFile);
+            return true;
         }
         else {
             //Failed
@@ -814,8 +840,7 @@ class Application {
                     $this->addLog("ZipArchive: Seek error.", "error");
                     break;
             }
-            
-            
+            return false;
         }
     }
 
@@ -855,6 +880,24 @@ class Application {
     }
     
     function signOut() {
+        // Invalidate server-side, not just in the browser: the users document
+        // keeps phpSessionId as the lookup handle (see the restore-by-phpSessionId
+        // path above), and nothing cleared it on logout - the session was
+        // resurrectable from a stolen id until PHP's own garbage collection
+        // happened to expire the session file.
+        $sessionId = session_id();
+        if($sessionId !== "" && $sessionId !== "0") {
+            try {
+                $database = $this->getMongoDb();
+                $database->selectCollection('users')->updateOne(
+                    ['phpSessionId' => $sessionId],
+                    ['$set' => ['phpSessionId' => null]]
+                );
+            } catch (Throwable $e) {
+                // Logout must still proceed with the cookie cleared.
+                $this->addLog("Could not clear phpSessionId on sign-out: ".$e->getMessage(), "error");
+            }
+        }
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -864,7 +907,13 @@ class Application {
             );
         }
         session_destroy();
-        header("Location: https://".$_SERVER['HTTP_HOST']);
+        // Redirect to the configured base domain, not to Host:.
+        $baseDomain = getenv("BASE_DOMAIN");
+        $secure = strtolower((string)getenv("HTTP_PROTOCOL")) !== "http";
+        $redirect = $baseDomain !== false && $baseDomain !== ""
+            ? ($secure ? "https://" : "http://").$baseDomain
+            : "/";
+        header("Location: ".$redirect);
         
         return false;
     }

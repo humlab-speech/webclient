@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Project } from '../../models/Project';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { VispApp } from "../../models/VispApp";
 import { NotifierService } from 'angular-notifier';
 import { Router } from '@angular/router';
@@ -35,10 +34,8 @@ export class AppctrlComponent implements OnInit {
   btnTitle:string;
   appIconPath:string;
   domain:string = window.location.hostname;
-  showSaveButton:boolean = true;
 
   constructor(
-    private http:HttpClient, 
     notifierService: NotifierService, 
     userService: UserService, 
     projectService: ProjectService, 
@@ -187,43 +184,6 @@ export class AppctrlComponent implements OnInit {
     });
   }
 
-  launchContainerSessionOLD(appName) {
-
-    this.statusMsg = "Launching";
-    this.showLoadingIndicator = true;
-
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: this.project.id
-    };
-
-    this.http.post<any>('/api/v1/'+appName+'/session/please', "data="+JSON.stringify(body), { headers }).subscribe({
-      next: (data) => {
-        let sessionAccessCode = JSON.parse(data.body).sessionAccessCode;
-        if(!sessionAccessCode) {
-          this.notifier.notify("error", "No sessionAccessCode received.");
-          return;
-        }
-        this.statusMsg = "Taking you there...";
-        this.showLoadingIndicator = true;
-        
-        let cookieParams = " SameSite=None; Secure";
-        if(environment.PROTOCOL == "http") {
-          cookieParams = "";
-        }
-        console.log("Setting SessionAccessCode cookie");
-        Cookies.set('SessionAccessCode', sessionAccessCode, { domain: this.domain, secure: true, sameSite: 'None' });
-        //document.cookie = "SessionAccessCode="+sessionAccessCode+"; domain="+this.domain+";"+cookieParams;
-  
-        this.router.navigate(['/app'], { queryParams: { token: sessionAccessCode }});
-      },
-      error: (error) => {
-        console.error(error);
-      }
-    });
-  }
 
   launchEmuWebAppSession() {
     this.statusMsg = "Launching";
@@ -260,28 +220,6 @@ export class AppctrlComponent implements OnInit {
     return this.hasRunningSessions;
   }
 
-  save() {
-    this.statusMsg = "Saving";
-    this.showLoadingIndicator = true;
-
-    let sessionAccessCode = this.getSessionAccessCode();
-    console.log("Save session", sessionAccessCode);
-
-    let headers = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    };
-    let body = {
-      projectId: this.project.id,
-      sessionId: sessionAccessCode
-    };
-
-    this.http.post<any>('/api/v1/session/save', "data="+JSON.stringify(body), { headers }).subscribe((data) => {
-      let statusObj = JSON.parse(data.body);
-      this.notifier.notify('info', statusObj.msg);
-      this.showLoadingIndicator = false;
-      this.statusMsg = "Running";
-    });
-  }
 
   close() {
     if(!window.confirm("Are you sure? Any unsaved changes will be lost.")) {
