@@ -331,7 +331,10 @@
                         </details>
 
                         <div class="session-card-footer">
-                            <button type="button" class="text-btn text-btn-danger" (click)="deleteSession(i, $event)">
+                            <!-- Deleting an existing session is gated like deleting a
+                                 stored bundle (backend: canDeleteProject on the save);
+                                 removing a not-yet-saved session is harmless. -->
+                            <button *ngIf="session.controls.new.value || canDeleteBundles(project)" type="button" class="text-btn text-btn-danger" (click)="deleteSession(i, $event)">
                                 <i class="fa fa-trash-o" aria-hidden="true"></i>
                                 {{ session.controls.new.value ? 'Remove session' : 'Delete session' }}
                             </button>
