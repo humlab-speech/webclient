@@ -525,6 +525,22 @@ foreach (["$workDir/s9/take", "$workDir/s9", "$workDir/s10", "$workDir/s5/takena
 }
 check("the harness cleaned up its scratch directory", !is_dir($workDir));
 
+// --- projectGrantsAccess (finding F2: a missing project denies, it does not fatal)
+// The bug was iterator_to_array(null) on the findOne() result: a request naming
+// a project id that does not exist answered HTTP 500 with an empty body, on the
+// ?f=session route and on the octra download route that share this code. These
+// cases run against the real function - no MongoDB and no Apache - which is why
+// the decision lives in sessionSecurity.php in the first place.
+check("no project document denies access", projectGrantsAccess(null, "some_user") === false);
+check("a scalar is not a project", projectGrantsAccess("42", "some_user") === false);
+check("a project with no members array denies", projectGrantsAccess(["id" => "p1"], "some_user") === false);
+check("a member is granted", projectGrantsAccess(["members" => [["username" => "other"], ["username" => "some_user"]]], "some_user") === true);
+check("a non-member is denied", projectGrantsAccess(["members" => [["username" => "other"]]], "some_user") === false);
+check("a BSON document (Traversable) is handled like an array", projectGrantsAccess(new ArrayIterator(["members" => [["username" => "some_user"]]]), "some_user") === true);
+check("a username compare is never type-juggled", projectGrantsAccess(["members" => [["username" => "0"]]], "") === false);
+check("members that are not arrays deny rather than warn", projectGrantsAccess(["members" => ["some_user"]], "some_user") === false);
+check("a members value that is not a list denies", projectGrantsAccess(["members" => "[]"], "some_user") === false);
+
 // --- result -----------------------------------------------------------------
 
 // --- result -----------------------------------------------------------------

@@ -457,33 +457,15 @@ class Application {
         // Try to find project - log what we're searching for
         $this->addLog("Searching for project with id: '$projectId'", "debug");
         $project = $collection->findOne(['id' => $projectId]);
-        
-        // Convert MongoDB document to array
-        $projectData = json_decode(json_encode(iterator_to_array($project)), TRUE);
-        $this->addLog("Found project: ".print_r(['id' => $projectData['id'] ?? 'no-id', 'members' => count($projectData['members'] ?? [])], true), "debug");
-        
-        // Check if user is in project members
-        $foundUser = false;
-        if(!empty($projectData['members'])) {
-            $memberUsernames = [];
-            foreach($projectData['members'] as $member) {
-                $memberUsernames[] = $member['username'] ?? 'no-username';
-                if(isset($member['username']) && $member['username'] == $_SESSION['username']) {
-                    $foundUser = true;
-                    break;
-                }
-            }
-            $this->addLog("Project members: ".print_r($memberUsernames, true), "debug");
-        } else {
-            $this->addLog("Project has no members array", "debug");
-        }
-        
+
+        // One decision, in sessionSecurity.php, where a test can reach it. A
+        // missing document is a denial here rather than the TypeError that
+        // iterator_to_array(null) used to raise on this line - which answered
+        // HTTP 500 with an empty body to both callers of this function.
+        $foundUser = projectGrantsAccess($project, $_SESSION['username']);
         if(!$foundUser) {
-            $this->addLog("User ".$_SESSION['username']." attempted to access unauthorized project: $projectId", "warn");
-        } else {
-            $this->addLog("Authorization check passed for user ".$_SESSION['username']." on project $projectId", "debug");
+            $this->addLog("Access denied for user ".$_SESSION['username']." on project $projectId (no such project, or not a member)", "warn");
         }
-        
         return $foundUser;
     }
 

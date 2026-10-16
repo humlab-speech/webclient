@@ -557,3 +557,41 @@ function extractionCleanupPlan(array $extracted, array $existedBefore, array $cr
     });
     return ['files' => $files, 'dirs' => $dirs];
 }
+
+/**
+ * The authorization decision behind api.php's userHasProjectAuthorization():
+ * given the project document the database returned, does this username belong
+ * to it? Kept here, and pure, because that is where the tests can reach it -
+ * no MongoDB, no Apache, no session.
+ *
+ * It accepts what the driver actually hands back: a BSON document (Traversable),
+ * an array, or null for "no such project". That third case is why this exists.
+ * The old code ran iterator_to_array($project) unconditionally, and
+ * iterator_to_array(null) is a TypeError - so a request naming a project id
+ * that does not exist answered HTTP 500 with an empty body, on the ?f=session
+ * validation route and on the octra file-download route, which share this code.
+ * The caller could not tell "denied" from "broken", and neither could the log.
+ *
+ * A missing project and a project you are not a member of answer identically on
+ * purpose: distinguishing them would make this an id-enumeration oracle. (The
+ * 500 used to distinguish them, which was an oracle of the other kind.)
+ *
+ * @param array|Traversable|null $project the document, or null
+ * @param string $username the signed-in user
+ */
+function projectGrantsAccess($project, string $username): bool {
+    if(!is_array($project) && !$project instanceof Traversable) {
+        // null (no document), or a scalar from something that is not a project.
+        return false;
+    }
+    // Same document-to-array trip the caller used, so BSON types behave as they
+    // did before the decision was moved here.
+    $data = json_decode(json_encode(iterator_to_array($project)), true);
+    $members = is_array($data['members'] ?? null) ? $data['members'] : [];
+    foreach($members as $member) {
+        if(is_array($member) && ($member['username'] ?? null) === $username) {
+            return true;
+        }
+    }
+    return false;
+}
