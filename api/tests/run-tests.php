@@ -509,6 +509,18 @@ if ($slashless['ok'] !== true) { fwrite(STDERR, "DEBUG: " . json_encode($slashle
 check("nothing was stored under the folder's own name", !is_file("$workDir/s9/take"));
 check("the file inside that folder lands", is_file("$workDir/s9/take/tiny.wav"));
 
+// The same shape, but the folder name has a dot: "Session.1". The zero-size
+// heuristic keys on "no extension", which a dotted folder name defeats; the
+// ancestor scan is what recognises it now.
+[$dotted] = $extractAsZipArchive(
+    [['Session.1', 0], ['Session.1/take.wav', 2048]],
+    ['Session.1' => '', 'Session.1/take.wav' => $tiny],
+    "$workDir/s11"
+);
+if ($dotted['ok'] !== true) { fwrite(STDERR, "DEBUG: " . json_encode($dotted) . "\n"); } check("an archive with a slash-less dotted directory entry is accepted", $dotted['ok'] === true);
+check("nothing was stored under the dotted folder's own name", !is_file("$workDir/s11/Session.1"));
+check("the file inside that dotted folder lands", is_file("$workDir/s11/Session.1/take.wav"));
+
 [$dirsonly] = $extractAsZipArchive([['a/', 0], ['b/', 0], ['c', 0]], [], "$workDir/s10");
 check("an archive that stores no file is refused, not reported as stored", $dirsonly['ok'] === false);
 check("and the refusal says why", str_contains($dirsonly['reason'], 'no file'));
@@ -519,7 +531,7 @@ $leftovers = array_merge(glob("$workDir/*") ?: [], glob("$workDir/*/*") ?: [], g
 foreach ($leftovers as $p) {
     if (is_file($p)) { unlink($p); }
 }
-foreach (["$workDir/s9/take", "$workDir/s9", "$workDir/s10", "$workDir/s5/takename1", "$workDir/s5", "$workDir/s7", "$workDir/s8/my_takes", "$workDir/s8",
+foreach (["$workDir/s9/take", "$workDir/s9", "$workDir/s11/Session.1", "$workDir/s11", "$workDir/s10", "$workDir/s5/takename1", "$workDir/s5", "$workDir/s7", "$workDir/s8/my_takes", "$workDir/s8",
           "$workDir/uploads/takename1", "$workDir/uploads", $workDir] as $d) {
     @rmdir($d);
 }

@@ -430,6 +430,21 @@ function extractZipEntries(
     ?callable $log = null
 ): array {
     $log = $log ?: function ($message, $level = "debug") {};
+    // First pass: every name that is some entry's ancestor is a directory.
+    // Archivers that store directories without the trailing slash are then
+    // recognised even when the folder name contains a dot: "Session.1" would
+    // otherwise be written as an empty file, and its contents could never
+    // be created.
+    $ancestorDirs = [];
+    for ($i = 0; $i < $entryCount; $i++) {
+        $n = (string) $nameAt($i);
+        $slash = strrpos($n, "/");
+        while ($slash !== false) {
+            $ancestorDirs[substr($n, 0, $slash)] = true;
+            $n = substr($n, 0, $slash);
+            $slash = strrpos($n, "/");
+        }
+    }
     $extracted = [];
     $wrote = 0;
     $existedBefore = [];
@@ -443,13 +458,13 @@ function extractZipEntries(
             continue; // Apple's resource forks never land on disk at all
         }
         $isDir = substr($name, -1) === "/";
-        if(!$isDir && (int) $sizeAt($i) === 0 && !str_contains($name, ".")) {
+        if(!$isDir && (int) $sizeAt($i) === 0 && (!str_contains($name, ".") || isset($ancestorDirs[$name]))) {
             // A directory stored without its trailing slash. getStream() hands
             // back a real (empty) resource for it, so the unreadable-entry
             // guard below never fires: writing it would put a FILE where the
             // folder has to be, and the file inside it could then never be
             // created. Zero size and no extension is what unzip itself keys on.
-            // ponytail: an empty extension-less file (a 0-byte README) is read
+            // Note: an empty extension-less file (a 0-byte README) is read
             // as a folder; uploads here are audio, and it stores nothing either way.
             $isDir = true;
         }
