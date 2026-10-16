@@ -207,8 +207,8 @@
                                         </label>
                                         <span class="field-hint">The prompts the participant reads aloud during the session.</span>
                                         <div class="input-with-action recordingScriptContainer">
-                                            <select [id]="'session-script-' + session.controls.id.value" class="text-input sessionScriptControl" formControlName="sessionScript" [attr.disabled]="sessionScriptIsLocked(session) ? true : null">
-                                                <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.value.sessionScript === option.value ? true : null">{{ option.label }}</option>
+                                            <select [id]="'session-script-' + session.controls.id.value" class="text-input sessionScriptControl" formControlName="sessionScript">
+                                                <option *ngFor="let option of sessionScriptOptions" [value]="option.value" [selected]="session.controls.sessionScript.value === option.value ? true : null">{{ option.label }}</option>
                                             </select>
                                             <button type="button" class="outline-btn" *ngIf="!sessionScriptIsLocked(session)" (click)="openScriptEditor(session)">
                                                 <i class="fa fa-plus" aria-hidden="true"></i>

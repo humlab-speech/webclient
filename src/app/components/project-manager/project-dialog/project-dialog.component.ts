@@ -268,7 +268,7 @@ export class ProjectDialogComponent implements OnInit, OnDestroy {
     });
 
     let mergedForm = formValues;
-    mergedForm.sessions = this.emudbFormComponent.sessions.value;
+    mergedForm.sessions = this.emudbFormComponent.sessionsPayloadValue();
     mergedForm.annotLevels = emuDbFormValues.annotLevels;
     mergedForm.annotLevelLinks = emuDbFormValues.annotLevelLinks;
     mergedForm.formContextId = this.formContextId;
