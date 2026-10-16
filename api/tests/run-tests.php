@@ -541,6 +541,21 @@ check("a username compare is never type-juggled", projectGrantsAccess(["members"
 check("members that are not arrays deny rather than warn", projectGrantsAccess(["members" => ["some_user"]], "some_user") === false);
 check("a members value that is not a list denies", projectGrantsAccess(["members" => "[]"], "some_user") === false);
 
+// --- nothing but PHP under api/ (finding F5) -------------------------------
+// In dev the api/ directory is bind-mounted wholesale into the Apache container
+// (quadlets/dev/apache.container) and the vhost grants it ("Require all
+// granted"), so every file that lands here is served - and executed if it ends
+// in .php - without a login. angular.json's ignore list only protects the prod
+// image copy. Docs and editor config belong in docs/.
+$strays = [];
+foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__ . "/..", FilesystemIterator::SKIP_DOTS)) as $f) {
+    if(pathinfo($f->getFilename(), PATHINFO_EXTENSION) !== "php") {
+        $strays[] = str_replace(dirname(__DIR__) . "/", "", $f->getPathname());
+    }
+}
+sort($strays);
+check("no non-PHP file is served out of api/: " . implode(", ", $strays), $strays === []);
+
 // --- result -----------------------------------------------------------------
 
 // --- result -----------------------------------------------------------------
