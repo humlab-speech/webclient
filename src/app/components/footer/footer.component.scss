@@ -2,6 +2,7 @@
     display: block;
 }
 
+// The third column is left empty so the contact column stays centred.
 #footer-container {
     display: grid;
     grid-template-columns: 1fr minmax(0, 1.4fr) 1fr;
@@ -59,23 +60,6 @@
     align-items: center;
 }
 
-.footer-node {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.footer-node-logo {
-    display: block;
-    height: 2.6rem;
-    width: auto;
-    object-fit: contain;
-}
-
-// The logo is black on transparent; flip it to white in the dark theme.
-:host-context([data-theme='dark']) .footer-node-logo {
-    filter: invert(1);
-}
-
 @media (max-width: 900px) {
     #footer-container {
         grid-template-columns: 1fr;
@@ -93,9 +77,5 @@
 
     .footer-contact ul {
         align-items: flex-start;
-    }
-
-    .footer-node {
-        justify-content: flex-start;
     }
 }

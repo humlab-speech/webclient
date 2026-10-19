@@ -7,8 +7,8 @@ interface FooterLink {
 }
 
 // Page footer laid out per Språkbanken's graphic profile: Språkbanken and its
-// links on the left, a call to get in touch in the middle, and the logo of
-// the node hosting this installation (Umeå University) on the right.
+// links on the left and a call to get in touch in the middle. The logo of the
+// node hosting this installation (Umeå University) is in the topbar.
 const FOOTER_TEXT = {
   sv: {
     sprakbanken: 'https://sprakbanken.se/',
@@ -18,7 +18,6 @@ const FOOTER_TEXT = {
     callout: 'Använder du våra plattformar, datamängder eller analyser i ditt arbete? Då vill vi gärna höra från dig!',
     contact: { label: 'Kontakta oss', href: 'https://sprakbanken.se/kontakt' },
     cite: { label: 'Referera till oss', href: 'https://sprakbanken.se/om/referera-till-oss' },
-    node: { label: 'Umeå universitet', href: 'https://www.umu.se/', logo: '/assets/umu-logotyp-SE.svg' },
   },
   en: {
     sprakbanken: 'https://sprakbanken.se/en',
@@ -28,7 +27,6 @@ const FOOTER_TEXT = {
     callout: 'Do you use our platforms, datasets or analyses in your work? We would love to hear from you!',
     contact: { label: 'Contact us', href: 'https://sprakbanken.se/en/contact' },
     cite: { label: 'How to cite us', href: 'https://sprakbanken.se/en/about/how-to-cite' },
-    node: { label: 'Umeå University', href: 'https://www.umu.se/en/', logo: '/assets/umu-logotyp-EN.svg' },
   },
 };
 
