@@ -18,6 +18,7 @@ import { NotifierService } from 'angular-notifier';
 import { ProjectService } from 'src/app/services/project.service';
 import { Project } from '../../../models/Project';
 import { ProjectManagerComponent } from '../../project-manager/project-manager.component';
+import { withLockedSessionScripts } from './sessionPayload';
 import { HttpClient } from '@angular/common/http'
 import { FileUploadService } from "../../../services/file-upload.service";
 import { UserService } from 'src/app/services/user.service';
@@ -145,6 +146,7 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     this.subscriptions.push(
       // any time the inner form changes update the parent of any change
       this.form.valueChanges.subscribe(value => {
+        this.applyScriptLocks();
         this.onChange(value);
         this.onTouched();
       })
@@ -773,6 +775,9 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     else {
       this.sessions.push(sessionGroup);
     }
+    // The script is final at this point (fetched above), so this is where a session
+    // that must keep it gets locked.
+    this.applyScriptLock(sessionGroup);
     } finally {
       this.isAddingSession = false;
     }
@@ -970,6 +975,57 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
     // pick here is not a data-loss hole - it is the only way out.
     const current = session?.controls?.sessionScript?.value;
     return current != null && this.sessionScriptOptions.some(option => option.value == current);
+  }
+
+  /**
+   * Owns the disabled state of one session's script select. Neither the disabled
+   * attribute nor a [disabled] binding reaches an element carrying formControlName:
+   * attribute bindings bypass directives entirely (and the value accessor writes
+   * disabled=false when it attaches, which is what silently undid the previous
+   * [attr.disabled]), while the directive's "disabled" input only logs a dev-mode
+   * warning. control.disable()/enable() is the one channel that moves the DOM.
+   * emitEvent:false because this runs from form.valueChanges and would re-enter.
+   */
+  applyScriptLock(session:FormGroup):boolean {
+    const control = session?.controls?.sessionScript;
+    if(!control) {
+      return false;
+    }
+    const locked = this.sessionScriptIsLocked(session);
+    if(locked && !control.disabled) {
+      control.disable({emitEvent:false});
+      return true;
+    }
+    if(!locked && control.disabled) {
+      control.enable({emitEvent:false});
+      return true;
+    }
+    return false;
+  }
+
+  // Covers a changed script list, a delete flag and the value writes of the script
+  // editor. An import status that flips while the dialog sits untouched updates the
+  // hint text but not the control until the next edit - which is why the backend
+  // refusal, not this, is the boundary.
+  applyScriptLocks():void {
+    let flipped = false;
+    this.sessions?.controls.forEach(control => {
+      flipped = this.applyScriptLock(control as FormGroup) || flipped;
+    });
+    if(flipped) {
+      // The flip was emitted with emitEvent:false, so form.statusChanges never fired
+      // and formIsValid - which gates the save button - would keep the previous
+      // aggregate, missing or including the newly excluded control.
+      this.validateForm();
+    }
+  }
+
+  /** What to send to the backend: the group value, with any locked script put back. */
+  sessionsPayloadValue():any[] {
+    return withLockedSessionScripts(
+      this.sessions.value as any[],
+      this.sessions.getRawValue() as any[],
+    );
   }
 
   // The flag arrives as a boolean from the backend, but as a string from the <select>
