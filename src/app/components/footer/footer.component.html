@@ -14,10 +14,4 @@
       <li *ngFor="let link of contactLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
     </ul>
   </div>
-
-  <div class="footer-column footer-node">
-    <a class="footer-logo-link" [href]="text.node.href" target="_blank" rel="noopener">
-      <img class="footer-node-logo" [src]="text.node.logo" [alt]="text.node.label">
-    </a>
-  </div>
 </footer>

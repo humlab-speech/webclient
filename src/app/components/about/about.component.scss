@@ -20,6 +20,9 @@
 
 .about-logo {
     display: block;
-    height: 4.5rem;
+    height: 5.9rem;
     width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: left;
 }

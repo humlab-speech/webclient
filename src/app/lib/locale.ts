@@ -1,8 +1,9 @@
-// The UI itself is English, but the Språkbanken branding (logos, slogans,
-// footer links) comes in Swedish and English; pick it from the browser language.
+// The Språkbanken branding (logos, slogans, footer links) exists in Swedish
+// and English, but the UI itself is English only, so the branding is too:
+// following the browser language gave Swedish visitors a Swedish header on an
+// English site. The Swedish variants are kept for when the UI is translated.
 export type BrandLanguage = 'sv' | 'en';
 
 export function brandLanguage(): BrandLanguage {
-  const language = (typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en').toLowerCase();
-  return language.startsWith('sv') ? 'sv' : 'en';
+  return 'en';
 }

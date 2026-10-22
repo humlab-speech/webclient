@@ -1,4 +1,4 @@
-<header id="menu-bar" [class.menu-bar--dashboard]="showDashboardHero" [style.--hero-collapse]="heroCollapseProgress">
+<header id="menu-bar" [class.menu-bar--dashboard]="showDashboardHero" [class.menu-bar--back-button]="showBackToDashboardButton" [style.--hero-collapse]="heroCollapseProgress">
   <div class="menu-top-row">
     <div class="menu-left">
       <a class="brand-block" href="/" (click)="$event.preventDefault(); backButtonClicked()"
@@ -11,6 +11,10 @@
         <span>Back to dashboard</span>
       </button>
     </div>
+
+    <a class="host-node" [href]="hostNode.href" target="_blank" rel="noopener">
+      <img class="host-node-logo" [src]="hostNode.logo" [alt]="hostNode.label">
+    </a>
 
     <div class="topbar-actions">
       <div *ngIf="showUserActions" class="notification-wrapper" (click)="$event.stopPropagation()">

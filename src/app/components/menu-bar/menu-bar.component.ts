@@ -18,6 +18,12 @@ interface TopBarNotification {
   source: 'toast' | 'notification';
 }
 
+// Logo of the node hosting this installation, shown in the middle of the topbar.
+const HOST_NODE = {
+  sv: { label: 'Umeå universitet', href: 'https://www.umu.se/', logo: '/assets/umu-logotyp-SE.svg' },
+  en: { label: 'Umeå University', href: 'https://www.umu.se/en/', logo: '/assets/umu-logotyp-EN.svg' },
+};
+
 @Component({
   selector: 'app-menu-bar',
   templateUrl: './menu-bar.component.html',
@@ -33,6 +39,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   public readonly brandLogoPath = `/assets/visp_slogan_${this.brandLang}.svg`;
   public readonly brandLogoDarkPath = `/assets/visp_slogan_${this.brandLang}_dark.svg`;
   public readonly brandSlogan = this.brandLang === 'sv' ? 'Språkbankens talforskningsplattform' : 'Språkbanken’s speech research platform';
+  public readonly hostNode = HOST_NODE[this.brandLang];
   public isDashboardRoute:boolean = false;
 
   public userAuthenticationCheckPerformed:boolean = false;

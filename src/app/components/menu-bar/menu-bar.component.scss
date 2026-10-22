@@ -54,12 +54,54 @@
   opacity: 0.8;
 }
 
+// The row's min-height leaves 4.5rem for content, so the logo can fill most
+// of it without making the topbar taller.
 .brand-logo {
   display: block;
-  height: 3.1rem;
+  height: 4.2rem;
   width: auto;
-  max-width: min(60vw, 16rem);
+  max-width: min(60vw, 18rem);
   object-fit: contain;
+}
+
+// Logo of the node hosting this installation (Umeå University), centred on
+// the page rather than between its neighbours. Hidden once the topbar gets
+// too narrow to fit it between the brand logo and the actions; the back
+// button widens the left side, so it goes earlier when that is shown.
+.host-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  transition: opacity 0.15s ease;
+}
+
+.host-node:hover {
+  opacity: 0.8;
+}
+
+.host-node-logo {
+  display: block;
+  height: 3.4rem;
+  width: auto;
+}
+
+// The logo is black on transparent; flip it to white in the dark theme.
+:host-context([data-theme='dark']) .host-node-logo {
+  filter: invert(1);
+}
+
+@media (max-width: 1300px) {
+  .menu-bar--back-button .host-node {
+    display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .host-node {
+    display: none;
+  }
 }
 
 #visp-back-button {
@@ -385,7 +427,7 @@
   }
 
   .brand-logo {
-    height: 2.6rem;
+    height: 3.4rem;
   }
 
   .menu-hero-inner {
@@ -415,5 +457,12 @@
   .notifications-panel {
     right: -4rem;
     width: min(21.5rem, 92vw);
+  }
+}
+
+// Leave room for the sign-in button on phones.
+@media (max-width: 560px) {
+  .brand-logo {
+    height: 2.6rem;
   }
 }
