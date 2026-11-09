@@ -80,3 +80,20 @@ label {
     font-size: 0.9rem;
     margin: 0;
 }
+
+.create-level {
+    margin-bottom: 0.9rem;
+
+    p {
+        color: var(--v-text-2);
+        line-height: 1.45;
+        font-size: 0.95rem;
+        margin: 0 0 0.5rem;
+    }
+
+    .form-error-msg {
+        color: var(--v-danger);
+        font-size: 0.85rem;
+        margin-top: 0.35rem;
+    }
+}

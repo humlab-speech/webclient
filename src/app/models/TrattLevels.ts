@@ -60,3 +60,26 @@ export function preferredTrattLevel(options: TrattLevelOption[], remembered?: st
   }
   return usable[0] ?? null;
 }
+
+/**
+ * Why `name` cannot be a new level in a project with `levels`, or null when it
+ * can. Mirrors session-manager's trattLevel.js (which decides): the project
+ * dialog's level-name rule, and no name the project has in any letter case.
+ */
+export function trattLevelNameProblem(name: string, levels: ProjectAnnotLevel[] | undefined): string | null {
+  if (!/^[A-Za-z0-9 _-]{1,30}$/.test(name ?? "") || name.trim() !== name) {
+    return "A level name is 1-30 letters, digits, spaces, hyphens or underscores";
+  }
+  const clash = (levels ?? []).find(level => (level.name ?? "").toLowerCase() === name.toLowerCase());
+  return clash ? `The project already has a level named "${clash.name}"` : null;
+}
+
+/** The name to offer for a new TRATT level: Transcription, or the first free Transcription_<n>. */
+export function suggestedTrattLevelName(levels: ProjectAnnotLevel[] | undefined): string {
+  for (let n = 1; ; n++) {
+    const name = n === 1 ? DEFAULT_TRATT_LEVEL : `${DEFAULT_TRATT_LEVEL}_${n}`;
+    if (trattLevelNameProblem(name, levels) === null) {
+      return name;
+    }
+  }
+}

@@ -21,10 +21,23 @@
                 </select>
             </div>
 
-            <div class="bundle-mode-help" *ngIf="usableLevels.length === 0">
+            <div class="create-level" *ngIf="offerNewLevel">
+                <p>
+                    This project has no annotation level Tratt can transcribe into. Tratt needs a
+                    SEGMENT level that is not linked to other levels. Create one now?
+                </p>
+                <label for="new-level-name">Name of the new level:</label>
+                <input id="new-level-name" type="text" class="transcription-select" maxlength="30"
+                    [formControl]="newLevelName" [readonly]="creatingLevel"
+                    (keydown.enter)="createLevelAndLaunch()">
+                <div class="form-error-msg" *ngIf="newLevelNameProblem">{{ newLevelNameProblem }}</div>
+                <div class="form-error-msg" *ngIf="createLevelError">{{ createLevelError }}</div>
+            </div>
+
+            <div class="bundle-mode-help" *ngIf="usableLevels.length === 0 && !offerNewLevel">
                 This project has no annotation level Tratt can transcribe into. Tratt needs a
-                SEGMENT level that is not linked to other levels; a project admin can add one
-                in the project's settings.
+                SEGMENT level that is not linked to other levels; a project member who can edit
+                the project can add one in the project's settings.
             </div>
 
             <div class="unusable-levels" *ngIf="unusableLevels.length > 0">
@@ -46,7 +59,11 @@
             </p>
         </div>
 
-        <button type="button" (click)="launch()" [disabled]="launchDisabled()">
+        <button type="button" *ngIf="offerNewLevel" (click)="createLevelAndLaunch()" [disabled]="createLevelDisabled()">
+            <ng-container *ngIf="creatingLevel">Creating level…</ng-container>
+            <ng-container *ngIf="!creatingLevel">{{ assignedBundleCount === 0 ? 'Create level' : 'Create level and launch Tratt' }}</ng-container>
+        </button>
+        <button type="button" *ngIf="!offerNewLevel" (click)="launch()" [disabled]="launchDisabled()">
             Launch Tratt
         </button>
 

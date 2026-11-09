@@ -1,4 +1,4 @@
-import { preferredTrattLevel, trattLevelOptions } from './TrattLevels';
+import { preferredTrattLevel, suggestedTrattLevelName, trattLevelNameProblem, trattLevelOptions } from './TrattLevels';
 
 describe('trattLevelOptions', () => {
   const levels = [
@@ -43,5 +43,32 @@ describe('preferredTrattLevel', () => {
 
   it('is null when nothing is usable', () => {
     expect(preferredTrattLevel(options.filter(o => !o.usable), 'Phonetic')).toBeNull();
+  });
+});
+
+describe('trattLevelNameProblem', () => {
+  const levels = [{ name: 'Word', type: 'ITEM' }];
+
+  it('accepts what the project dialog accepts', () => {
+    expect(trattLevelNameProblem('Transcription', levels)).toBeNull();
+    expect(trattLevelNameProblem('Ortho words_2-b', levels)).toBeNull();
+  });
+
+  it('refuses bad names and names the project has in any case', () => {
+    for (const bad of ['', ' Lead', 'Trail ', 'a/b', 'x'.repeat(31)]) {
+      expect(trattLevelNameProblem(bad, levels)).withContext(bad).not.toBeNull();
+    }
+    expect(trattLevelNameProblem('word', levels)).toContain('"Word"');
+  });
+});
+
+describe('suggestedTrattLevelName', () => {
+  it('suggests Transcription, or the first free numbered name', () => {
+    expect(suggestedTrattLevelName(undefined)).toBe('Transcription');
+    expect(suggestedTrattLevelName([{ name: 'transcription', type: 'ITEM' }])).toBe('Transcription_2');
+    expect(suggestedTrattLevelName([
+      { name: 'Transcription', type: 'ITEM' },
+      { name: 'Transcription_2', type: 'ITEM' },
+    ])).toBe('Transcription_3');
   });
 });
