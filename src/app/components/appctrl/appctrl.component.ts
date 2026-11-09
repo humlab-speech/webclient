@@ -64,9 +64,9 @@ export class AppctrlComponent implements OnInit {
 
   preFlightChecks() {
     let failures = [];
-    if(this.vispApp.name == "artic") {
+    if(this.vispApp.name == "artic" || this.vispApp.name == "tratt") {
       let foundFiles = false;
-      //check that this project contains at least one session with files in it, otherwise artic should not be launchable
+      //check that this project contains at least one session with files in it, otherwise artic/tratt should not be launchable
       this.project.sessions.forEach((session) => {
         if(session.files.length > 0) {
           foundFiles = true;
@@ -87,9 +87,15 @@ export class AppctrlComponent implements OnInit {
     return failures;
   }
 
+  //the annotation level TRATT transcribes into, chosen in the launch dialog
+  private trattLevel: string | null = null;
+
   selectAppOptions() {
-    //launch popup with app options
-    this.modalService.showModal("tratt-select-bundle-dialog", this.project);
+    //ask which annotation level to use; the dialog calls back to launch
+    this.modalService.showModal("tratt-select-level-dialog", this.project, (level: string) => {
+      this.trattLevel = level;
+      this.launchProjectInApp();
+    });
   }
 
   launchProjectInApp() {
@@ -202,10 +208,13 @@ export class AppctrlComponent implements OnInit {
     this.statusMsg = "Launching";
     this.showLoadingIndicator = true;
 
-    //set projectId cookie
+    //set projectId cookie - the annotation server authenticates TRATT's websocket with it, as for artic
     Cookies.set('projectId', this.project.id, { domain: this.domain, secure: true, sameSite: 'None' });
 
+    //TRATT opens the user's bundle list in this project, transcribing into the chosen level
     this.router.navigate(['/tratt'], { queryParams: {
+      projectId: this.project.id,
+      level: this.trattLevel,
     }});
   }
 

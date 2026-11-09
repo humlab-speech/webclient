@@ -467,7 +467,7 @@ export class ManageBundleAssignmentFormComponent implements OnInit {
   }
 
   closeDialog() {
-    this.modalService.hideModal("tratt-select-bundle-dialog");
+    this.modalService.hideModal("manage-bundle-assignment-dialog");
   }
 
   showComment(bundle) {

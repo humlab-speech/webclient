@@ -54,7 +54,7 @@ import { InviteCodeEntryComponent } from './components/invite-code-entry/invite-
 import { HelpDialogComponent } from './components/help-dialog/help-dialog.component';
 import { HelpCtrlComponent } from './components/help-ctrl/help-ctrl.component';
 import { TranscribeDialogComponent } from './components/transcribe-dialog/transcribe-dialog.component';
-import { TrattSelectBundleDialogComponent } from './components/tratt-select-bundle-dialog/tratt-select-bundle-dialog.component';
+import { TrattSelectLevelDialogComponent } from './components/tratt-select-level-dialog/tratt-select-level-dialog.component';
 import { FrontpageComponent } from './components/frontpage/frontpage.component';
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 import { UseInviteCodeDialogComponent } from './components/use-invite-code-dialog/use-invite-code-dialog.component';
@@ -92,7 +92,7 @@ import { UseInviteCodeDialogComponent } from './components/use-invite-code-dialo
     HelpDialogComponent,
     HelpCtrlComponent,
     TranscribeDialogComponent,
-    TrattSelectBundleDialogComponent,
+    TrattSelectLevelDialogComponent,
     FrontpageComponent,
     AdminPanelComponent,
     UseInviteCodeDialogComponent

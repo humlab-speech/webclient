@@ -54,74 +54,22 @@ export class ContainerSessionRenderComponent implements OnInit {
     });
   }
 
+  /**
+   * TRATT's VISP workspace: the user's bundle list in the project, transcribed
+   * into the level chosen in the launch dialog. TRATT reads and saves through
+   * the annotation server (as artic does), authenticated by the PHPSESSID and
+   * projectId cookies; the server address comes from TRATT's own config.
+   */
   setupTratt(iframe) {
-    const DEBUG = false;
-
-    let trattTask = Cookies.get("trattTask");
-    if (DEBUG) console.log("Tratt task from cookie:", trattTask);
-    let trattTaskAnnotationFile = Cookies.get("trattTaskAnnotationFile");
-    if (DEBUG) console.log("Tratt task annotation file from cookie:", trattTaskAnnotationFile);
-
-    // Use current origin so this works across domains/environments, including ports
-    const apiBase = window.location.protocol + "//tratt." + window.location.host;
-    const taskUrl = `${apiBase}/api/v1/file/download/${trattTask}`;
-    if (!trattTask) {
-      console.warn('Tratt task not found in cookies; download URL will be invalid.');
-    }
-    let trattUrlParams = `?embedded=true&audio_url=${encodeURIComponent(taskUrl)}.wav`;
-    if(trattTaskAnnotationFile) {
-      trattUrlParams += `&transcript=${encodeURIComponent(taskUrl)}_annot.json`;
-    }
-    let trattUrl = window.location.protocol+"//tratt."+window.location.hostname + trattUrlParams;
-
-    iframe.setAttribute("src", trattUrl);
-
-    interface TrattWindowMessageEventData {
-      status?: "success" | "changed" | "error";
-      data?: {
-        annotation: IFile; // IFile with annotation saved as AnnotJSON.
-      }
-      error?: string; // only set on error
-    }
-
-    interface IFile {
-      name: string;
-      content: string;
-      type: string;
-      encoding: string;
-    }
-
-    window.addEventListener("message", (event) => {
-      const trattMessageData: TrattWindowMessageEventData = event.data;
-
-      if (trattMessageData?.status === "error" && trattMessageData?.error) {
-        // something went wrong
-        const error = trattMessageData.error;
-        console.log("Tratt error:", error);
-      } else if (trattMessageData?.status === "success") {
-          // user clicked on "SAVE" button on the bottom
-          const annotation = trattMessageData.data.annotation; // annotJSON
-          if (DEBUG) console.log("Tratt annotation saved:", annotation);
-
-          const annotationParsed = JSON.parse(annotation.content);
-
-          this.systemService.sendCommandToBackend({
-            cmd: "saveOctraTask",
-            octraTaskId: annotationParsed.name,
-            annotation: annotationParsed
-          }).then((response: any) => {
-            if (DEBUG) console.log('Task updated:', response);
-          });
-
-        } else if (trattMessageData?.status === "changed") {
-          // user changed something in Tratt
-          const annotation = trattMessageData.data.annotation; // annotJSON
-          if (DEBUG) console.log("Tratt annotation changed:", annotation);
-        }
+    const launch = new URLSearchParams(window.location.search);
+    const projectId = launch.get("projectId") || Cookies.get("projectId") || "";
+    const query = new URLSearchParams({
+      workspace: "visp",
+      projectId: projectId,
+      level: launch.get("level") || "",
     });
+    iframe.setAttribute("src", window.location.protocol + "//tratt." + window.location.hostname + "/?" + query.toString());
   }
-
-
 
   openModal() {
     console.log("Opening modal");

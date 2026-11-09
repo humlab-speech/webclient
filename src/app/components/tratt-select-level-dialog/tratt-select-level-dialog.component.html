@@ -1,0 +1,54 @@
+<div class="modal-bg">
+    <div class="form modal-dialog-container">
+
+        <div class="dialog-header"><h2>Launch Tratt</h2>
+            <div class="dialog-close-btn" (click)="closeDialog()">
+                <i class="fa fa-times" aria-hidden="true"></i>
+            </div>
+        </div>
+
+        <div class="dialog-content">
+
+            <p class="mode-intro">
+                Tratt opens the recording bundles assigned to you in this project and saves
+                your transcriptions into the annotation level you choose here.
+            </p>
+
+            <div class="form-group" *ngIf="usableLevels.length > 0">
+                <label for="level-select">Annotation level:</label>
+                <select id="level-select" [formControl]="level" class="transcription-select">
+                    <option *ngFor="let option of usableLevels" [value]="option.name">{{ option.name }}</option>
+                </select>
+            </div>
+
+            <div class="bundle-mode-help" *ngIf="usableLevels.length === 0">
+                This project has no annotation level Tratt can transcribe into. Tratt needs a
+                SEGMENT level that is not linked to other levels; a project admin can add one
+                in the project's settings.
+            </div>
+
+            <div class="unusable-levels" *ngIf="unusableLevels.length > 0">
+                <span class="unusable-title">Not available in Tratt:</span>
+                <ul>
+                    <li *ngFor="let option of unusableLevels">
+                        <span class="level-name">{{ option.name }}</span>
+                        <span class="level-reason">{{ option.reason }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bundle-mode-help" *ngIf="assignedBundleCount === 0">
+                No recording bundles are assigned to you in this project yet. A project admin
+                assigns them under <strong>Assign annotation tasks</strong>.
+            </div>
+            <p class="bundle-count" *ngIf="assignedBundleCount !== null && assignedBundleCount > 0">
+                {{ assignedBundleCount }} recording {{ assignedBundleCount === 1 ? 'bundle is' : 'bundles are' }} assigned to you.
+            </p>
+        </div>
+
+        <button type="button" (click)="launch()" [disabled]="launchDisabled()">
+            Launch Tratt
+        </button>
+
+    </div>
+</div>
