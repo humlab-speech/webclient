@@ -26,7 +26,10 @@
       <i class="fa fa-wrench" aria-hidden="true"></i>
     </span>
 
-    <h4>{{ infobox.title }}</h4>
+    <div class="info-card-heading">
+      <h3>{{ infobox.title }}</h3>
+      <span *ngIf="infobox.name === 'tools' && trattEnabled" class="tool-badge">No account needed</span>
+    </div>
   </div>
 
   <p>{{ infobox.body }}</p>
@@ -57,12 +60,9 @@
   <div class="resource-list" *ngSwitchCase="'tools'">
     <a *ngIf="trattEnabled" [href]="trattUrl" target="_blank" rel="noopener noreferrer" class="resource-button">
       <span class="resource-left">
-        <span class="resource-icon">
-          <i class="fa fa-pencil" aria-hidden="true"></i>
-        </span>
-        Open Tratt
+        Open TRATT
       </span>
-      <span class="resource-arrow">↗</span>
+      <span class="resource-arrow" aria-hidden="true">↗</span>
     </a>
 
     <div *ngIf="!trattEnabled" class="resource-disabled-message">

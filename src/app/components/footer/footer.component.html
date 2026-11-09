@@ -1,15 +1,15 @@
-<footer id="footer-container">
+<footer id="footer-container" [class.footer--compact]="compact">
   <div class="footer-column footer-sprakbanken">
     <a class="footer-logo-link" [href]="text.sprakbanken" target="_blank" rel="noopener">
       <img class="footer-sb-logo" src="/assets/sprakbanken_logo.svg" alt="Språkbanken">
     </a>
     <ul>
-      <li *ngFor="let link of sprakbankenLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
+      <li *ngFor="let link of compact ? compactSprakbankenLinks : sprakbankenLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
     </ul>
   </div>
 
   <div class="footer-column footer-contact">
-    <p>{{ text.callout }}</p>
+    <p *ngIf="!compact">{{ text.callout }}</p>
     <ul>
       <li *ngFor="let link of contactLinks"><a [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a></li>
     </ul>

@@ -1,4 +1,34 @@
-<div>
-    <app-signin-ctrl></app-signin-ctrl>
-    <app-infobox-manager></app-infobox-manager>
-</div>
+<main>
+  <section class="frontpage-hero" aria-labelledby="frontpage-title">
+    <div class="frontpage-inner">
+      <p class="eyebrow">Språkbanken’s speech research platform</p>
+      <h1 id="frontpage-title">Research speech data,<br><span>with one shared platform.</span></h1>
+      <p class="hero-description">
+        Visible Speech brings together research tools for speech analysis,
+        secure collaboration, and reproducible work.
+      </p>
+      <div class="hero-actions">
+        <div class="hero-action" *ngIf="trattEnabled">
+          <a class="hero-button hero-button--tratt" [href]="trattUrl" target="_blank" rel="noopener noreferrer">
+            Open TRATT <span aria-hidden="true">↗</span>
+          </a>
+          <span class="action-caption">No sign-in needed</span>
+        </div>
+        <div class="hero-action">
+          <button type="button" class="hero-button hero-button--access"
+                  (click)="resources.toggleAccessRequestForm()"
+                  [attr.aria-expanded]="resources.showAccessRequestForm" aria-controls="access-request-form">
+            Request access <span aria-hidden="true">→</span>
+          </button>
+          <span class="action-caption">For the VISP platform</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frontpage-resources" aria-label="Explore VISP">
+    <div class="frontpage-inner">
+      <app-infobox-manager #resources [expandedLayout]="true"></app-infobox-manager>
+    </div>
+  </section>
+</main>

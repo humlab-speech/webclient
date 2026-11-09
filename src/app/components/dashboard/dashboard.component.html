@@ -1,4 +1,5 @@
 <div id="dashboard" [class.dashboard--signed-out-frontpage]="showSignedOutFrontpage">
+  <app-frontpage *ngIf="showSignedOutFrontpage"></app-frontpage>
   <main id="main-content">
     <ng-container *ngIf="userAuthenticationCheckPerformed && userIsAuthenticated && userIsAuthorized; else unauthenticatedState">
       <section class="workspace-section">
@@ -29,7 +30,7 @@
     <app-tratt-select-bundle-dialog *ngIf="(modalActive && modalName=='tratt-select-bundle-dialog')" [project]="modalArgs[0]"></app-tratt-select-bundle-dialog>
   </main>
 
-  <aside id="infobar">
-    <app-infobox-manager [expandedLayout]="showSignedOutFrontpage"></app-infobox-manager>
+  <aside id="infobar" *ngIf="!showSignedOutFrontpage">
+    <app-infobox-manager></app-infobox-manager>
   </aside>
 </div>

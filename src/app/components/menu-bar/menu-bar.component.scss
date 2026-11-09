@@ -464,5 +464,6 @@
 @media (max-width: 560px) {
   .brand-logo {
     height: 2.6rem;
+    max-width: min(45vw, calc(100vw - 13rem));
   }
 }

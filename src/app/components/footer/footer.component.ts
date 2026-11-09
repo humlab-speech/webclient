@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { brandLanguage } from 'src/app/lib/locale';
 
 interface FooterLink {
@@ -36,7 +36,9 @@ const FOOTER_TEXT = {
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent {
+  @Input() compact = false;
   public readonly text = FOOTER_TEXT[brandLanguage()];
   public readonly sprakbankenLinks: FooterLink[] = [this.text.about, this.text.news, this.text.platforms];
+  public readonly compactSprakbankenLinks: FooterLink[] = [this.text.about, this.text.platforms];
   public readonly contactLinks: FooterLink[] = [this.text.contact, this.text.cite];
 }
