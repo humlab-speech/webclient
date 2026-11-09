@@ -1,4 +1,4 @@
-<header id="menu-bar" [class.menu-bar--dashboard]="showDashboardHero" [class.menu-bar--back-button]="showBackToDashboardButton" [style.--hero-collapse]="heroCollapseProgress">
+<header id="menu-bar" [class.menu-bar--dashboard]="showSignedInHero" [class.menu-bar--back-button]="showBackToDashboardButton" [style.--hero-collapse]="heroCollapseProgress">
   <div class="menu-top-row">
     <div class="menu-left">
       <a class="brand-block" href="/" (click)="$event.preventDefault(); backButtonClicked()"
@@ -62,9 +62,9 @@
     </div>
   </div>
 
-  <div class="menu-hero-content" *ngIf="showDashboardHero">
+  <div class="menu-hero-content" *ngIf="showSignedInHero">
    <div class="menu-hero-inner">
-    <ng-container *ngIf="showSignedInHero; else signedOutHeroTemplate">
+    <ng-container *ngIf="showSignedInHero">
       <div class="menu-hero-badge">{{ greetingLine }}</div>
       <h1>Your speech research,<br><span>secured and organized.</span></h1>
       <p>
@@ -83,18 +83,6 @@
       </div>
     </ng-container>
 
-    <ng-template #signedOutHeroTemplate>
-      <ng-container *ngIf="showSignedOutHero">
-        <div class="menu-hero-badge">Welcome to VISP</div>
-        <h1>Research speech data,<br><span>with one shared platform.</span></h1>
-        <p>
-          Visible Speech is a collection of research tools for speech analysis.
-          If you need access to the system, contact us at
-          <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
-        </p>
-        <app-signin-ctrl></app-signin-ctrl>
-      </ng-container>
-    </ng-template>
    </div>
   </div>
 </header>

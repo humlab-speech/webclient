@@ -1,10 +1,10 @@
-<div id="main-container">
-  <app-menu-bar></app-menu-bar>
+<div id="main-container" [style.--hero-collapse]="menuBar.heroCollapseProgress">
+  <app-menu-bar #menuBar></app-menu-bar>
 
   <div id="content-container">
     <notifier-container>notifier</notifier-container>
     <router-outlet></router-outlet>
   </div>
 
-  <app-footer *ngIf="showBottomBanner" class="app-footer"></app-footer>
+  <app-footer *ngIf="showBottomBanner" class="app-footer" [compact]="menuBar.showSignedOutHero"></app-footer>
 </div>

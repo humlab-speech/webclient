@@ -1,22 +1,19 @@
 <section class="infobar-block" [class.infobar-block--expanded]="expandedLayout">
   <div class="infobar-heading">
-    <span class="eyebrow">Resources</span>
-    <h3>{{ headingText }}</h3>
+    <span class="eyebrow">{{ expandedLayout ? 'Explore VISP' : 'Resources' }}</span>
+    <h2>{{ headingText }}</h2>
   </div>
 
   <div class="infobar-intro-row" *ngIf="expandedLayout">
     <p class="infobar-intro">
       Learn how VISP supports speech research, onboarding, and secure collaboration.
     </p>
-    <button type="button" class="infobar-cta-button" (click)="toggleAccessRequestForm()">
-      <i class="fa fa-key" aria-hidden="true"></i>
-      {{ showAccessRequestForm ? 'Close form' : 'Request access' }}
-    </button>
   </div>
 
   <form
     *ngIf="expandedLayout && showAccessRequestForm"
     class="access-request-form"
+    id="access-request-form"
     [formGroup]="accessRequestForm"
     (ngSubmit)="submitAccessRequest()"
     novalidate
@@ -29,6 +26,9 @@
         <h4>Request access to VISP</h4>
         <p>Enter your email address and we'll open a prefilled message to our support team.</p>
       </div>
+      <button type="button" class="access-form-close" aria-label="Close access request" (click)="toggleAccessRequestForm()">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
     </div>
     <div class="access-request-field">
       <label for="access-request-email">Your contact email</label>
@@ -36,11 +36,14 @@
         <div class="access-input-wrap">
           <i class="fa fa-envelope-o access-input-icon" aria-hidden="true"></i>
           <input
+            #accessEmailInput
             id="access-request-email"
             type="email"
             formControlName="email"
             placeholder="name@example.org"
             autocomplete="email"
+            [attr.aria-invalid]="accessEmailControl?.touched && accessEmailControl?.invalid"
+            aria-describedby="access-request-hint access-request-error"
           >
         </div>
         <button type="submit">
@@ -48,11 +51,11 @@
           Send request
         </button>
       </div>
-      <p class="access-request-error" *ngIf="accessEmailControl?.touched && accessEmailControl?.invalid">
+      <p id="access-request-error" class="access-request-error" *ngIf="accessEmailControl?.touched && accessEmailControl?.invalid" role="alert">
         Enter a valid e-mail address to continue.
       </p>
     </div>
-    <p class="access-request-hint">
+    <p id="access-request-hint" class="access-request-hint">
       This opens your e-mail client with a prefilled request to support&#64;humlab.umu.se.
     </p>
   </form>

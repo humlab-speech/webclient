@@ -17,17 +17,13 @@
 
 #dashboard.dashboard--signed-out-frontpage {
   grid-template-columns: minmax(0, 1fr);
-  max-width: 1300px;
-  padding-top: 0.55rem;
+  max-width: none;
+  padding: 0;
+  gap: 0;
 }
 
 #dashboard.dashboard--signed-out-frontpage #main-content {
   display: none;
-}
-
-#dashboard.dashboard--signed-out-frontpage #infobar {
-  grid-column: 1 / -1;
-  padding-top: 0.15rem;
 }
 
 .workspace-section {

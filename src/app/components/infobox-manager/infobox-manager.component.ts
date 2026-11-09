@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Infobox } from '../../models/Infobox';
 
@@ -10,6 +10,7 @@ import { Infobox } from '../../models/Infobox';
 export class InfoboxManagerComponent implements OnInit, OnChanges {
 
   @Input() expandedLayout:boolean = false;
+  @ViewChild('accessEmailInput') accessEmailInput?: ElementRef<HTMLInputElement>;
   infoboxes:Infobox[] = [];
   showAccessRequestForm:boolean = false;
   accessRequestForm:FormGroup;
@@ -39,17 +40,17 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'secure-infrastructure',
             title: 'Secure infrastructure',
-            body: 'VISP provides an isolated environment designed for speech data processing, built to meet security and compliance requirements from day one.'
+            body: 'An isolated environment for speech data processing, designed around security and compliance.'
           },
           {
             name: 'reproducible-workflows',
             title: 'Reproducible workflows',
-            body: 'Projects follow a documented and transparent structure that supports reproducible processing, collaboration, long-term archiving, and FAIR data practices.'
+            body: 'Documented project structures support reproducible processing, collaboration, long-term archiving, and FAIR data practices.'
           },
           {
             name: 'tools',
             title: 'Tools',
-            body: 'TRATT is available as an open browser-based transcription tool. It runs locally in your browser, so your audio files are not uploaded to VISP.'
+            body: 'TRATT is a free browser-based transcription tool. Audio stays in your browser and is not uploaded to VISP.'
           }
         ]
       : [
@@ -67,11 +68,14 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
   }
 
   get headingText():string {
-    return this.expandedLayout ? 'Explore VISP' : 'Get Started';
+    return this.expandedLayout ? 'Built for speech research' : 'Get Started';
   }
 
   toggleAccessRequestForm():void {
     this.showAccessRequestForm = !this.showAccessRequestForm;
+    if(this.showAccessRequestForm) {
+      setTimeout(() => this.accessEmailInput?.nativeElement.focus());
+    }
   }
 
   submitAccessRequest():void {

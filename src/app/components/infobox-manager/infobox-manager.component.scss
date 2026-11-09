@@ -18,7 +18,7 @@
   margin-bottom: 0.6rem;
 }
 
-.infobar-heading h3 {
+.infobar-heading h2 {
   margin: 0;
   font-size: 2.5rem;
   font-weight: 600;
@@ -43,52 +43,18 @@
   line-height: 1.6;
 }
 
-.infobar-cta-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.75rem 1.55rem;
-  border-radius: 6px;
-  background: var(--v-accent);
-  border: none;
-  color: var(--v-on-accent);
-  font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: transform 0.13s ease, box-shadow 0.13s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-  line-height: 1;
-
-  .fa {
-    font-size: 1.15em;
-  }
-
-  &:hover {
-    background: var(--v-accent-hover);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
 .infobar-card-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
 }
 
-.infobar-block--expanded .infobar-card-grid {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-
 /* ── Access request form ─────────────────────────────────────── */
 
 .access-request-form {
-  border: 1px solid var(--v-border-strong);
+  border: 1px solid var(--v-border);
   border-radius: 10px;
+  box-shadow: var(--v-shadow);
   background: var(--v-surface);
   padding: 1.5rem 1.6rem 1.35rem;
   display: grid;
@@ -259,7 +225,7 @@
   }
 }
 
-.infobar-block--expanded .infobar-heading h3 {
+.infobar-block--expanded .infobar-heading h2 {
   font-size: clamp(1.7rem, 2.2vw, 2.2rem);
 }
 
@@ -273,8 +239,44 @@
     justify-content: center;
   }
 
-  .infobar-cta-button {
-    width: 100%;
-    justify-content: center;
+}
+
+.infobar-block--expanded {
+  .infobar-intro {
+    max-width: none;
+  }
+
+  .infobar-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .access-request-form {
+    scroll-margin-top: 7rem;
+  }
+}
+
+.access-form-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid var(--v-border);
+  border-radius: 6px;
+  background: var(--v-control);
+  color: var(--v-muted);
+
+  &:hover {
+    border-color: var(--v-border-strong);
+    background: var(--v-surface-2);
+    color: var(--v-text);
+  }
+}
+
+@media (max-width: 1000px) {
+  .infobar-block--expanded .infobar-card-grid {
+    grid-template-columns: 1fr;
   }
 }

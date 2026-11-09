@@ -2,6 +2,67 @@
     display: block;
 }
 
+#footer-container.footer--compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1420px;
+    min-height: 7rem;
+    padding: 1.75rem 1.5rem;
+    font-size: 1rem;
+
+    .footer-sprakbanken {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .footer-logo-link {
+        padding-right: 2rem;
+        border-right: 1px solid var(--v-border);
+    }
+
+    .footer-sb-logo {
+        height: 1.6rem;
+        margin: 0.5rem 0;
+    }
+
+    .footer-column ul {
+        gap: 0.1rem;
+    }
+
+    .footer-contact ul {
+        flex-direction: row;
+        gap: 1.8rem;
+    }
+
+    .footer-contact li + li {
+        border-left: 1px solid var(--v-border);
+        padding-left: 1.8rem;
+    }
+}
+
+@media (max-width: 900px) {
+    #footer-container.footer--compact {
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 1.75rem 1rem;
+
+        .footer-sprakbanken {
+            gap: 1.25rem;
+        }
+
+        .footer-logo-link {
+            padding-right: 1.25rem;
+        }
+
+        .footer-sb-logo {
+            max-width: 35vw;
+            height: auto;
+        }
+    }
+}
+
 // The third column is left empty so the contact column stays centred.
 #footer-container {
     display: grid;
