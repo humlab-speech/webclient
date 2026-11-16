@@ -28,9 +28,9 @@
               </div>
               <p>Tools you can launch to interact with your project's data:</p>
               <ul class="help-list">
-                <li><strong>Annotation tool</strong> — Label, annotate, and visualize speech data using Artic.</li>
-                <li><strong>Notebook tool</strong> — Run R or Python code in a Jupyter environment on the VISP server to analyze your data using the emuR library.</li>
-                <li><strong>Artic</strong> — A standalone transcription editor. No separate login is required, but it operates independently from the rest of the platform.</li>
+                <li><strong>Artic</strong> — Annotation tool: label, annotate, and visualize speech data on any annotation tier, with spectrograms and acoustic measurements.</li>
+                <li><strong>Tratt</strong> — Transcription tool: transcribe the recording bundles assigned to you, on the tier you choose when launching it. Your work is saved straight back to the project.</li>
+                <li><strong>Jupyter Notebook</strong> — Run R or Python code in a Jupyter environment on the Visp server to analyze your data using the emuR library.</li>
               </ul>
             </div>
 
@@ -42,8 +42,8 @@
               <p>Manage your project’s workflow and resources:</p>
               <ul class="help-list">
                 <li><strong>Auto-transcribe</strong> — Assign audio files for automatic speech transcription via an AI model.</li>
-                <li><strong>Recording sessions</strong> — View and manage recording sessions. Each recording session corresponds to a recording event and contains its associated audio files. Recording sessions can be based on uploaded files, or recorded directly online in VISP.</li>
-                <li><strong>Assign annotation tasks</strong> — Distribute annotation bundles to project members. Assignments are tightly integrated with the Transcription tool.</li>
+                <li><strong>Recording sessions</strong> — View and manage recording sessions. Each recording session corresponds to a recording event and contains its associated audio files. Recording sessions can be based on uploaded files, or recorded directly online in Visp.</li>
+                <li><strong>Assign annotation tasks</strong> — Choose which recording bundles each project member works on. Artic and Tratt show members only the bundles assigned to them, and members mark them done there.</li>
                 <li><strong>Members</strong> — Manage your project’s team members and their roles.</li>
                 <li><strong>Manage recording scripts</strong> — Create and edit recording scripts. A script is a set of prompts for participants to speak during a recording session.</li>
               </ul>
@@ -82,13 +82,32 @@
           </section>
         }
 
+        @if (getCurrentNavigation() == 'tratt') {
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+              <h2>Tratt</h2>
+            </div>
+            <p>Tratt is a transcription tool. It works on one annotation tier, the one you chose when launching it, and leaves every other tier as it is.</p>
+          </section>
+
+          <section class="help-section">
+            <div class="help-section-header">
+              <span class="help-section-icon"><i class="fa fa-info-circle" aria-hidden="true"></i></span>
+              <h2>Using the tool</h2>
+            </div>
+            <p>Your assigned recording bundles appear in the list on the left. Only bundles assigned to you under <strong>Assign annotation tasks</strong> are shown — even as project leader you must assign bundles to yourself before they appear here.</p>
+            <p>Your transcript is saved to the project automatically. The ring beside each bundle shows how much of its audio has text; click it to mark the bundle done, which the project leader sees under <strong>Assign annotation tasks</strong>.</p>
+          </section>
+        }
+
         @if (getCurrentNavigation() == 'jupyter') {
           <section class="help-section">
             <div class="help-section-header">
               <span class="help-section-icon"><i class="fa fa-code" aria-hidden="true"></i></span>
               <h2>Jupyter Notebook</h2>
             </div>
-            <p>You are running a Jupyter notebook session on the VISP server. Use R or Python to analyze your speech data, including the <strong>emuR</strong> library to work with your Emu-R database — no local installation needed.</p>
+            <p>You are running a Jupyter notebook session on the Visp server. Use R or Python to analyze your speech data, including the <strong>emuR</strong> library to work with your Emu-R database — no local installation needed.</p>
           </section>
 
           <section class="help-section">

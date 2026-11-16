@@ -39,7 +39,7 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'secure-infrastructure',
             title: 'Secure infrastructure',
-            body: 'VISP provides an isolated environment designed for speech data processing, built to meet security and compliance requirements from day one.'
+            body: 'Visp provides an isolated environment designed for speech data processing, built to meet security and compliance requirements from day one.'
           },
           {
             name: 'reproducible-workflows',
@@ -49,7 +49,7 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'tools',
             title: 'Tools',
-            body: 'TRATT is available as an open browser-based transcription tool. It runs locally in your browser, so your audio files are not uploaded to VISP.'
+            body: 'Tratt is available as an open browser-based transcription tool. It can run locally in your browser, without your audio files being uploaded to Visp.'
           }
         ]
       : [
@@ -61,13 +61,13 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'help-and-guides',
             title: 'Help & Guides',
-            body: 'Want to learn how to start a project in VISP? Find tutorials and references here.'
+            body: 'Want to learn how to start a project in Visp? Find tutorials and references here.'
           }
         ];
   }
 
   get headingText():string {
-    return this.expandedLayout ? 'Explore VISP' : 'Get Started';
+    return this.expandedLayout ? 'Explore Visp' : 'Get Started';
   }
 
   toggleAccessRequestForm():void {
@@ -81,9 +81,9 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
     }
 
     const email = `${this.accessRequestForm.value.email || ''}`.trim();
-    const subject = encodeURIComponent('VISP access request');
+    const subject = encodeURIComponent('Visp access request');
     const body = encodeURIComponent(
-      `Hello,\n\nI would like to request access to VISP.\n\nContact email: ${email}\n`
+      `Hello,\n\nI would like to request access to Visp.\n\nContact email: ${email}\n`
     );
 
     if(typeof window !== 'undefined') {

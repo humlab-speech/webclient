@@ -38,7 +38,7 @@ export function trattLevelOptions(
   return (levels ?? []).map(level => {
     const type = (level.type ?? "").toUpperCase();
     if (type !== "SEGMENT") {
-      return { name: level.name, type, usable: false, reason: `${type || "Unknown"} level; TRATT needs a SEGMENT level` };
+      return { name: level.name, type, usable: false, reason: `${type || "Unknown"} level; Tratt needs a SEGMENT level` };
     }
     const linkedTo = (links ?? [])
       .filter(link => link.superLevel === level.name || link.subLevel === level.name)
