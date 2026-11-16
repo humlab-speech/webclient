@@ -1,14 +1,15 @@
 <div class="account" *ngIf="userIsSignedIn" (mouseover)="showAccountMenu(true)" (mouseout)="showAccountMenu(false, true)">
   <button class="profile-pill" aria-label="Account menu">
     <span class="profile-avatar">{{ getUserInitials() }}</span>
-    <span class="profile-meta">
-      <strong>{{ getUserDisplayName() }}</strong>
-      <span>{{ getUserRole() }}</span>
-    </span>
+    <span class="profile-name">{{ getUserDisplayName() }}</span>
     <i class="fa fa-angle-down" aria-hidden="true"></i>
   </button>
 
   <ul *ngIf="accountMenuVisible" class="account-menu-dropdown">
+    <li class="account-menu-who">
+      <strong>{{ getUserDisplayName() }}</strong>
+      <span>{{ getUserRole() }}</span>
+    </li>
     <li *ngIf="isAdmin()" (click)="openAdminPanel()"><i class="fa fa-cogs" aria-hidden="true"></i> Admin</li>
     <li (click)="showUseInviteCodeDialog()"><i class="fa fa-ticket" aria-hidden="true"></i> Use invite code</li>
     <li (click)="showHelpDialog()"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</li>

@@ -2,14 +2,17 @@
   <div class="menu-top-row">
     <div class="menu-left">
       <a class="brand-block" href="/" (click)="$event.preventDefault(); backButtonClicked()"
-         [attr.aria-label]="'VISP, ' + brandSlogan + ' (start page)'">
-        <img class="brand-logo" [src]="themeService.theme === 'dark' ? brandLogoDarkPath : brandLogoPath" [alt]="'VISP – ' + brandSlogan">
+         [attr.aria-label]="'Visp, ' + brandSlogan + ' (start page)'">
+        <img class="brand-logo" [src]="brandLogoPath" [alt]="'Visp – ' + brandSlogan">
       </a>
 
-      <button *ngIf="showBackToDashboardButton" id="visp-back-button" (click)="backButtonClicked()" aria-label="Back to dashboard">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-        <span>Back to dashboard</span>
-      </button>
+      <ng-container *ngIf="showBackToDashboardButton">
+        <span class="bar-divider" aria-hidden="true"></span>
+        <a id="visp-back-button" href="/" (click)="$event.preventDefault(); backButtonClicked()" aria-label="Back to dashboard">
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </a>
+      </ng-container>
     </div>
 
     <a class="host-node" [href]="hostNode.href" target="_blank" rel="noopener">
@@ -64,37 +67,14 @@
 
   <div class="menu-hero-content" *ngIf="showDashboardHero">
    <div class="menu-hero-inner">
-    <ng-container *ngIf="showSignedInHero; else signedOutHeroTemplate">
-      <div class="menu-hero-badge">{{ greetingLine }}</div>
-      <h1>Your speech research,<br><span>secured and organized.</span></h1>
-      <p>
-        Manage projects, transcribe recordings, and collaborate with your team
-        in one modern workspace.
-      </p>
-      <div class="menu-hero-actions">
-        <button id="tutorial-create-project-btn" class="hero-btn hero-btn-primary" (click)="createProject()" [disabled]="!canCreateProjects">
-          <i class="fa fa-plus" aria-hidden="true"></i>
-          <span>New project</span>
-        </button>
-        <button class="hero-btn hero-btn-help" (click)="openHelpDialog()">
-          <i class="fa fa-question-circle" aria-hidden="true"></i>
-          <span>Help</span>
-        </button>
-      </div>
-    </ng-container>
-
-    <ng-template #signedOutHeroTemplate>
-      <ng-container *ngIf="showSignedOutHero">
-        <div class="menu-hero-badge">Welcome to VISP</div>
-        <h1>Research speech data,<br><span>with one shared platform.</span></h1>
-        <p>
-          Visible Speech is a collection of research tools for speech analysis.
-          If you need access to the system, contact us at
-          <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
-        </p>
-        <app-signin-ctrl></app-signin-ctrl>
-      </ng-container>
-    </ng-template>
+    <div class="menu-hero-badge">Welcome to Visp</div>
+    <h1>Research speech data,<br><span>with one shared platform.</span></h1>
+    <p>
+      Visible Speech is a collection of research tools for speech analysis.
+      If you need access to the system, contact us at
+      <a href="mailto:support@humlab.umu.se">support&#64;humlab.umu.se</a>.
+    </p>
+    <app-signin-ctrl></app-signin-ctrl>
    </div>
   </div>
 </header>

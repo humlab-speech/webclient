@@ -3,57 +3,43 @@
   z-index: 30;
 }
 
-// Lives in the topbar.
+// Lives in the topbar, which is dark in both themes.
 .profile-pill,
 .signin-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 3.1rem;
-  border: 1px solid var(--v-border-strong);
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  border: 0;
   border-radius: 6px;
-  background: var(--v-topbar);
+  background: transparent;
   color: var(--v-topbar-text);
-  padding: 0.3rem 0.85rem 0.3rem 0.45rem;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  padding: 0 0.5rem 0 0.35rem;
+  font-size: 0.95rem;
+  transition: background 0.15s ease;
 }
 
 .profile-pill:hover,
 .signin-pill:hover {
-  border-color: var(--v-interactive);
   background: var(--v-topbar-raised);
 }
 
 .profile-avatar {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 1.85rem;
+  height: 1.85rem;
   border-radius: 50%;
   display: grid;
   place-items: center;
   color: var(--v-on-accent);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   background: var(--v-accent);
   flex: 0 0 auto;
 }
 
-.profile-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1.2;
-  margin-right: 0.5rem;
-}
-
-.profile-meta strong {
-  font-size: 1rem;
+.profile-name {
   font-weight: 500;
-  color: var(--v-topbar-text);
-}
-
-.profile-meta span {
-  font-size: 0.8rem;
-  color: var(--v-topbar-muted);
+  white-space: nowrap;
 }
 
 .profile-pill > i {
@@ -61,15 +47,14 @@
 }
 
 .signin-pill {
-  padding: 0.35rem 0.95rem;
-  font-size: 1rem;
+  padding: 0 0.8rem;
   font-weight: 500;
   cursor: pointer;
 }
 
 .signin-pill > i {
-  color: var(--v-interactive);
-  font-size: 1.2rem;
+  color: var(--v-topbar-muted);
+  font-size: 1.15rem;
 }
 
 .account-menu-dropdown {
@@ -112,12 +97,32 @@
   cursor: pointer;
 }
 
-@media (max-width: 560px) {
-  .profile-meta {
-    display: none;
-  }
+// Who is signed in, and as what: not an action.
+.account-menu-dropdown li.account-menu-who {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  border-bottom: 1px solid var(--v-border);
+  margin-bottom: 0.3rem;
+  cursor: default;
+}
 
-  .profile-pill {
-    padding-right: 0.6rem;
+.account-menu-dropdown li.account-menu-who:hover {
+  background: transparent;
+  color: var(--v-text);
+}
+
+.account-menu-who strong {
+  font-weight: 500;
+}
+
+.account-menu-who span {
+  font-size: 0.8rem;
+  color: var(--v-muted);
+}
+
+@media (max-width: 560px) {
+  .profile-name {
+    display: none;
   }
 }

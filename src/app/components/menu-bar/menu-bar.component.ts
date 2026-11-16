@@ -2,8 +2,6 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { NotifierService } from 'angular-notifier';
 import { Subscription } from 'rxjs';
-import { UserSession } from 'src/app/models/UserSession';
-import { ModalService } from 'src/app/services/modal.service';
 import { SystemService } from 'src/app/services/system.service';
 import { UserService } from 'src/app/services/user.service';
 import { ThemeService } from 'src/app/services/theme.service';
@@ -18,10 +16,11 @@ interface TopBarNotification {
   source: 'toast' | 'notification';
 }
 
-// Logo of the node hosting this installation, shown in the middle of the topbar.
+// Logo of the node hosting this installation, shown beside the topbar actions:
+// Umeå University's Humlab variant (seal, name and "Humlab" on one line).
 const HOST_NODE = {
-  sv: { label: 'Umeå universitet', href: 'https://www.umu.se/', logo: '/assets/umu-logotyp-SE.svg' },
-  en: { label: 'Umeå University', href: 'https://www.umu.se/en/', logo: '/assets/umu-logotyp-EN.svg' },
+  sv: { label: 'Humlab, Umeå universitet', href: 'https://www.umu.se/humlab/', logo: '/assets/humlab-umu-logo-SE.svg' },
+  en: { label: 'Humlab, Umeå University', href: 'https://www.umu.se/en/humlab/', logo: '/assets/humlab-umu-logo-EN.svg' },
 };
 
 @Component({
@@ -34,10 +33,10 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   public containerSessionViewActive:boolean = false;
   public showBackToDashboardButton:boolean = false;
 
-  // Platform logo with slogan, per Språkbanken's graphic profile.
+  // Platform logo, per Språkbanken's graphic profile. The topbar is dark in
+  // both themes and too slim for the slogan, which stays in the alt text.
   private readonly brandLang = brandLanguage();
-  public readonly brandLogoPath = `/assets/visp_slogan_${this.brandLang}.svg`;
-  public readonly brandLogoDarkPath = `/assets/visp_slogan_${this.brandLang}_dark.svg`;
+  public readonly brandLogoPath = '/assets/visp_dark.svg';
   public readonly brandSlogan = this.brandLang === 'sv' ? 'Språkbankens talforskningsplattform' : 'Språkbanken’s speech research platform';
   public readonly hostNode = HOST_NODE[this.brandLang];
   public isDashboardRoute:boolean = false;
@@ -45,8 +44,6 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   public userAuthenticationCheckPerformed:boolean = false;
   public userIsAuthenticated:boolean = false;
   public userIsAuthorized:boolean = false;
-  public userFullName:string = '';
-  public userSession:UserSession = null;
 
   public heroCollapseProgress:number = 1;
   public isNotificationsPanelOpen:boolean = false;
@@ -166,21 +163,6 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     }
   };
 
-  private readonly firstLoginPhrases:string[] = [
-    'Nice to see you',
-    'Great to have you here',
-    'Happy to have you on board'
-  ];
-  private readonly returnPhrases:string[] = [
-    'Welcome back',
-    'Nice to see you again',
-    'Glad you made it back'
-  ];
-  private readonly longBreakPhrases:string[] = [
-    'It has been a while',
-    'Welcome back after a break'
-  ];
-
   private routerSubscription?: Subscription;
   private userEventSubscription?: Subscription;
   private toastActionSubscription?: Subscription;
@@ -192,14 +174,11 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     private systemService: SystemService,
     private toastService: NotifierService,
     private userService: UserService,
-    private modalService: ModalService,
     public themeService: ThemeService
   ) {
-    this.userFullName = (window as any).visp?.fullName || '';
     this.userAuthenticationCheckPerformed = this.userService.userAuthenticationCheckPerformed;
     this.userIsAuthenticated = this.userService.userIsAuthenticated;
     this.userIsAuthorized = this.userService.userIsAuthorized;
-    this.userSession = this.userService.getSession();
   }
 
   ngOnInit(): void {
@@ -224,15 +203,11 @@ export class MenuBarComponent implements OnInit, OnDestroy {
       if(event === 'userAuthentication') {
         this.userIsAuthenticated = this.userService.userIsAuthenticated;
         this.userAuthenticationCheckPerformed = true;
-        if(this.userIsAuthenticated) {
-          this.userSession = this.userService.getSession();
-        }
       }
 
       if(event === 'userAuthorization') {
         this.userIsAuthorized = this.userService.userIsAuthorized;
         if(this.userIsAuthorized) {
-          this.userSession = this.userService.getSession();
           this.fetchNotificationsFromBackend();
         }
       }
@@ -287,18 +262,6 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     this.systemService.setCurrentApplication('dashboard');
   }
 
-  createProject(): void {
-    if(!this.canCreateProjects) {
-      return;
-    }
-
-    this.modalService.showModal('project-dialog');
-  }
-
-  openHelpDialog(): void {
-    this.modalService.showModal('help-dialog');
-  }
-
   toggleNotificationsPanel(event: MouseEvent) {
     event.stopPropagation();
     this.isNotificationsPanelOpen = !this.isNotificationsPanelOpen;
@@ -324,50 +287,18 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     return notification.id;
   }
 
+  // The hero welcomes signed-out visitors on the front page; signed-in users
+  // go straight to their projects (New project and Help live there too).
   get showDashboardHero():boolean {
-    if(!this.isDashboardRoute || this.showBackToDashboardButton || !this.userAuthenticationCheckPerformed) {
-      return false;
-    }
-
-    if(!this.userIsAuthenticated) {
-      return true;
-    }
-
-    return this.userIsAuthorized;
-  }
-
-  get showSignedInHero():boolean {
-    return this.showDashboardHero && this.userIsAuthenticated && this.userIsAuthorized;
-  }
-
-  get showSignedOutHero():boolean {
-    return this.showDashboardHero && !this.userIsAuthenticated;
+    return this.isDashboardRoute
+      && !this.showBackToDashboardButton
+      && this.userAuthenticationCheckPerformed
+      && !this.userIsAuthenticated;
   }
 
   get showUserActions():boolean {
     // Notifications only mean something to a user who can reach projects.
     return this.userIsAuthenticated && this.userIsAuthorized;
-  }
-
-  get canCreateProjects():boolean {
-    // Creating a project is a system-level action, reserved for sysadmins.
-    return this.userService.userIsSysAdmin();
-  }
-
-  get firstName():string {
-    if(this.userSession?.firstName) {
-      return this.userSession.firstName;
-    }
-
-    if(this.userFullName) {
-      return this.userFullName.split(' ')[0] || this.userFullName;
-    }
-
-    return 'researcher';
-  }
-
-  get greetingLine():string {
-    return `${this.getGreetingPrefix()}, ${this.firstName}`;
   }
 
   @HostListener('window:resize')
@@ -479,34 +410,6 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     if(typeof document !== 'undefined') {
       document.body.classList.remove('hero-phase1');
     }
-  }
-
-  private getGreetingPrefix():string {
-    const loginCount = this.userSession?.loginCount || 0;
-    const lastLoginDurationSeconds = this.userSession?.lastLoginDurationSeconds;
-
-    if(loginCount <= 1) {
-      return this.pickPhrase(this.firstLoginPhrases);
-    }
-
-    if(typeof lastLoginDurationSeconds === 'number' && lastLoginDurationSeconds >= 60 * 60 * 24 * 14) {
-      return this.pickPhrase(this.longBreakPhrases);
-    }
-
-    return this.pickPhrase(this.returnPhrases);
-  }
-
-  private pickPhrase(phrases:string[]):string {
-    const seed = `${this.userSession?.username || this.userFullName || ''}:${this.userSession?.loginCount || 0}`;
-    let hash = 0;
-
-    for(let i = 0; i < seed.length; i++) {
-      hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-      hash |= 0;
-    }
-
-    const index = Math.abs(hash) % phrases.length;
-    return phrases[index];
   }
 
   private async fetchNotificationsFromBackend() {
