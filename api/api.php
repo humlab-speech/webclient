@@ -26,7 +26,7 @@ $accessListEnabled = strtolower((string)getenv("ACCESS_LIST_ENABLED")) === "true
 // deploying. Do not "fix" a subdomain problem by moving this to None - that is a
 // cross-site cookie, and it needs Secure as well.
 session_set_cookie_params([
-    "lifetime" => 60 * 60 * 8,
+    "lifetime" => SESSION_COOKIE_LIFETIME,
     "path" => "/",
     "domain" => $domain,
     "secure" => $secure,
@@ -140,52 +140,56 @@ class Application {
         }
 
         if(empty($_SESSION['loginAllowed'])) {
-            //if loginAllowed is not set, we need to fetch the complete session from the mongodb
-            $this->addLog("Session not found in PHP session, fetching from MongoDB", "debug");
+            //No grant recorded in the PHP session - it may have been given since
+            //sign-in (an invite code redeemed over the websocket), so re-read the
+            //user from mongo. A session that knows who it is looks the user up by
+            //username: users.phpSessionId names only the most recent sign-in, so
+            //looking up by it failed every session but the newest for a user
+            //signed in on two browsers. Merged, not assigned: the mongo document
+            //lacks the session's own bookkeeping (sessionIdRegenerated, testUser).
+            $this->addLog("No grant in PHP session, fetching user from MongoDB", "debug");
 
             $database = $this->getMongoDb();
             $collection = $database->selectCollection('users');
-            $cursor = $collection->findOne(['phpSessionId' => session_id()]);
-            if($cursor == null) { //empty result / not found
-                $this->addLog("Session not found in database", "error");
-                $ar = new ApiResponse(401, "Session ".session_id()." not found in database");
-                echo $ar->toJSON();
-                exit();
+            $filter = !empty($_SESSION['username'])
+                ? ['username' => $_SESSION['username']]
+                : ['phpSessionId' => session_id()];
+            $cursor = $collection->findOne($filter);
+            if($cursor != null) {
+                $this->addLog("User found in database", "debug");
+                $_SESSION = array_merge($_SESSION, json_decode(json_encode(iterator_to_array($cursor)), TRUE));
             }
-
-            $this->addLog("Session found in database", "debug");
-            $session = json_decode(json_encode(iterator_to_array($cursor)), TRUE);
-            $_SESSION = $session;
         }
 
         // In open-access mode, normalize loginAllowed so downstream checks and
         // session consumers can rely on a consistent truthy value.
-        if(!$this->accessListEnabled) {
+        if(!$this->accessListEnabled && !empty($_SESSION['username'])) {
             $_SESSION['loginAllowed'] = true;
         }
 
         //AUTH CONTROL - ALL METHODS BEYOND THIS POINT REQUIRES THE USER TO BE SIGNED-IN
-        if($this->accessListEnabled) {
-            // Access list mode: user must be explicitly authorized.
-            if(empty($_SESSION['loginAllowed']) || $_SESSION['loginAllowed'] !== true) {
-                $this->addLog("User not signed in - Authorization required");
-                $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
-                $this->addLog("session: ".print_r($_SESSION, true), "debug");
-                $ar = new ApiResponse(401, "Authorization required");
-                echo $ar->toJSON();
-                exit();
-            }
+        //A real HTTP status, not just the body's "code": the webclient's
+        //liveness check and interceptor key on it, and a 200 carrying a 401
+        //made every failed upload look like a stored one.
+        $authStatus = apiAuthStatus($_SESSION, $this->accessListEnabled);
+        if($authStatus === 401) {
+            $this->addLog("User not signed in - Authentication required");
+            $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
+            http_response_code(401);
+            $ar = new ApiResponse(401, "Authentication required");
+            echo $ar->toJSON();
+            exit();
         }
-        else {
-            // Open access mode: require authenticated identity but skip loginAllowed gate.
-            if(empty($_SESSION['username'])) {
-                $this->addLog("User not signed in - Authentication required");
-                $this->addLog("cookies: ".print_r($_COOKIE, true), "debug");
-                $this->addLog("session: ".print_r($_SESSION, true), "debug");
-                $ar = new ApiResponse(401, "Authentication required");
-                echo $ar->toJSON();
-                exit();
-            }
+
+        //Identity is established: slide the sign-in forward (see SESSION_COOKIE_LIFETIME).
+        refreshSessionCookie();
+
+        if($authStatus === 403) {
+            $this->addLog("User ".$_SESSION['username']." not on the access list - Authorization required");
+            http_response_code(403);
+            $ar = new ApiResponse(403, "Authorization required");
+            echo $ar->toJSON();
+            exit();
         }
 
         if($reqMethod == "GET") {

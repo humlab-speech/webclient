@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'
+import { SessionExpiryInterceptor } from './interceptors/session-expiry.interceptor';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -139,6 +140,7 @@ import { UseInviteCodeDialogComponent } from './components/use-invite-code-dialo
   ],
   providers: [
     UserService,
+    { provide: HTTP_INTERCEPTORS, useClass: SessionExpiryInterceptor, multi: true },
     { provide: OverlayContainer, useClass: HighZOverlayContainer }
   ],
   bootstrap: [AppComponent]

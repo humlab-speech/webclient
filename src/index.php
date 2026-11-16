@@ -32,7 +32,7 @@ if ($sessionSecurity === null) {
     ]);
 }
 
-session_set_cookie_params(60*60*2, "/", $domain, $secure, $httpOnly);
+session_set_cookie_params(defined('SESSION_COOKIE_LIFETIME') ? SESSION_COOKIE_LIFETIME : 60*60*2, "/", $domain, $secure, $httpOnly);
 
 session_start();
 $sid = session_id();
@@ -171,6 +171,11 @@ if(!empty($_SESSION['username']) && empty($_SESSION['sessionIdRegenerated'])) {
 }
 
 addLog("Started session ".$sid."", "info");
+
+//A page load is activity: slide the sign-in forward (see SESSION_COOKIE_LIFETIME).
+if(!empty($_SESSION['username']) && function_exists('refreshSessionCookie')) {
+  refreshSessionCookie();
+}
 
 if(!empty($_SESSION['username']) && empty($_SESSION['id'])) {
   addLog("Looking up user ".$_SESSION['username']." in database", "info");

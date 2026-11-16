@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'
 import { Observable, Subject, from, BehaviorSubject } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
+import { NotifierService } from 'angular-notifier';
 import { UserSession } from "../models/UserSession";
 import { ApiResponse } from "../models/ApiResponse";
 import { environment } from 'src/environments/environment';
@@ -28,7 +29,7 @@ export class UserService {
   public userIsAuthenticated:boolean = false; //do we know who this user is?
   public userIsAuthorized:boolean = false; //does this user have access to the system?
   
-  constructor(private http:HttpClient, private systemService:SystemService) {
+  constructor(private http:HttpClient, private systemService:SystemService, private notifierService:NotifierService) {
     this.sessionObs = new Subject();
 
     // Synchronously bootstrap auth state from window.visp, which PHP populates
@@ -68,6 +69,16 @@ export class UserService {
     setInterval(() => {
       this.checkValidityOfPhpSessionCookie();
     }, 60000);
+
+    // Background tabs have their timers throttled and a sleeping laptop runs
+    // none, so the sign-in can have lapsed long before the next tick. Check the
+    // moment the user looks at the page again rather than letting them act on
+    // a dashboard that is already signed out.
+    document.addEventListener("visibilitychange", () => {
+      if(document.visibilityState === "visible" && Date.now() - this.lastLivenessCheck > 10000) {
+        this.checkValidityOfPhpSessionCookie();
+      }
+    });
   }
 
   /**
@@ -77,11 +88,12 @@ export class UserService {
    */
   private sessionInvalidationHandled:boolean = false;
 
-  private handleSessionInvalidated() {
-    if(this.sessionInvalidationHandled) {
+  public handleSessionInvalidated() {
+    if(this.sessionInvalidationHandled || !this.userIsAuthenticated) {
       return;
     }
     this.sessionInvalidationHandled = true;
+    this.notifierService.notify("warning", "You have been signed out. Please sign in again.");
 
     console.warn("Backend reports the session is no longer valid - signing out locally.");
     this.session = null;
@@ -292,6 +304,11 @@ export class UserService {
   }
 
   importSession(session:UserSession) {
+    if(!session?.eppn && this.userIsAuthenticated) {
+      //signed in until now: the session ended under us - tear down and tell the user
+      this.handleSessionInvalidated();
+      return;
+    }
     this.session = session;
     if(session?.eppn) {
       //a live session again (fresh sign-in), so re-arm the invalidation guard
@@ -340,25 +357,48 @@ export class UserService {
     return this.session.firstName.toLocaleLowerCase()+"."+this.session.lastName.toLocaleLowerCase();
   }
 
+  private lastLivenessCheck:number = 0;
+
   /**
-   * Heartbeat. The cookie merely existing proves nothing - PHP expires sessions
-   * server-side at gc_maxlifetime while the cookie sits there for hours - so ask
-   * the backend whether the session is actually still alive. getSession answers
-   * null once it isn't, and importSession turns that into a signed-out UI.
+   * Heartbeat. The question is whether THIS BROWSER is still signed in, and
+   * only a request carrying the browser's own cookie can answer it. The
+   * websocket cannot: it authenticates with the cookie it captured when it
+   * connected, plus window.visp.phpSessionId, so it kept answering "signed in"
+   * after the browser had dropped the cookie - leaving a dashboard whose
+   * uploads, Artic, Tratt and recorder all failed, and which a reload showed
+   * signed out. So ask the PHP API directly: 401 means signed out. The same
+   * request also slides the cookie's expiry forward (api.php
+   * refreshSessionCookie), which is what keeps an open tab signed in.
+   *
+   * On success the websocket getSession still runs, to pick up changes to the
+   * user's grant and role (loginAllowed, system_role).
    */
   checkValidityOfPhpSessionCookie() {
-    // The session cookie is HttpOnly now, so its value is not readable here -
-    // and reading it never proved anything anyway: the cookie outlives the
-    // server-side session, and a stolen id looks just as good. The getSession
-    // round-trip below is the liveness check: it answers null once the PHP
-    // session is gone, and importSession brings the UI down.
-    if(this.userIsAuthenticated) {
-      this.fetchSession().subscribe({
-        next: (session:UserSession) => this.importSession(session),
-        error: () => {} //transient socket trouble is not proof of an expired session
-      });
+    if(!this.userIsAuthenticated) {
+      return;
     }
+    this.lastLivenessCheck = Date.now();
 
-    return true;
+    this.http.get("/api/v1/session", { observe: "response" }).pipe(timeout(15000)).subscribe({
+      next: () => this.refreshSessionFromBackend(),
+      error: (error) => {
+        if(error?.status === 401) {
+          this.handleSessionInvalidated();
+        }
+        else if(error?.status === 403) {
+          //signed in, but not (or no longer) on the access list
+          this.refreshSessionFromBackend();
+        }
+        //anything else (network, 5xx while apache restarts, timeout) is not
+        //proof of a lapsed sign-in; the next tick asks again
+      }
+    });
+  }
+
+  private refreshSessionFromBackend() {
+    this.fetchSession().subscribe({
+      next: (session:UserSession) => this.importSession(session),
+      error: () => {} //transient socket trouble is not proof of an expired session
+    });
   }
 }
