@@ -98,7 +98,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
   private readonly onCollapseTouchMove = (event: TouchEvent) => {
     const touch = event.touches[0];
-    if(!touch || this.lastTouchClientY === null) {
+    if(!this.showDashboardHero || !touch || this.lastTouchClientY === null) {
       return;
     }
 
@@ -127,7 +127,9 @@ export class MenuBarComponent implements OnInit, OnDestroy {
   };
 
   private readonly onCollapseKeydown = (event: KeyboardEvent) => {
-    if(!this.showDashboardHero || this.isEventInsideModal(event.target)) {
+    const target = event.target as HTMLElement | null;
+    if(!this.showDashboardHero || this.isEventInsideModal(target) ||
+       target?.closest('input, textarea, select, button, a, [contenteditable]')) {
       return;
     }
 
@@ -287,13 +289,18 @@ export class MenuBarComponent implements OnInit, OnDestroy {
     return notification.id;
   }
 
-  // The hero welcomes signed-out visitors on the front page; signed-in users
-  // go straight to their projects (New project and Help live there too).
+  // Only signed-out visitors get a hero, the front page's (FrontpageComponent);
+  // its scroll-collapse is driven from here. Signed-in users go straight to
+  // their projects, where New project and Help live.
   get showDashboardHero():boolean {
     return this.isDashboardRoute
       && !this.showBackToDashboardButton
       && this.userAuthenticationCheckPerformed
       && !this.userIsAuthenticated;
+  }
+
+  get showSignedOutHero():boolean {
+    return this.isDashboardRoute && this.userAuthenticationCheckPerformed && !this.userIsAuthenticated;
   }
 
   get showUserActions():boolean {
@@ -303,6 +310,26 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
   @HostListener('window:resize')
   onWindowResize(): void {
+  }
+
+  @HostListener('document:focusin', ['$event'])
+  onDocumentFocusIn(event: FocusEvent): void {
+    const target = event.target as HTMLElement | null;
+    if(!this.showSignedOutHero || this.heroCollapseProgress === 1 || !target?.closest('.frontpage-resources')) {
+      return;
+    }
+
+    // Keyboard navigation and the access form must be able to reach resources
+    // while the hero still owns page scrolling.
+    if(this.heroCollapseRafId !== null) {
+      window.cancelAnimationFrame(this.heroCollapseRafId);
+      this.heroCollapseRafId = null;
+    }
+    this.collapseTargetScroll = this.COLLAPSE_DISTANCE;
+    this.collapseAnimatedScroll = this.COLLAPSE_DISTANCE;
+    this.heroCollapseProgress = 1;
+    this.unlockCollapsePage();
+    window.requestAnimationFrame(() => target.scrollIntoView({ block: 'center' }));
   }
 
   @HostListener('document:click')
@@ -377,7 +404,7 @@ export class MenuBarComponent implements OnInit, OnDestroy {
 
     this.collapseAnimatedScroll += distanceToTarget * chaseSpeed;
 
-    if(Math.abs(distanceToTarget) < this.SNAP_THRESHOLD) {
+    if(Math.abs(this.collapseTargetScroll - this.collapseAnimatedScroll) < this.SNAP_THRESHOLD) {
       this.collapseAnimatedScroll = this.collapseTargetScroll;
     }
 
