@@ -157,6 +157,15 @@ check("refresh keeps an insecure dev cookie insecure", $o['secure'] === false);
 check("refresh never drops HttpOnly", sessionCookieRefreshOptions([], 0)['httponly'] === true);
 
 
+// --- trattSubdomain (window.vispConfig) -------------------------------------
+check("Tratt's subdomain defaults to tratt", trattSubdomain([]) === "tratt");
+check("TRATT_SUBDOMAIN=octra is used (sites whose DNS kept the old name)", trattSubdomain(['TRATT_SUBDOMAIN' => 'octra']) === "octra");
+check("the subdomain is normalised to lower case", trattSubdomain(['TRATT_SUBDOMAIN' => ' Octra ']) === "octra");
+check("a value that is not a DNS label falls back to tratt",
+    trattSubdomain(['TRATT_SUBDOMAIN' => 'evil.example/x']) === "tratt" && trattSubdomain(['TRATT_SUBDOMAIN' => '-x']) === "tratt");
+check("vispConfig JSON cannot close its script tag", strpos(vispConfigJson(['TRATT_SUBDOMAIN' => '</script>']), '<') === false);
+
+
 // --- requestOriginOk --------------------------------------------------------
 $BASE = "visp.example.edu";
 $ok = function (array $server) use ($BASE) { return requestOriginOk($server, $BASE); };

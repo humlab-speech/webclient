@@ -332,6 +332,7 @@ if (function_exists('vispShellJson')) {
   </script>
   <script>
     window.visp = <?php echo $vispJson; ?>;
+    window.vispConfig = <?php echo function_exists('vispConfigJson') ? vispConfigJson(getenv()) : '{}'; ?>;
   </script>
 </head>
 <body>

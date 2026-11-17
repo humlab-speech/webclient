@@ -100,6 +100,28 @@ function refreshSessionCookie(): void
 }
 
 /**
+ * The host label Tratt is served under (TRATT_SUBDOMAIN in .env, default
+ * "tratt"; sites whose DNS kept the old name set "octra"). The webclient
+ * builds Tratt's URL from it, so it must match the Apache vhost, which reads
+ * the same variable. Anything that is not a plain DNS label falls back to
+ * the default rather than ending up in a URL.
+ */
+function trattSubdomain(array $env): string
+{
+    $value = isset($env['TRATT_SUBDOMAIN']) ? strtolower(trim((string) $env['TRATT_SUBDOMAIN'])) : "";
+    return preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/', $value) ? $value : "tratt";
+}
+
+/** Deployment settings for the SPA (window.vispConfig), as JSON safe inside a <script> tag. */
+function vispConfigJson(array $env): string
+{
+    return json_encode(
+        ["trattSubdomain" => trattSubdomain($env)],
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+}
+
+/**
  * The window.visp object for src/index.php's <script> block, as JSON.
  *
  * The template used to echo the session values raw into a JS string

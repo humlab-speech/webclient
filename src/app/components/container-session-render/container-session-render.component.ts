@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalService } from '../../services/modal.service';
 import Cookies from 'js-cookie';
+import { trattOrigin } from 'src/app/models/TrattUrl';
 import { SystemService } from 'src/app/services/system.service';
 
 @Component({
@@ -68,7 +69,7 @@ export class ContainerSessionRenderComponent implements OnInit {
       projectId: projectId,
       level: launch.get("level") || "",
     });
-    iframe.setAttribute("src", window.location.protocol + "//tratt." + window.location.hostname + "/?" + query.toString());
+    iframe.setAttribute("src", trattOrigin() + "/?" + query.toString());
   }
 
   openModal() {
