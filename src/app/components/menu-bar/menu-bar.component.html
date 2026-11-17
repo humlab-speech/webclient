@@ -1,15 +1,18 @@
-<header id="menu-bar" [class.menu-bar--dashboard]="showSignedInHero" [class.menu-bar--back-button]="showBackToDashboardButton" [style.--hero-collapse]="heroCollapseProgress">
+<header id="menu-bar" [class.menu-bar--back-button]="showBackToDashboardButton" [style.--hero-collapse]="heroCollapseProgress">
   <div class="menu-top-row">
     <div class="menu-left">
       <a class="brand-block" href="/" (click)="$event.preventDefault(); backButtonClicked()"
-         [attr.aria-label]="'VISP, ' + brandSlogan + ' (start page)'">
-        <img class="brand-logo" [src]="themeService.theme === 'dark' ? brandLogoDarkPath : brandLogoPath" [alt]="'VISP – ' + brandSlogan">
+         [attr.aria-label]="'Visp, ' + brandSlogan + ' (start page)'">
+        <img class="brand-logo" [src]="brandLogoPath" [alt]="'Visp – ' + brandSlogan">
       </a>
 
-      <button *ngIf="showBackToDashboardButton" id="visp-back-button" (click)="backButtonClicked()" aria-label="Back to dashboard">
-        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-        <span>Back to dashboard</span>
-      </button>
+      <ng-container *ngIf="showBackToDashboardButton">
+        <span class="bar-divider" aria-hidden="true"></span>
+        <a id="visp-back-button" href="/" (click)="$event.preventDefault(); backButtonClicked()" aria-label="Back to dashboard">
+          <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </a>
+      </ng-container>
     </div>
 
     <a class="host-node" [href]="hostNode.href" target="_blank" rel="noopener">
@@ -62,27 +65,4 @@
     </div>
   </div>
 
-  <div class="menu-hero-content" *ngIf="showSignedInHero">
-   <div class="menu-hero-inner">
-    <ng-container *ngIf="showSignedInHero">
-      <div class="menu-hero-badge">{{ greetingLine }}</div>
-      <h1>Your speech research,<br><span>secured and organized.</span></h1>
-      <p>
-        Manage projects, transcribe recordings, and collaborate with your team
-        in one modern workspace.
-      </p>
-      <div class="menu-hero-actions">
-        <button id="tutorial-create-project-btn" class="hero-btn hero-btn-primary" (click)="createProject()" [disabled]="!canCreateProjects">
-          <i class="fa fa-plus" aria-hidden="true"></i>
-          <span>New project</span>
-        </button>
-        <button class="hero-btn hero-btn-help" (click)="openHelpDialog()">
-          <i class="fa fa-question-circle" aria-hidden="true"></i>
-          <span>Help</span>
-        </button>
-      </div>
-    </ng-container>
-
-   </div>
-  </div>
 </header>

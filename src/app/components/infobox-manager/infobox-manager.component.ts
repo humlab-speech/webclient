@@ -50,7 +50,7 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'tools',
             title: 'Tools',
-            body: 'TRATT is a free browser-based transcription tool. Audio stays in your browser and is not uploaded to VISP.'
+            body: 'Tratt is a free browser-based transcription tool. Audio stays in your browser and is not uploaded to Visp.'
           }
         ]
       : [
@@ -62,7 +62,7 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
           {
             name: 'help-and-guides',
             title: 'Help & Guides',
-            body: 'Want to learn how to start a project in VISP? Find tutorials and references here.'
+            body: 'Want to learn how to start a project in Visp? Find tutorials and references here.'
           }
         ];
   }
@@ -85,9 +85,9 @@ export class InfoboxManagerComponent implements OnInit, OnChanges {
     }
 
     const email = `${this.accessRequestForm.value.email || ''}`.trim();
-    const subject = encodeURIComponent('VISP access request');
+    const subject = encodeURIComponent('Visp access request');
     const body = encodeURIComponent(
-      `Hello,\n\nI would like to request access to VISP.\n\nContact email: ${email}\n`
+      `Hello,\n\nI would like to request access to Visp.\n\nContact email: ${email}\n`
     );
 
     if(typeof window !== 'undefined') {

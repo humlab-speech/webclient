@@ -55,11 +55,14 @@
   --v-interactive-ink: #157278;
   --v-on-interactive: #ffffff;
 
-  --v-topbar: #ffffff;
-  --v-topbar-raised: #f3f3f3;
-  --v-topbar-border: #e0e0e0;
-  --v-topbar-text: #1a1a1a;
-  --v-topbar-muted: #666666;
+  // The platform bar on top of every page: dark in both themes, so the
+  // workspace or app below it reads as a separate layer.
+  --v-topbar: #222222;
+  --v-topbar-raised: #363636;
+  --v-topbar-border: #222222;
+  --v-topbar-divider: #555555;
+  --v-topbar-text: #ffffff;
+  --v-topbar-muted: #c8c8c8;
 
   --v-bg: #f3f3f3;
   --v-hero: #ffffff;
@@ -127,11 +130,12 @@
   --v-interactive-ink: #45c0c7;
   --v-on-interactive: #ffffff;
 
-  --v-topbar: #1c1c1c;
+  --v-topbar: #0b0b0b;
   --v-topbar-raised: #262626;
   --v-topbar-border: #2c2c2c;
+  --v-topbar-divider: #444444;
   --v-topbar-text: #f0f0f0;
-  --v-topbar-muted: #9a9a9a;
+  --v-topbar-muted: #b4b4b4;
 
   --v-bg: #141414;
   --v-hero: #1c1c1c;

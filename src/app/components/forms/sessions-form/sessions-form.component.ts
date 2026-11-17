@@ -167,6 +167,8 @@ export class SessionsFormComponent implements ControlValueAccessor, OnDestroy {
       this.addAnnotLevel("Word", "ITEM");
       this.addAnnotLevel("Phonetic", "SEGMENT");
       this.addAnnotLevelLink("Word", "Phonetic");
+      //an unlinked SEGMENT level, so every new project has one TRATT can transcribe into
+      this.addAnnotLevel("Transcription", "SEGMENT");
     }
   }
 

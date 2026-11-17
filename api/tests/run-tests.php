@@ -130,6 +130,42 @@ check("loginAllowed survives (authorization state)", ($payload['loginAllowed'] ?
 check("session without identity -> []", sessionValidationPayload(['loginCount' => 3]) === "[]");
 
 
+// --- apiAuthStatus (api.php's signed-in gate) -------------------------------
+$signedIn = ['username' => 'some_user', 'loginAllowed' => true];
+$noGrant = ['username' => 'some_user', 'loginAllowed' => false];
+check("no session -> 401 in open mode", apiAuthStatus([], false) === 401);
+check("no session -> 401 in access-list mode, not 403", apiAuthStatus([], true) === 401);
+check("grant but no identity -> 401", apiAuthStatus(['loginAllowed' => true], true) === 401);
+check("open mode lets an identified user without a grant through", apiAuthStatus($noGrant, false) === 0);
+// The heartbeat signs the UI out on 401: a user waiting for a grant must get
+// 403 or they are thrown out of the invite-code screen within a minute.
+check("access-list mode: identified but no grant -> 403", apiAuthStatus($noGrant, true) === 403);
+check("access-list mode: truthy non-true grant is not a grant", apiAuthStatus(['username' => 'u', 'loginAllowed' => 1], true) === 403);
+check("access-list mode: granted -> through", apiAuthStatus($signedIn, true) === 0);
+
+// --- sessionCookieRefreshOptions (sliding sign-in) ---------------------------
+$apiParams = ['lifetime' => 1, 'path' => '/', 'domain' => '.visp.example.edu', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax'];
+$o = sessionCookieRefreshOptions($apiParams, 1000);
+check("refresh pushes expiry SESSION_COOKIE_LIFETIME past now", $o['expires'] === 1000 + SESSION_COOKIE_LIFETIME);
+check("refresh keeps the configured scope and flags",
+    $o['path'] === '/' && $o['domain'] === '.visp.example.edu' && $o['secure'] === true && $o['httponly'] === true && $o['samesite'] === 'Lax');
+// index.php sets no SameSite; refreshing must not quietly add one (the SAML
+// return path is what a changed SameSite could break).
+$o = sessionCookieRefreshOptions(['lifetime' => 1, 'path' => '/', 'domain' => '', 'secure' => false, 'httponly' => true, 'samesite' => ''], 0);
+check("refresh adds no SameSite the script did not set", !array_key_exists('samesite', $o));
+check("refresh keeps an insecure dev cookie insecure", $o['secure'] === false);
+check("refresh never drops HttpOnly", sessionCookieRefreshOptions([], 0)['httponly'] === true);
+
+
+// --- trattSubdomain (window.vispConfig) -------------------------------------
+check("Tratt's subdomain defaults to tratt", trattSubdomain([]) === "tratt");
+check("TRATT_SUBDOMAIN=octra is used (sites whose DNS kept the old name)", trattSubdomain(['TRATT_SUBDOMAIN' => 'octra']) === "octra");
+check("the subdomain is normalised to lower case", trattSubdomain(['TRATT_SUBDOMAIN' => ' Octra ']) === "octra");
+check("a value that is not a DNS label falls back to tratt",
+    trattSubdomain(['TRATT_SUBDOMAIN' => 'evil.example/x']) === "tratt" && trattSubdomain(['TRATT_SUBDOMAIN' => '-x']) === "tratt");
+check("vispConfig JSON cannot close its script tag", strpos(vispConfigJson(['TRATT_SUBDOMAIN' => '</script>']), '<') === false);
+
+
 // --- requestOriginOk --------------------------------------------------------
 $BASE = "visp.example.edu";
 $ok = function (array $server) use ($BASE) { return requestOriginOk($server, $BASE); };
@@ -540,7 +576,7 @@ check("the harness cleaned up its scratch directory", !is_dir($workDir));
 // --- projectGrantsAccess (finding F2: a missing project denies, it does not fatal)
 // The bug was iterator_to_array(null) on the findOne() result: a request naming
 // a project id that does not exist answered HTTP 500 with an empty body, on the
-// ?f=session route and on the octra download route that share this code. These
+// ?f=session route (and on the since-removed Octra-task download route). These
 // cases run against the real function - no MongoDB and no Apache - which is why
 // the decision lives in sessionSecurity.php in the first place.
 check("no project document denies access", projectGrantsAccess(null, "some_user") === false);

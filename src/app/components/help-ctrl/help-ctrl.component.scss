@@ -1,17 +1,19 @@
+// Lives in the topbar, which is dark in both themes; matches its icon buttons.
 #help-button {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.75rem;
+  height: 2.75rem;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 50%;
+  border-radius: 6px;
   background: transparent;
-  color: var(--v-interactive);
-  font-size: 1.35rem;
+  color: var(--v-topbar-muted);
+  font-size: 1.2rem;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 #help-button:hover {
-  background: var(--v-interactive-soft);
-  color: var(--v-interactive-ink);
+  background: var(--v-topbar-raised);
+  color: var(--v-topbar-text);
 }

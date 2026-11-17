@@ -1,12 +1,12 @@
 <section class="infobar-block" [class.infobar-block--expanded]="expandedLayout">
   <div class="infobar-heading">
-    <span class="eyebrow">{{ expandedLayout ? 'Explore VISP' : 'Resources' }}</span>
+    <span class="eyebrow">{{ expandedLayout ? 'Explore Visp' : 'Resources' }}</span>
     <h2>{{ headingText }}</h2>
   </div>
 
   <div class="infobar-intro-row" *ngIf="expandedLayout">
     <p class="infobar-intro">
-      Learn how VISP supports speech research, onboarding, and secure collaboration.
+      Learn how Visp supports speech research, onboarding, and secure collaboration.
     </p>
   </div>
 
@@ -23,7 +23,7 @@
         <i class="fa fa-shield" aria-hidden="true"></i>
       </span>
       <div>
-        <h4>Request access to VISP</h4>
+        <h4>Request access to Visp</h4>
         <p>Enter your email address and we'll open a prefilled message to our support team.</p>
       </div>
       <button type="button" class="access-form-close" aria-label="Close access request" (click)="toggleAccessRequestForm()">

@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Infobox } from '../../models/Infobox';
 import { environment } from 'src/environments/environment';
+import { trattSubdomain } from 'src/app/models/TrattUrl';
 import { UserService } from '../../services/user.service';
 import { ModalService } from '../../services/modal.service';
 
@@ -23,7 +24,7 @@ export class InfoboxComponent implements OnInit {
 
   ngOnInit(): void {
     this.trattEnabled = environment.ENABLED_APPLICATIONS.includes('tratt');
-    this.trattUrl = `https://tratt.${window.location.hostname}`;
+    this.trattUrl = `https://${trattSubdomain()}.${window.location.hostname}`;
     this.userIsLoggedIn = !!this.userService.getSession()?.eppn;
 
     this.userService.sessionObs.subscribe((userSession) => {

@@ -33,6 +33,95 @@ function cookieParams(array $env): array
 }
 
 /**
+ * How long a sign-in outlives the last request that proved it, in seconds.
+ *
+ * PHP sends the session cookie only when it creates or regenerates a session,
+ * never again: a lifetime set through session_set_cookie_params() therefore
+ * counts from sign-in, not from the last activity. That made the browser drop
+ * PHPSESSID two hours after sign-in however busy the user was, while the open
+ * websocket - which authenticates with the cookie it captured at connect time -
+ * kept the dashboard looking signed in. Uploads, Artic, Tratt and the recorder
+ * all failed in the meantime. refreshSessionCookie() makes the lifetime
+ * sliding; the webclient's heartbeat hits the API every minute, so an open tab
+ * keeps the sign-in and it ends this long after the last tab closed.
+ */
+const SESSION_COOKIE_LIFETIME = 60 * 60 * 2;
+
+/**
+ * The setcookie() options that push the session cookie's expiry forward,
+ * keeping every other attribute exactly as the calling script configured it
+ * through session_set_cookie_params() ($params is session_get_cookie_params()).
+ */
+function sessionCookieRefreshOptions(array $params, int $now): array
+{
+    $options = [
+        "expires" => $now + SESSION_COOKIE_LIFETIME,
+        "path" => $params["path"] ?? "/",
+        "domain" => $params["domain"] ?? "",
+        "secure" => (bool) ($params["secure"] ?? true),
+        "httponly" => (bool) ($params["httponly"] ?? true),
+    ];
+    if (!empty($params["samesite"])) {
+        $options["samesite"] = $params["samesite"];
+    }
+    return $options;
+}
+
+/**
+ * The HTTP status api.php's auth gate answers a signed-in-only route with, or
+ * 0 to let the request through.
+ *
+ * 401 and 403 mean different things to the webclient and must stay apart:
+ * 401 - we do not know who this is (no session, or it expired): the webclient
+ *       drops to its signed-out UI.
+ * 403 - we know who it is, but the access list has not granted them entry:
+ *       they stay signed in and are offered the invite-code path. Answering
+ *       this with 401, as both cases once were, would sign out every user
+ *       still waiting for a grant at the first heartbeat.
+ */
+function apiAuthStatus(array $session, bool $accessListEnabled): int
+{
+    if (empty($session['username'])) {
+        return 401;
+    }
+    if ($accessListEnabled && ($session['loginAllowed'] ?? null) !== true) {
+        return 403;
+    }
+    return 0;
+}
+
+/** Re-send the session cookie with a fresh expiry. Call only for a signed-in session. */
+function refreshSessionCookie(): void
+{
+    if (session_status() !== PHP_SESSION_ACTIVE || headers_sent()) {
+        return;
+    }
+    setcookie(session_name(), session_id(), sessionCookieRefreshOptions(session_get_cookie_params(), time()));
+}
+
+/**
+ * The host label Tratt is served under (TRATT_SUBDOMAIN in .env, default
+ * "tratt"; sites whose DNS kept the old name set "octra"). The webclient
+ * builds Tratt's URL from it, so it must match the Apache vhost, which reads
+ * the same variable. Anything that is not a plain DNS label falls back to
+ * the default rather than ending up in a URL.
+ */
+function trattSubdomain(array $env): string
+{
+    $value = isset($env['TRATT_SUBDOMAIN']) ? strtolower(trim((string) $env['TRATT_SUBDOMAIN'])) : "";
+    return preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/', $value) ? $value : "tratt";
+}
+
+/** Deployment settings for the SPA (window.vispConfig), as JSON safe inside a <script> tag. */
+function vispConfigJson(array $env): string
+{
+    return json_encode(
+        ["trattSubdomain" => trattSubdomain($env)],
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+}
+
+/**
  * The window.visp object for src/index.php's <script> block, as JSON.
  *
  * The template used to echo the session values raw into a JS string
@@ -584,7 +673,8 @@ function extractionCleanupPlan(array $extracted, array $existedBefore, array $cr
  * The old code ran iterator_to_array($project) unconditionally, and
  * iterator_to_array(null) is a TypeError - so a request naming a project id
  * that does not exist answered HTTP 500 with an empty body, on the ?f=session
- * validation route and on the octra file-download route, which share this code.
+ * validation route (and on the Octra-task file-download route, which shared this
+ * code until it was removed when Tratt moved to the annotation server).
  * The caller could not tell "denied" from "broken", and neither could the log.
  *
  * A missing project and a project you are not a member of answer identically on
