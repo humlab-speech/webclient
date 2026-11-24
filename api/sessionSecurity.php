@@ -122,6 +122,55 @@ function vispConfigJson(array $env): string
 }
 
 /**
+ * The link-preview <meta> tags (Open Graph + Twitter card) for src/index.php's
+ * <head>. Social sites and chat apps read these from the raw HTML and never
+ * run the SPA, so they must be in the PHP shell rather than set by Angular.
+ *
+ * og:url and og:image must be absolute, so they are built from BASE_DOMAIN and
+ * HTTP_PROTOCOL - never from the client-controlled Host: header (a crafted
+ * Host: would otherwise end up in a cached preview). Without a usable
+ * BASE_DOMAIN both are left out and the preview falls back to title and text.
+ */
+function socialMetaTags(array $env): string
+{
+    $title = "Visible Speech";
+    $description = "Språkbanken’s speech research platform: research tools for speech analysis, "
+        . "secure collaboration and reproducible work.";
+    $tags = [
+        ["name", "description", $description],
+        ["property", "og:type", "website"],
+        ["property", "og:site_name", "Visp"],
+        ["property", "og:title", $title],
+        ["property", "og:description", $description],
+        ["property", "og:locale", "en_GB"],
+        ["name", "twitter:title", $title],
+        ["name", "twitter:description", $description],
+    ];
+
+    $baseDomain = isset($env['BASE_DOMAIN']) ? strtolower(trim((string) $env['BASE_DOMAIN'])) : "";
+    if (preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/', $baseDomain)) {
+        $protocol = isset($env['HTTP_PROTOCOL']) && strtolower(trim((string) $env['HTTP_PROTOCOL'])) === "http" ? "http" : "https";
+        $origin = $protocol . "://" . $baseDomain;
+        $tags[] = ["property", "og:url", $origin . "/"];
+        $tags[] = ["property", "og:image", $origin . "/assets/visp-share.png"];
+        $tags[] = ["property", "og:image:type", "image/png"];
+        $tags[] = ["property", "og:image:width", "1200"];
+        $tags[] = ["property", "og:image:height", "630"];
+        $tags[] = ["property", "og:image:alt", "Visp – Språkbanken’s speech research platform"];
+        $tags[] = ["name", "twitter:card", "summary_large_image"];
+    } else {
+        $tags[] = ["name", "twitter:card", "summary"];
+    }
+
+    $html = "";
+    foreach ($tags as [$attr, $key, $value]) {
+        $html .= '<meta ' . $attr . '="' . htmlspecialchars($key, ENT_QUOTES, 'UTF-8') . '" content="'
+            . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . "\">\n  ";
+    }
+    return rtrim($html) . "\n";
+}
+
+/**
  * The window.visp object for src/index.php's <script> block, as JSON.
  *
  * The template used to echo the session values raw into a JS string

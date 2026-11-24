@@ -316,6 +316,7 @@ if (function_exists('vispShellJson')) {
   <title id="title">Visible Speech</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <?php echo function_exists('socialMetaTags') ? socialMetaTags(getenv()) : ''; ?>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.gstatic.com">
