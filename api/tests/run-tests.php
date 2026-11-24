@@ -166,6 +166,22 @@ check("a value that is not a DNS label falls back to tratt",
 check("vispConfig JSON cannot close its script tag", strpos(vispConfigJson(['TRATT_SUBDOMAIN' => '</script>']), '<') === false);
 
 
+// --- socialMetaTags (link previews) -----------------------------------------
+$m = socialMetaTags(['BASE_DOMAIN' => 'visp.example.edu', 'HTTP_PROTOCOL' => 'https']);
+check("preview has an Open Graph title", strpos($m, '<meta property="og:title" content="Visible Speech">') !== false);
+check("preview image is absolute, on BASE_DOMAIN",
+    strpos($m, 'content="https://visp.example.edu/assets/visp-share.png"') !== false);
+check("preview url is the site root", strpos($m, '<meta property="og:url" content="https://visp.example.edu/">') !== false);
+check("preview asks for a large image card", strpos($m, 'content="summary_large_image"') !== false);
+check("dev mode: http protocol is kept in preview urls",
+    strpos(socialMetaTags(['BASE_DOMAIN' => 'visp.local', 'HTTP_PROTOCOL' => 'http']), 'content="http://visp.local/"') !== false);
+$m = socialMetaTags(['HTTP_HOST' => 'evil.example']);
+check("no BASE_DOMAIN -> no absolute urls, never the Host header", strpos($m, 'og:image"') === false && strpos($m, 'evil') === false);
+check("no BASE_DOMAIN -> small card", strpos($m, 'content="summary"') !== false);
+$m = socialMetaTags(['BASE_DOMAIN' => 'x"><script>alert(1)</script>']);
+check("a malformed BASE_DOMAIN is not used", strpos($m, '<script') === false && strpos($m, 'og:url') === false);
+
+
 // --- requestOriginOk --------------------------------------------------------
 $BASE = "visp.example.edu";
 $ok = function (array $server) use ($BASE) { return requestOriginOk($server, $BASE); };
